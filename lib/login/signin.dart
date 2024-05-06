@@ -5,7 +5,9 @@ import 'package:flutter_sdg/layout/login_layout.dart';
 import 'package:flutter_sdg/login/create_user_account.dart';
 import 'package:flutter_sdg/login/forgot_password.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_sdg/question/introduction1.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -149,24 +151,15 @@ class SignIn extends StatelessWidget {
                       .collection('users')
                       .doc(user.uid)
                       .get()
-                      .then((userSnapshot) {
-                    if (!userSnapshot.exists) {
-                      FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(user.uid)
-                          .set({
-                        'name': "",
-                        'age': 0,
-                        'studyField': "",
-                        'school': "",
-                        'level': 1,
-                        'points': 0,
-                        'ongoingTasks': [],
-                        'completedTasks': [],
-                      }).then((_) {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => const HomePageScreen()));
-                      }).catchError((error) {});
+                      .then((userSnapshot) async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    bool loggedInBefore =
+                        prefs.getBool('loggedInBefore') ?? false;
+                    if (!loggedInBefore) {
+                      prefs.setBool('loggedInBefore', true);
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => IntroductionPage()));
                     } else {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const HomePageScreen()));

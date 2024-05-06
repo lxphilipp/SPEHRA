@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/services/chat_service.dart';
 
@@ -85,14 +84,13 @@ class ChatPageLayoutState extends State<ChatPageLayout> {
             : Alignment.centerLeft,
         child: Container(
           padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration( 
-           color: data['senderID'] == _finalAuth.currentUser!.uid ?
-            const Color.fromARGB(255, 38, 181, 79) :
-            const Color(0xff040324),
-           border: data['senderID'] == _finalAuth.currentUser!.uid ? 
-            null : Border.all(
-            color: const Color.fromARGB(255, 126, 254, 114)
-            ),
+          decoration: BoxDecoration(
+            color: data['senderID'] == _finalAuth.currentUser!.uid
+                ? const Color.fromARGB(255, 38, 181, 79)
+                : const Color(0xff040324),
+            border: data['senderID'] == _finalAuth.currentUser!.uid
+                ? null
+                : Border.all(color: const Color.fromARGB(255, 126, 254, 114)),
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Column(
@@ -101,8 +99,8 @@ class ChatPageLayoutState extends State<ChatPageLayout> {
                 data['message'],
                 style: TextStyle(
                   color: data['senderID'] == _finalAuth.currentUser!.uid
-                ? const Color.fromARGB(255, 255, 255, 255)
-                : const Color.fromARGB(255, 126, 254, 114),
+                      ? const Color.fromARGB(255, 255, 255, 255)
+                      : const Color.fromARGB(255, 126, 254, 114),
                   fontFamily: 'OswaldLight',
                   fontSize: 16.0,
                 ),
