@@ -45,19 +45,69 @@ class TransportPage extends StatelessWidget {
                   )
                 ])),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xff3BBE6B))),
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const Placeholder())),
-                    child: const Text('Car',
-                        style: TextStyle(color: Colors.white))),
-              ],
-            )
+            Container(
+              height: 100,
+              width: 300,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                        ),
+                        child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                side:
+                                    const BorderSide(color: Color(0xff3BBE6B))),
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Placeholder())),
+                            child: const Text(' Car ',
+                                style: TextStyle(color: Colors.white))),
+                      ),
+                      OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xff3BBE6B))),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Placeholder())),
+                          child: const Text(' Public Transport ',
+                              style: TextStyle(color: Colors.white))),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 2, horizontal: 10),
+                        child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                                side:
+                                    const BorderSide(color: Color(0xff3BBE6B))),
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Placeholder())),
+                            child: const Text('  By foot  ',
+                                style: TextStyle(color: Colors.white))),
+                      ),
+                      OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xff3BBE6B))),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Placeholder())),
+                          child: const Text('   Air plane    ',
+                              style: TextStyle(color: Colors.white))),
+                    ],
+                  )
+                ],
+              ),
+            ),
           ],
         ));
   }

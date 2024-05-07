@@ -7,6 +7,7 @@ import 'package:flutter_sdg/homepage/homepage.dart';
 import 'package:flutter_sdg/homepage/profile_stats.dart';
 import 'package:flutter_sdg/homepage/userListPage.dart';
 import 'package:flutter_sdg/layout/logoutButton_layout.dart';
+import 'package:flutter_sdg/question/introduction1.dart';
 
 class MenuDrawer extends StatefulWidget {
   @override
@@ -127,9 +128,16 @@ class MenuDrawerStare extends State<MenuDrawer> {
                     title: Text('Chat',
                         style: TextStyle(fontSize: 15, color: Colors.white))),
               ),
-              const ListTile(
-                  title: Text('Posts',
-                      style: TextStyle(fontSize: 15, color: Colors.white))),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => IntroductionPage(),
+                  ));
+                },
+                child: const ListTile(
+                    title: Text('Stats',
+                        style: TextStyle(fontSize: 15, color: Colors.white))),
+              ),
             ],
           ),
           ExpansionTile(

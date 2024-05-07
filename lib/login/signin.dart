@@ -157,7 +157,7 @@ class SignIn extends StatelessWidget {
                     bool loggedInBefore =
                         prefs.getBool('loggedInBefore') ?? false;
                     if (!loggedInBefore) {
-                      prefs.setBool('loggedInBefore', true);
+                      await prefs.setBool('loggedInBefore', false);
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => IntroductionPage()));
                     } else {
