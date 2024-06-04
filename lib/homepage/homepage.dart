@@ -339,7 +339,7 @@ class HomePage extends StatelessWidget {
                                 : '';
                             Color circleColor = Colors.white;
 
-                            circleColor = getCategoryColor(category);
+                            circleColor = getCategoryColor(category[0]);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -358,8 +358,13 @@ class HomePage extends StatelessWidget {
                                         title: challengeData['title'],
                                         description:
                                             challengeData['description'],
+                                        task: challengeData['task'],
                                         points: challengeData['points'],
-                                        category: challengeData['category'],
+                                        category:
+                                            (challengeData['category'] as List)
+                                                .map((item) => item.toString())
+                                                .toList()
+                                                .cast<String>(),
                                         challengeId: challengeDocument.id,
                                       ),
                                     ),
@@ -392,7 +397,7 @@ class HomePage extends StatelessWidget {
                                           width: 22,
                                           height: 22,
                                           child: Image.asset(
-                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenfläche 1.png'),
+                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png'),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
@@ -483,7 +488,7 @@ class HomePage extends StatelessWidget {
                             var category = challengeData['category'];
                             Color circleColor = Colors.white;
 
-                            circleColor = getCategoryColor(category);
+                            circleColor = getCategoryColor(category[0]);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -502,8 +507,13 @@ class HomePage extends StatelessWidget {
                                         title: challengeData['title'],
                                         description:
                                             challengeData['description'],
+                                        task: challengeData['task'],
                                         points: challengeData['points'],
-                                        category: challengeData['category'],
+                                        category:
+                                            (challengeData['category'] as List)
+                                                .map((item) => item.toString())
+                                                .toList()
+                                                .cast<String>(),
                                         challengeId: challengeDocument.id,
                                       ),
                                     ),
@@ -536,7 +546,7 @@ class HomePage extends StatelessWidget {
                                           width: 22,
                                           height: 22,
                                           child: Image.asset(
-                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenfläche 1.png'),
+                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png'),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_sdg/question/diet5.dart';
+import 'package:flutter_sdg/question/energy6.dart';
 
-class TransportPage extends StatelessWidget {
+class DietPage extends StatelessWidget {
   final double fontSize = 22;
 
-  const TransportPage({Key? key}) : super(key: key);
-
+  const DietPage({Key? key}) : super(key: key);
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff040324),
@@ -19,7 +17,7 @@ class TransportPage extends StatelessWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const DietPage(),
+                builder: (context) => const EnergyPage(),
               ),
             ),
             child: const Text(
@@ -37,23 +35,23 @@ class TransportPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: RichText(
                 text: const TextSpan(
-                    style: TextStyle(fontSize: 29),
+                    style: TextStyle(fontSize: 30),
                     children: <TextSpan>[
                   TextSpan(
-                      text: ' What is your go to ',
+                      text: ' What does your ',
                       style: TextStyle(color: Colors.white)),
                   TextSpan(
-                      text: 'method \n of transport',
+                      text: 'diet',
                       style: TextStyle(
                           color: Color(0xff3BBE6B),
                           fontStyle: FontStyle.italic)),
                   TextSpan(
-                    text: '?',
+                    text: ' look\n like ?',
                     style: TextStyle(color: Colors.white),
                   )
                 ])),
           ),
-          const SizedBox(height: 420),
+          const SizedBox(height: 430),
           Column(
             children: [
               Padding(
@@ -77,7 +75,7 @@ class TransportPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const Placeholder())),
-                          child: Text(' Car ',
+                          child: Text(' Vegan ',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -90,7 +88,7 @@ class TransportPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const Placeholder())),
-                        child: Text(' Public Transport ',
+                        child: Text('   Vegeterian   ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],
@@ -113,7 +111,7 @@ class TransportPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const Placeholder())),
-                          child: Text('  By foot  ',
+                          child: Text('Pescerian',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -126,7 +124,7 @@ class TransportPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const Placeholder())),
-                        child: Text('   Air plane    ',
+                        child: Text('Omnivorian',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],

@@ -26,20 +26,19 @@ class CreateOwnChallenges extends StatefulWidget {
 }
 
 class _ChallengesState extends State<CreateOwnChallenges> {
-  int? _selectedCategoryIndex;
+  List<int> _selectedCategoryIndices = [];
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _taskController = TextEditingController();
   final TextEditingController _pointsController = TextEditingController();
 
   String _selectedLevel = "Easy";
-  String _selectedCategory = "goal1";
-
+  List<String> _selectedCategories = [];
   @override
   void initState() {
     super.initState();
     _selectedLevel = "Easy";
-    _selectedCategoryIndex = 0;
   }
 
   List<String> categoryNames = [
@@ -72,15 +71,17 @@ class _ChallengesState extends State<CreateOwnChallenges> {
   }
 
   void _saveChallenge() async {
-    String category = _selectedCategory;
+    List<String> categories = _selectedCategories;
     String title = _titleController.text;
     String description = _descriptionController.text;
+    String task = _taskController.text;
     int points = int.tryParse(_pointsController.text) ?? 0;
     String level = _selectedLevel;
 
-    if (category.isEmpty ||
+    if (categories.isEmpty ||
         title.isEmpty ||
         description.isEmpty ||
+        task.isEmpty ||
         points == 0 ||
         level.isEmpty) {
       _showSnackbarMessage('Please fill in all required fields', Colors.red);
@@ -88,9 +89,10 @@ class _ChallengesState extends State<CreateOwnChallenges> {
     }
 
     Map<String, dynamic> challengeData = {
-      'category': category,
+      'category': categories,
       'title': title,
       'description': description,
+      'task': task,
       'points': points,
       'difficulty': level,
     };
@@ -145,17 +147,17 @@ class _ChallengesState extends State<CreateOwnChallenges> {
   }
 
   Widget _buildCategoryImage(int index, String imagePath) {
-    bool isSelected = index == _selectedCategoryIndex;
+    bool isSelected = _selectedCategoryIndices.contains(index);
 
     return GestureDetector(
       onTap: () {
         setState(() {
           if (isSelected) {
-            _selectedCategoryIndex = null;
-            _selectedCategory = categoryNames[0];
+            _selectedCategoryIndices.remove(index);
+            _selectedCategories.remove(categoryNames[index]);
           } else {
-            _selectedCategoryIndex = index;
-            _selectedCategory = categoryNames[index];
+            _selectedCategoryIndices.add(index);
+            _selectedCategories.add(categoryNames[index]);
           }
         });
       },
@@ -282,7 +284,8 @@ class _ChallengesState extends State<CreateOwnChallenges> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    _selectedCategory, // Display the selected category text
+                    _selectedCategories
+                        .join(", "), // Display the selected category text
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -327,10 +330,41 @@ class _ChallengesState extends State<CreateOwnChallenges> {
                 ),
                 const SizedBox(height: 4),
                 TextField(
+                  maxLines: null,
+                  minLines: 1,
                   controller: _descriptionController,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Enter description",
+                    hintStyle: const TextStyle(color: Colors.white),
+                    fillColor: const Color(0xff38344c),
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Task",
+                  style: TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+                TextField(
+                  maxLines: null,
+                  minLines: 1,
+                  controller: _taskController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Enter task",
                     hintStyle: const TextStyle(color: Colors.white),
                     fillColor: const Color(0xff38344c),
                     filled: true,

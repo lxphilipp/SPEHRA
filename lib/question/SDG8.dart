@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_sdg/question/diet5.dart';
+import 'package:flutter_sdg/question/yourConcerns9.dart';
 
-class TransportPage extends StatelessWidget {
-  final double fontSize = 22;
+class SDGPage extends StatelessWidget {
+  const SDGPage({Key? key}) : super(key: key);
 
-  const TransportPage({Key? key}) : super(key: key);
+  final double fontSize = 20;
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +18,7 @@ class TransportPage extends StatelessWidget {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const DietPage(),
+                builder: (context) => const YourConcernsPage(),
               ),
             ),
             child: const Text(
@@ -37,29 +36,51 @@ class TransportPage extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: RichText(
                 text: const TextSpan(
-                    style: TextStyle(fontSize: 29),
+                    style: TextStyle(fontSize: 32),
                     children: <TextSpan>[
                   TextSpan(
-                      text: ' What is your go to ',
+                      text: 'How much do you know about the UN\'s ',
                       style: TextStyle(color: Colors.white)),
                   TextSpan(
-                      text: 'method \n of transport',
+                      text: 'Sustainability Development Goals',
                       style: TextStyle(
                           color: Color(0xff3BBE6B),
                           fontStyle: FontStyle.italic)),
                   TextSpan(
-                    text: '?',
+                    text: '(SDGs) ?',
                     style: TextStyle(color: Colors.white),
                   )
                 ])),
           ),
-          const SizedBox(height: 420),
+          const SizedBox(height: 285),
           Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 20,
+                ),
+                child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(
+                            color: Color(
+                          0xff3BBE6B,
+                        ))),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const Placeholder())),
+                    child: Text(' Never heard of them',
+                        style: TextStyle(
+                            color: Colors.white, fontSize: fontSize))),
+              ),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -77,7 +98,7 @@ class TransportPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const Placeholder())),
-                          child: Text(' Car ',
+                          child: Text('hardly anything',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -90,7 +111,7 @@ class TransportPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const Placeholder())),
-                        child: Text(' Public Transport ',
+                        child: Text(' a little ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],
@@ -100,6 +121,7 @@ class TransportPage extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -113,7 +135,7 @@ class TransportPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const Placeholder())),
-                          child: Text('  By foot  ',
+                          child: Text('quite a bit',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -126,7 +148,7 @@ class TransportPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const Placeholder())),
-                        child: Text('   Air plane    ',
+                        child: Text('I\'m an expert',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],

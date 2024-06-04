@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/homepage/userSearch.dart';
 import 'package:flutter_sdg/layout/chatpage_layout.dart';
 
 class UserListPage extends StatelessWidget {
   FirebaseAuth _auth = FirebaseAuth.instance;
+  QuerySnapshot<Object?>? snapshot;
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,6 +24,13 @@ class UserListPage extends StatelessWidget {
             )),
       ),
       body: _buildListOfUsers(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showSearch(
+              context: context, delegate: UserSearch(snapshot?.docs ?? []));
+        },
+        child: const Icon(Icons.search),
+      ),
     );
   }
 

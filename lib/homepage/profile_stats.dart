@@ -233,7 +233,7 @@ class Profile extends StatelessWidget {
             child: Column(children: [
               Center(
                   child: Image.asset(
-                      'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenfläche1Kopie8.png',
+                      'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche1Kopie8.png',
                       width: 50)),
               const Center(
                 child: Text("stats", style: TextStyle(color: Colors.white)),

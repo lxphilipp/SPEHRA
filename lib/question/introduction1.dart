@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/name2.dart';
 
 class IntroductionPage extends StatelessWidget {
+  const IntroductionPage({Key? key}) : super(key: key);
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: const Color(0xff040324),
           title: Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NamePage()),
+                MaterialPageRoute(builder: (context) => const NamePage()),
               ),
               child: const Text(
                 'skip',
@@ -43,7 +45,7 @@ class IntroductionPage extends StatelessWidget {
                           ' your sustainability goals.',
                       style: TextStyle(color: Colors.white)),
                 ])),
-            const SizedBox(height: 370),
+            const SizedBox(height: 390),
             Align(
               alignment: Alignment.bottomCenter,
               child: TextButton(

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/transport4.dart';
 
 class GettingStartedPage extends StatelessWidget {
+  const GettingStartedPage({Key? key}) : super(key: key);
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xff040324),
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: const Color(0xff040324),
           title: Align(
             alignment: Alignment.centerRight,
@@ -13,7 +15,7 @@ class GettingStartedPage extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TransportPage(),
+                  builder: (context) => const TransportPage(),
                 ),
               ),
               child: const Text(
@@ -43,7 +45,7 @@ class GettingStartedPage extends StatelessWidget {
                           ' the best goal compatibility?',
                       style: TextStyle(color: Colors.white)),
                 ])),
-            const SizedBox(height: 375),
+            const SizedBox(height: 395),
             Align(
               alignment: Alignment.bottomCenter,
               child: TextButton(

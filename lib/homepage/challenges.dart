@@ -27,7 +27,7 @@ class Challenges extends StatefulWidget {
 
 class _ChallengesState extends State<Challenges> {
   int _selectedTab = 0;
-  int? _selectedCategoryIndex;
+  List<int> _selectedCategoryIndices = [];
 
   @override
   void initState() {
@@ -56,14 +56,15 @@ class _ChallengesState extends State<Challenges> {
   ];
 
   Widget _buildCategoryImage(int index, String imagePath) {
-    bool isSelected = index == _selectedCategoryIndex;
+    bool isSelected = _selectedCategoryIndices.contains(index);
     return GestureDetector(
       onTap: () {
         setState(() {
+          //neue hinzugefügt wegen List<dynamic> error
           if (isSelected) {
-            _selectedCategoryIndex = null;
+            _selectedCategoryIndices.remove(index);
           } else {
-            _selectedCategoryIndex = index;
+            _selectedCategoryIndices.add(index);
           }
         });
       },
@@ -308,13 +309,20 @@ class _ChallengesState extends State<Challenges> {
                     if (!snapshot.hasData) {
                       return const CircularProgressIndicator();
                     }
+                    //hier ist irgendwo der Fehler
                     var completedTasks =
                         snapshot.data!.exists && snapshot.data!.data() != null
-                            ? snapshot.data!.get('completedTasks') as List
+                            ? (snapshot.data!.get('completedTasks') as List)
+                                .where((item) => item is String)
+                                .map((item) => item?.toString() ?? '')
+                                .toList()
                             : [];
                     var ongoingTasks =
                         snapshot.data!.exists && snapshot.data!.data() != null
-                            ? snapshot.data!.get('ongoingTasks') as List
+                            ? (snapshot.data!.get('ongoingTasks') as List)
+                                .where((item) => item is String)
+                                .map((item) => item?.toString() ?? '')
+                                .toList()
                             : [];
 
                     // StreamBuilder to fetch and display challenges based on the selected tab and category
@@ -337,13 +345,18 @@ class _ChallengesState extends State<Challenges> {
                                       .contains(challengeDocument.id) &&
                                   !ongoingTasks.contains(challengeDocument.id))
                               .toList();
-                          if (_selectedCategoryIndex != null) {
-                            var selectedCategory =
-                                categoryNames[_selectedCategoryIndex!];
+                          if (!_selectedCategoryIndices.isEmpty) {
+                            List<String> selectedCategories = [];
+                            for (int i = 0;
+                                i < _selectedCategoryIndices.length;
+                                i++) {
+                              selectedCategories.add(
+                                  categoryNames[_selectedCategoryIndices[i]]);
+                            }
                             challengesToShow = challengesToShow
                                 .where((challengeDocument) =>
                                     challengeDocument['category'] ==
-                                    selectedCategory)
+                                    selectedCategories)
                                 .toList();
                           }
                         } else if (_selectedTab == 1) {
@@ -351,13 +364,18 @@ class _ChallengesState extends State<Challenges> {
                               .where((challengeDocument) =>
                                   ongoingTasks.contains(challengeDocument.id))
                               .toList();
-                          if (_selectedCategoryIndex != null) {
-                            var selectedCategory =
-                                categoryNames[_selectedCategoryIndex!];
+                          if (!_selectedCategoryIndices.isEmpty) {
+                            List<String> selectedCategories = [];
+                            for (int i = 0;
+                                i < _selectedCategoryIndices.length;
+                                i++) {
+                              selectedCategories.add(
+                                  categoryNames[_selectedCategoryIndices[i]]);
+                            }
                             challengesToShow = challengesToShow
                                 .where((challengeDocument) =>
                                     challengeDocument['category'] ==
-                                    selectedCategory)
+                                    selectedCategories)
                                 .toList();
                           }
                         } else if (_selectedTab == 2) {
@@ -365,13 +383,18 @@ class _ChallengesState extends State<Challenges> {
                               .where((challengeDocument) =>
                                   completedTasks.contains(challengeDocument.id))
                               .toList();
-                          if (_selectedCategoryIndex != null) {
-                            var selectedCategory =
-                                categoryNames[_selectedCategoryIndex!];
+                          if (!_selectedCategoryIndices.isEmpty) {
+                            List<String> selectedCategories = [];
+                            for (int i = 0;
+                                i < _selectedCategoryIndices.length;
+                                i++) {
+                              selectedCategories.add(
+                                  categoryNames[_selectedCategoryIndices[i]]);
+                            }
                             challengesToShow = challengesToShow
                                 .where((challengeDocument) =>
                                     challengeDocument['category'] ==
-                                    selectedCategory)
+                                    selectedCategories)
                                 .toList();
                           }
                         }
@@ -383,12 +406,17 @@ class _ChallengesState extends State<Challenges> {
                                 ? challengeDocument.data()
                                     as Map<String, dynamic>
                                 : {};
-                            var category = challengeData.containsKey('category')
-                                ? challengeData['category']
-                                : '';
+                            var categories =
+                                challengeData.containsKey('category')
+                                    ? challengeData['category']
+                                    : '';
                             Color circleColor = Colors.white;
 
-                            circleColor = getCategoryColor(category);
+                            if (categories is List) {
+                              circleColor = getCategoryColor(categories[0]);
+                            } else if (categories is String) {
+                              circleColor = getCategoryColor(categories);
+                            }
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 10),
@@ -407,8 +435,14 @@ class _ChallengesState extends State<Challenges> {
                                         title: challengeData['title'],
                                         description:
                                             challengeData['description'],
+                                        task: challengeData['task'],
                                         points: challengeData['points'],
-                                        category: challengeData['category'],
+                                        //hier ist das neue Problem
+                                        category:
+                                            (challengeData['category'] as List)
+                                                .map((item) => item.toString())
+                                                .toList()
+                                                .cast<String>(),
                                         challengeId: challengeDocument.id,
                                       ),
                                     ),
@@ -441,7 +475,7 @@ class _ChallengesState extends State<Challenges> {
                                           width: 22,
                                           height: 22,
                                           child: Image.asset(
-                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenfläche 1.png'),
+                                              'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png'),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(

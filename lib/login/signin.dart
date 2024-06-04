@@ -137,13 +137,13 @@ class SignIn extends StatelessWidget {
               side: const BorderSide(color: Colors.green),
               minimumSize: const Size.fromHeight(55),
             ),
-            onPressed: () {
+            onPressed: () async {
               FirebaseAuth.instance
                   .signInWithEmailAndPassword(
                 email: emailController.text,
                 password: passwordController.text,
               )
-                  .then((value) {
+                  .then((value) async {
                 authProvider.login(emailController.text);
                 final user = FirebaseAuth.instance.currentUser;
                 if (user != null) {
@@ -152,15 +152,23 @@ class SignIn extends StatelessWidget {
                       .doc(user.uid)
                       .get()
                       .then((userSnapshot) async {
+                    // Get the shared preferences instance
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
-                    bool loggedInBefore =
-                        prefs.getBool('loggedInBefore') ?? false;
-                    if (!loggedInBefore) {
-                      await prefs.setBool('loggedInBefore', false);
+
+                    // Check if it's the user's first login
+                    bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
+
+                    // If it's the first login, show the introduction page
+                    if (isFirstLogin) {
+                      // Set 'isFirstLogin' to false
+                      await prefs.setBool('isFirstLogin', false);
+
+                      // Navigate to the introduction page
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => IntroductionPage()));
+                          builder: (context) => const IntroductionPage()));
                     } else {
+                      // If it's not the first login, navigate to the home page
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const HomePageScreen()));
                     }

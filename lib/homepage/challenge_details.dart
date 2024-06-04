@@ -9,14 +9,16 @@ import '../providers/auth_provider.dart';
 class ChallengeDetailsScreen extends StatelessWidget {
   final String title;
   final String description;
+  final String task;
   final int points;
-  final String category;
+  final List<String> category;
   final String challengeId;
 
   const ChallengeDetailsScreen({
     super.key,
     required this.title,
     required this.description,
+    required this.task,
     required this.points,
     required this.category,
     required this.challengeId,
@@ -28,6 +30,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
         body: ChallengeDetails(
       title: title,
       description: description,
+      task: task,
       points: points,
       category: category,
       challengeId: challengeId,
@@ -38,14 +41,16 @@ class ChallengeDetailsScreen extends StatelessWidget {
 class ChallengeDetails extends StatelessWidget {
   final String title;
   final String description;
+  final String task;
   final int points;
-  final String category;
+  final List<String> category;
   final String challengeId;
 
   const ChallengeDetails({
     super.key,
     required this.title,
     required this.description,
+    required this.task,
     required this.points,
     required this.category,
     required this.challengeId,
@@ -248,10 +253,11 @@ class ChallengeDetails extends StatelessWidget {
 
     int categoryIndex = -1;
 
-    // Determine the index of the current category
+    // Determine the index of the current category plus I am not sure if deleting this code will affect the app
     for (int i = 0; i < categoryNames.length; i++) {
-      if (categoryNames[i] == category) {
-        categoryIndex = i;
+      if (categoryNames[i] == category[0]) {
+        categoryIndex =
+            categoryNames.indexWhere((element) => category.contains(element));
         break;
       }
     }
@@ -355,6 +361,23 @@ class ChallengeDetails extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   description,
+                  style: const TextStyle(
+                      fontFamily: 'OswaldLight',
+                      color: Colors.white,
+                      fontSize: 15),
+                ),
+                const SizedBox(height: 50),
+                const SizedBox(height: 10),
+                const Text(
+                  'Task',
+                  style: TextStyle(
+                      fontFamily: 'OswaldRegular',
+                      color: Colors.white,
+                      fontSize: 15),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  task,
                   style: const TextStyle(
                       fontFamily: 'OswaldLight',
                       color: Colors.white,

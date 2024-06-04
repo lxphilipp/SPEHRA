@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/gettingStarted3.dart';
 
 class NamePage extends StatelessWidget {
+  const NamePage({Key? key}) : super(key: key);
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xff040324),
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: const Color(0xff040324),
           title: Align(
             alignment: Alignment.centerRight,
@@ -13,7 +15,7 @@ class NamePage extends StatelessWidget {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => GettingStartedPage(),
+                  builder: (context) => const GettingStartedPage(),
                 ),
               ),
               child: const Text(
@@ -42,7 +44,7 @@ class NamePage extends StatelessWidget {
                 TextSpan(text: '?', style: TextStyle(color: Colors.white)),
               ])),
           const SizedBox(
-            height: 440,
+            height: 460,
           ),
           Align(
             alignment: FractionalOffset.bottomCenter,
