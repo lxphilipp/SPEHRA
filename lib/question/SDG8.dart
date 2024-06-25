@@ -71,7 +71,7 @@ class SDGPage extends StatelessWidget {
                     onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const Placeholder())),
+                            builder: (context) => const YourConcernsPage())),
                     child: Text(' Never heard of them',
                         style: TextStyle(
                             color: Colors.white, fontSize: fontSize))),
@@ -97,7 +97,8 @@ class SDGPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) =>
+                                      const YourConcernsPage())),
                           child: Text('hardly anything',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -110,7 +111,8 @@ class SDGPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) =>
+                                    const YourConcernsPage())),
                         child: Text(' a little ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
@@ -134,7 +136,8 @@ class SDGPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) =>
+                                      const YourConcernsPage())),
                           child: Text('quite a bit',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -147,7 +150,8 @@ class SDGPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) =>
+                                    const YourConcernsPage())),
                         child: Text('I\'m an expert',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),

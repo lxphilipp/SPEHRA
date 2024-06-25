@@ -74,7 +74,7 @@ class EnergyPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) => const SchoolPage())),
                           child: Text(' Vegan ',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -87,7 +87,7 @@ class EnergyPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) => const SchoolPage())),
                         child: Text('   Vegeterian   ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
@@ -110,7 +110,7 @@ class EnergyPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) => const SchoolPage())),
                           child: Text('Pescerian',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -123,7 +123,7 @@ class EnergyPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) => const SchoolPage())),
                         child: Text('Omnivorian',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),

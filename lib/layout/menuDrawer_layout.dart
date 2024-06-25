@@ -4,6 +4,7 @@ import 'package:flutter_sdg/homepage/challenges.dart';
 import 'package:flutter_sdg/homepage/create_own_challenge.dart';
 import 'package:flutter_sdg/homepage/edit_profil.dart';
 import 'package:flutter_sdg/homepage/homepage.dart';
+import 'package:flutter_sdg/homepage/newsPage.dart';
 import 'package:flutter_sdg/homepage/profile_stats.dart';
 import 'package:flutter_sdg/homepage/userListPage.dart';
 import 'package:flutter_sdg/layout/logoutButton_layout.dart';
@@ -158,14 +159,21 @@ class MenuDrawerStare extends State<MenuDrawer> {
                 _selectedItemIndex = expanded ? 2 : -1;
               });
             },
-            children: const [
-              ListTile(
+            children: [
+              const ListTile(
                   title: Text('The 17 Goals',
                       style: TextStyle(fontSize: 15, color: Colors.white))),
-              ListTile(
-                  title: Text('News',
-                      style: TextStyle(fontSize: 15, color: Colors.white))),
-              ListTile(
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const NewsPageScreen(),
+                  ));
+                },
+                child: const ListTile(
+                    title: Text('News',
+                        style: TextStyle(fontSize: 15, color: Colors.white))),
+              ),
+              const ListTile(
                   title: Text('Voting',
                       style: TextStyle(fontSize: 15, color: Colors.white))),
             ],

@@ -75,7 +75,7 @@ class YourConcernsPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Placeholder())),
+                              builder: (context) => const HomePageScreen())),
                       child: Text('Means of transportion',
                           style: TextStyle(
                               color: Colors.white, fontSize: fontSize))),
@@ -99,7 +99,7 @@ class YourConcernsPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Placeholder())),
+                              builder: (context) => const HomePageScreen())),
                       child: Text('Environmental pollution',
                           style: TextStyle(
                               color: Colors.white, fontSize: fontSize))),
@@ -123,7 +123,7 @@ class YourConcernsPage extends StatelessWidget {
                       onPressed: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Placeholder())),
+                              builder: (context) => const HomePageScreen())),
                       child: Text('Food & Consumption',
                           style: TextStyle(
                               color: Colors.white, fontSize: fontSize))),
@@ -151,7 +151,8 @@ class YourConcernsPage extends StatelessWidget {
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const Placeholder())),
+                                    builder: (context) =>
+                                        const HomePageScreen())),
                             child: Text('War & Peace',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: fontSize))),
@@ -164,7 +165,8 @@ class YourConcernsPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) =>
+                                      const HomePageScreen())),
                           child: Text('Social Equality',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -189,7 +191,8 @@ class YourConcernsPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) =>
+                                      const HomePageScreen())),
                           child: Text('Climate Change',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -202,7 +205,7 @@ class YourConcernsPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) => const HomePageScreen())),
                         child: Text('All',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),

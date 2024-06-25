@@ -76,7 +76,7 @@ class TransportPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) => const DietPage())),
                           child: Text(' Car ',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -89,7 +89,7 @@ class TransportPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) => const DietPage())),
                         child: Text(' Public Transport ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
@@ -112,7 +112,7 @@ class TransportPage extends StatelessWidget {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Placeholder())),
+                                  builder: (context) => const DietPage())),
                           child: Text('  By foot  ',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
@@ -125,7 +125,7 @@ class TransportPage extends StatelessWidget {
                         onPressed: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const Placeholder())),
+                                builder: (context) => const DietPage())),
                         child: Text('   Air plane    ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
