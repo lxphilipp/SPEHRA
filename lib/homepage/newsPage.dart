@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/homepage/homepage.dart';
-import 'package:flutter_sdg/layout/homepage_layout.dart';
 import 'package:flutter_sdg/layout/menuDrawer_layout.dart';
 import 'package:flutter_sdg/models/user_data.dart';
+import 'package:like_button/like_button.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'challenge_details.dart';
@@ -460,19 +460,13 @@ class _NewsState extends State<News> {
                                 _selectedCategoryIndices
                                     .map((index) => categoryNames[index])
                                     .toList();
-
-                            print(
-                                "Selected Categories: $selectedCategories"); // Debugging-Zwecke
-
+                            //Filter für die Challenges
+                            for(int i = 0; i < selectedCategories.length; i++){
                             challengesToShow =
-                                challengesToShow.where((challengeDocument) {
-                              var challengeCategory =
-                                  challengeDocument['category'];
-                              print(
-                                  "Challenge Category: $challengeCategory"); // Debugging-Zwecke
-                              return selectedCategories
-                                  .contains(challengeCategory);
-                            }).toList();
+                                challengesToShow.where((challengeDocument) =>  
+                                challengeDocument['category'].contains(selectedCategories[i])
+                            ).toList();
+                          }
                           }
                         } else if (_selectedTab == 1) {
                           challengesToShow = allChallenges
@@ -480,35 +474,35 @@ class _NewsState extends State<News> {
                                   ongoingTasks.contains(challengeDocument.id))
                               .toList();
                           if (!_selectedCategoryIndices.isEmpty) {
-                            List<String> selectedCategories = [];
-                            for (int i = 0;
-                                i < _selectedCategoryIndices.length;
-                                i++) {
-                              selectedCategories.add(
-                                  categoryNames[_selectedCategoryIndices[i]]);
-                            }
-                            challengesToShow = challengesToShow
-                                .where((challengeDocument) => selectedCategories
-                                    .contains(challengeDocument['category']))
-                                .toList();
+                            List<String> selectedCategories =
+                                _selectedCategoryIndices
+                                    .map((index) => categoryNames[index])
+                                    .toList();
+                            //Filter für die Challenges
+                            for(int i = 0; i < selectedCategories.length; i++){
+                            challengesToShow =
+                                challengesToShow.where((challengeDocument) =>  
+                                challengeDocument['category'].contains(selectedCategories[i])
+                            ).toList();
+                          }
                           }
                         } else if (_selectedTab == 2) {
                           challengesToShow = allChallenges
                               .where((challengeDocument) =>
                                   completedTasks.contains(challengeDocument.id))
                               .toList();
-                          if (!_selectedCategoryIndices.isEmpty) {
-                            List<String> selectedCategories = [];
-                            for (int i = 0;
-                                i < _selectedCategoryIndices.length;
-                                i++) {
-                              selectedCategories.add(
-                                  categoryNames[_selectedCategoryIndices[i]]);
-                            }
-                            challengesToShow = challengesToShow
-                                .where((challengeDocument) => selectedCategories
-                                    .contains(challengeDocument['category']))
-                                .toList();
+                          if (!_selectedCategoryIndices.isEmpty){
+                            List<String> selectedCategories =
+                                _selectedCategoryIndices
+                                    .map((index) => categoryNames[index])
+                                    .toList();
+                            //Filter für die Challenges
+                            for(int i = 0; i < selectedCategories.length; i++){
+                            challengesToShow =
+                                challengesToShow.where((challengeDocument) =>  
+                                challengeDocument['category'].contains(selectedCategories[i])
+                            ).toList();
+                          }
                           }
                         }
 
@@ -524,7 +518,7 @@ class _NewsState extends State<News> {
                                     ? challengeData['category']
                                     : '';
                             Color circleColor = Colors.white;
-
+                            // Farbe der Kreise
                             if (categories is List) {
                               circleColor = getCategoryColor(categories[0]);
                             } else if (categories is String) {
@@ -586,7 +580,7 @@ class _NewsState extends State<News> {
                                       children: [
                                         SizedBox(
                                           width: 22,
-                                          height: 22,
+                                          height: 18,
                                           child: Image.asset(
                                               'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png'),
                                         ),
@@ -597,6 +591,23 @@ class _NewsState extends State<News> {
                                               color: Colors.white,
                                               fontFamily: 'OswaldLight'),
                                         ),
+                                        SizedBox(
+                                          width: 21,
+                                          height: 20,
+                                        child:
+                                        LikeButton(
+                                          size: 18,
+                                          isLiked: challengeData['isLiked'] ?? false,
+    onTap: (bool isLiked) async {
+      // Hier können Sie den neuen Zustand in Ihrer Firebase-Datenbank aktualisieren
+      // Zum Beispiel:
+      // await FirebaseFirestore.instance.collection('challenges').doc(challengeDocument.id).update({'isLiked': !isLiked});
+      return !isLiked;
+    },
+  
+
+                                          )
+                                          ,)
                                       ],
                                     ),
                                   ),

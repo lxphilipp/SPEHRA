@@ -13,6 +13,7 @@ class ChallengeDetailsScreen extends StatelessWidget {
   final int points;
   final List<String> category;
   final String challengeId;
+  final bool isLiked = false;
 
   const ChallengeDetailsScreen({
     super.key,
