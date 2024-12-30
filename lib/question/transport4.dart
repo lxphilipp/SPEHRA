@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+//import 'package:flutter/widgets.dart';
 import 'package:flutter_sdg/question/diet5.dart';
 
 class TransportPage extends StatelessWidget {
   final double fontSize = 22;
 
-  const TransportPage({Key? key}) : super(key: key);
+  const TransportPage({super.key});
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff040324),

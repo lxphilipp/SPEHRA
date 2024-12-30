@@ -20,7 +20,8 @@ class Profile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider =
+        Provider.of<MYAuthProvider>(context); // تغييييييييييييير
     final userData = authProvider.userData;
 
     String? profilPic = userData.imageURL;
@@ -229,8 +230,9 @@ class Profile extends StatelessWidget {
         // Display a placeholder for statistics section
         const SizedBox(height: 50),
         SizedBox(
-            height: 100,
-            child: Column(children: [
+          height: 100,
+          child: Column(
+            children: [
               Center(
                   child: Image.asset(
                       'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche1Kopie8.png',
@@ -238,7 +240,9 @@ class Profile extends StatelessWidget {
               const Center(
                 child: Text("stats", style: TextStyle(color: Colors.white)),
               )
-            ])),
+            ],
+          ),
+        ),
         StreamBuilder<List<PieChartSectionData>>(
           stream: fetchPieChartData(),
           builder: (context, snapshot) {

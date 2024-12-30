@@ -124,7 +124,7 @@ class SignIn extends StatelessWidget {
   }
 
   Widget _buildLoginButton(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider = Provider.of<MYAuthProvider>(context, listen: false);
 
     return Padding(
       padding: const EdgeInsets.only(top: 100, left: 20, right: 20),

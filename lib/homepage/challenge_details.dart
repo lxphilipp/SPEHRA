@@ -60,7 +60,8 @@ class ChallengeDetails extends StatelessWidget {
   // Function to remove a challenge from ongoing tasks
   Future<void> removeFromOngoingTasks(BuildContext context) async {
     // Get necessary instances
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider =
+        Provider.of<MYAuthProvider>(context, listen: false); // تغييييييير
     final navigator = Navigator.of(context);
     final snackbar = ScaffoldMessenger.of(context);
 
@@ -119,7 +120,8 @@ class ChallengeDetails extends StatelessWidget {
 
 // Function to add a challenge to completed tasks
   Future<void> addToCompletedTasks(BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider =
+        Provider.of<MYAuthProvider>(context, listen: false); // تغيييييييير
     final navigator = Navigator.of(context);
     final snackbar = ScaffoldMessenger.of(context);
 
@@ -207,7 +209,7 @@ class ChallengeDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Obtain the authentication provider, navigator, and snackbar for later use
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<MYAuthProvider>(context); // تغيييييييييير
     final navigator = Navigator.of(context);
     final snackbar = ScaffoldMessenger.of(context);
 

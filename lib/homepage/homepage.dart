@@ -80,7 +80,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<MYAuthProvider>(context); // تغيييييييييير
 
     List<Widget> imageList = [
       GestureDetector(
@@ -118,6 +118,63 @@ class HomePage extends StatelessWidget {
             .push(MaterialPageRoute(builder: (context) => const Goal7())),
         child: Image.asset('assets/icons/17_SDG_Icons/7.png'),
       ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal8())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/8.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal9())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/9.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal10())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/10.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal11())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/11.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal12())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/12.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal13())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/13.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal14())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/14.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal15())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/15.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal16())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/16.png'),
+      // ),
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal17())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/17.png'),
+      // ),
+    ];
+    List<Widget> imageList2 = [
+      // GestureDetector(
+      //   onTap: () => Navigator.of(context)
+      //       .push(MaterialPageRoute(builder: (context) => const Goal7())),
+      //   child: Image.asset('assets/icons/17_SDG_Icons/7.png'),
+      // ),
       GestureDetector(
         onTap: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => const Goal8())),
@@ -249,14 +306,27 @@ class HomePage extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 150,
+            height: 60,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: imageList.length,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(width: 50, child: imageList[index]),
+                  padding: const EdgeInsets.all(5.0),
+                  child: SizedBox(width: 45, child: imageList[index]),
+                );
+              },
+            ),
+          ),
+          SizedBox(
+            height: 60,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: imageList2.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: SizedBox(width: 45, child: imageList2[index]),
                 );
               },
             ),

@@ -74,7 +74,8 @@ class HomePageLayoutState extends State<HomePageLayout> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Consumer<AuthProvider>(
+        Consumer<MYAuthProvider>(
+          // تغييييييير
           builder: (context, authProvider, _) {
             UserData? userData = authProvider.userData;
             // ignore: unnecessary_null_comparison

@@ -63,7 +63,8 @@ Widget buildAppBarTitle(BuildContext context) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      Consumer<AuthProvider>(
+      Consumer<MYAuthProvider>(
+        // تغيييييييييييير
         builder: (context, authProvider, _) {
           UserData? userData = authProvider.userData;
           // ignore: unnecessary_null_comparison
@@ -239,7 +240,8 @@ class _NewsState extends State<News> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider =
+        Provider.of<MYAuthProvider>(context); // تغيييييييييييييييير
 
     List<Widget> imageList = [
       _buildCategoryImage(0, 'assets/icons/17_SDG_Icons/1.png'),
@@ -461,12 +463,15 @@ class _NewsState extends State<News> {
                                     .map((index) => categoryNames[index])
                                     .toList();
                             //Filter für die Challenges
-                            for(int i = 0; i < selectedCategories.length; i++){
-                            challengesToShow =
-                                challengesToShow.where((challengeDocument) =>  
-                                challengeDocument['category'].contains(selectedCategories[i])
-                            ).toList();
-                          }
+                            for (int i = 0;
+                                i < selectedCategories.length;
+                                i++) {
+                              challengesToShow = challengesToShow
+                                  .where((challengeDocument) =>
+                                      challengeDocument['category']
+                                          .contains(selectedCategories[i]))
+                                  .toList();
+                            }
                           }
                         } else if (_selectedTab == 1) {
                           challengesToShow = allChallenges
@@ -479,30 +484,36 @@ class _NewsState extends State<News> {
                                     .map((index) => categoryNames[index])
                                     .toList();
                             //Filter für die Challenges
-                            for(int i = 0; i < selectedCategories.length; i++){
-                            challengesToShow =
-                                challengesToShow.where((challengeDocument) =>  
-                                challengeDocument['category'].contains(selectedCategories[i])
-                            ).toList();
-                          }
+                            for (int i = 0;
+                                i < selectedCategories.length;
+                                i++) {
+                              challengesToShow = challengesToShow
+                                  .where((challengeDocument) =>
+                                      challengeDocument['category']
+                                          .contains(selectedCategories[i]))
+                                  .toList();
+                            }
                           }
                         } else if (_selectedTab == 2) {
                           challengesToShow = allChallenges
                               .where((challengeDocument) =>
                                   completedTasks.contains(challengeDocument.id))
                               .toList();
-                          if (!_selectedCategoryIndices.isEmpty){
+                          if (!_selectedCategoryIndices.isEmpty) {
                             List<String> selectedCategories =
                                 _selectedCategoryIndices
                                     .map((index) => categoryNames[index])
                                     .toList();
                             //Filter für die Challenges
-                            for(int i = 0; i < selectedCategories.length; i++){
-                            challengesToShow =
-                                challengesToShow.where((challengeDocument) =>  
-                                challengeDocument['category'].contains(selectedCategories[i])
-                            ).toList();
-                          }
+                            for (int i = 0;
+                                i < selectedCategories.length;
+                                i++) {
+                              challengesToShow = challengesToShow
+                                  .where((challengeDocument) =>
+                                      challengeDocument['category']
+                                          .contains(selectedCategories[i]))
+                                  .toList();
+                            }
                           }
                         }
 
@@ -594,20 +605,18 @@ class _NewsState extends State<News> {
                                         SizedBox(
                                           width: 21,
                                           height: 20,
-                                        child:
-                                        LikeButton(
-                                          size: 18,
-                                          isLiked: challengeData['isLiked'] ?? false,
-    onTap: (bool isLiked) async {
-      // Hier können Sie den neuen Zustand in Ihrer Firebase-Datenbank aktualisieren
-      // Zum Beispiel:
-      // await FirebaseFirestore.instance.collection('challenges').doc(challengeDocument.id).update({'isLiked': !isLiked});
-      return !isLiked;
-    },
-  
-
-                                          )
-                                          ,)
+                                          child: LikeButton(
+                                            size: 18,
+                                            isLiked: challengeData['isLiked'] ??
+                                                false,
+                                            onTap: (bool isLiked) async {
+                                              // Hier können Sie den neuen Zustand in Ihrer Firebase-Datenbank aktualisieren
+                                              // Zum Beispiel:
+                                              // await FirebaseFirestore.instance.collection('challenges').doc(challengeDocument.id).update({'isLiked': !isLiked});
+                                              return !isLiked;
+                                            },
+                                          ),
+                                        )
                                       ],
                                     ),
                                   ),

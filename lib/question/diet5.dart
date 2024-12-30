@@ -4,7 +4,8 @@ import 'package:flutter_sdg/question/energy6.dart';
 class DietPage extends StatelessWidget {
   final double fontSize = 22;
 
-  const DietPage({Key? key}) : super(key: key);
+  const DietPage({super.key});
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff040324),

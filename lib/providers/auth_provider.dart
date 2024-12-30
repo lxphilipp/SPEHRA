@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/user_data.dart';
 
-class AuthProvider with ChangeNotifier {
+class MYAuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
 
   FirebaseAuth _firebaseAuth = FirebaseAuth.instance;

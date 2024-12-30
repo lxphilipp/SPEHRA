@@ -75,9 +75,9 @@ class MenuDrawerStare extends State<MenuDrawer> {
                       style: TextStyle(fontSize: 15, color: Colors.white)),
                 ),
               ),
-              const ListTile(
+              /*const ListTile(
                   title: Text('Find your Match',
-                      style: TextStyle(fontSize: 15, color: Colors.white))),
+                      style: TextStyle(fontSize: 15, color: Colors.white))),*/
             ],
           ),
           ExpansionTile(
@@ -129,7 +129,7 @@ class MenuDrawerStare extends State<MenuDrawer> {
                     title: Text('Chat',
                         style: TextStyle(fontSize: 15, color: Colors.white))),
               ),
-              GestureDetector(
+              /*GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => IntroductionPage(),
@@ -138,7 +138,7 @@ class MenuDrawerStare extends State<MenuDrawer> {
                 child: const ListTile(
                     title: Text('Stats',
                         style: TextStyle(fontSize: 15, color: Colors.white))),
-              ),
+              ),*/
             ],
           ),
           ExpansionTile(
@@ -173,9 +173,9 @@ class MenuDrawerStare extends State<MenuDrawer> {
                     title: Text('News',
                         style: TextStyle(fontSize: 15, color: Colors.white))),
               ),
-              const ListTile(
+              /*const ListTile(
                   title: Text('Voting',
-                      style: TextStyle(fontSize: 15, color: Colors.white))),
+                      style: TextStyle(fontSize: 15, color: Colors.white))),*/
             ],
           ),
           Padding(

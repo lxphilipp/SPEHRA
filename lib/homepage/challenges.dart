@@ -129,7 +129,7 @@ class _ChallengesState extends State<Challenges> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<MYAuthProvider>(context); // تغيييييييييير
 
     List<Widget> imageList = [
       _buildCategoryImage(0, 'assets/icons/17_SDG_Icons/1.png'),

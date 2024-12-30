@@ -14,7 +14,7 @@ void main() async {
   );
   // Run the app with AuthProvider
   runApp(ChangeNotifierProvider(
-      create: (context) => AuthProvider(), child: const MyApp()));
+      create: (context) => MYAuthProvider(), child: const MyApp())); // تغييير
 }
 
 class MyApp extends StatelessWidget {

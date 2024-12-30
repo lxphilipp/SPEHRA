@@ -33,7 +33,8 @@ class _EditProfilPageState extends State<EditProfilPage> {
     super.initState();
 
     // Initialize the state with user data
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider =
+        Provider.of<MYAuthProvider>(context, listen: false); // تغيييييييييييير
     final userData = authProvider.userData;
 
     authProvider.fetchUserDataFromFirestore(); // Fetch user data from Firestore
@@ -57,7 +58,7 @@ class _EditProfilPageState extends State<EditProfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
+    final authProvider = Provider.of<MYAuthProvider>(context); //تغيييييييييير
     final userData = authProvider.userData;
 
     // Set the form field values based on user data
