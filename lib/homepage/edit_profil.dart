@@ -38,10 +38,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
     final userData = authProvider.userData;
 
     authProvider.fetchUserDataFromFirestore(); // Fetch user data from Firestore
-    _nameController.text = userData.name;
+    _nameController.text = userData.name!; //
     _ageController.text = userData.age.toString();
-    _studyFieldController.text = userData.studyField;
-    _schoolController.text = userData.school;
+    _studyFieldController.text = userData.studyField!; //
+    _schoolController.text = userData.school!;
   }
 
   // Function to open the image picker
@@ -62,10 +62,10 @@ class _EditProfilPageState extends State<EditProfilPage> {
     final userData = authProvider.userData;
 
     // Set the form field values based on user data
-    _nameController.text = userData.name;
+    _nameController.text = userData.name!; //
     _ageController.text = userData.age.toString();
-    _studyFieldController.text = userData.studyField;
-    _schoolController.text = userData.school;
+    _studyFieldController.text = userData.studyField!; //
+    _schoolController.text = userData.school!; //
 
     // Determine the avatar image provider based on the selected image or user's existing image URL
     ImageProvider? avatarImageProvider;

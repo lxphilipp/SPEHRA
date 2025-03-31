@@ -74,8 +74,8 @@ class ChallengeDetails extends StatelessWidget {
     final userData = UserData.fromMap(userDoc.data()!);
 
     // Remove challenge from ongoing tasks if present
-    if (userData.ongoingTasks.contains(challengeId)) {
-      final updatedOngoingTasks = userData.ongoingTasks.toList()
+    if (userData.ongoingTasks!.contains(challengeId)) {
+      final updatedOngoingTasks = userData.ongoingTasks!.toList()
         ..remove(challengeId);
 
       // Update user's ongoing tasks
@@ -138,10 +138,10 @@ class ChallengeDetails extends StatelessWidget {
     final userData = UserData.fromMap(userDoc.data()!);
 
     // If the challenge is in ongoing tasks, update completed tasks
-    if (userData.ongoingTasks.contains(challengeId)) {
-      final updatedOngoingTasks = userData.ongoingTasks.toList()
+    if (userData.ongoingTasks!.contains(challengeId)) {
+      final updatedOngoingTasks = userData.ongoingTasks!.toList()
         ..remove(challengeId);
-      final updatedCompletedTasks = userData.completedTasks.toList()
+      final updatedCompletedTasks = userData.completedTasks!.toList()
         ..add(challengeId);
 
       // Update user's ongoing and completed tasks
@@ -231,7 +231,7 @@ class ChallengeDetails extends StatelessWidget {
           .get();
 
       final userData = UserData.fromMap(userDoc.data()!);
-      return userData.completedTasks.contains(challengeId);
+      return userData.completedTasks!.contains(challengeId);
     }
 
     List<String> categoryNames = [
@@ -420,7 +420,7 @@ class ChallengeDetails extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                      } else if (userData.ongoingTasks.contains(challengeId)) {
+                      } else if (userData.ongoingTasks!.contains(challengeId)) {
                         snackbar.showSnackBar(
                           const SnackBar(
                             content:

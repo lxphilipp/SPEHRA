@@ -6,8 +6,8 @@ import '../models/user_data.dart';
 class MYAuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
 
-  FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  FirebaseFirestore _fireStore = FirebaseFirestore.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
   UserData _userData = UserData(
     age: 0,
     name: '',
@@ -23,10 +23,10 @@ class MYAuthProvider with ChangeNotifier {
   UserData get userData => _userData;
 
   // Getter for user points
-  int get userPoints => _userData.points;
+  int get userPoints => _userData.points!; // تغير
 
   // Getter for user level
-  int get userLevel => _userData.level;
+  int get userLevel => _userData.level!; // تغير
 
   // User's email
   String _currentUserEmail = '';

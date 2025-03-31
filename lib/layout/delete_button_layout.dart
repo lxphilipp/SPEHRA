@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class DeleteButton extends StatelessWidget {
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +31,8 @@ class DeleteButton extends StatelessWidget {
                     TextButton(
                       child: const Text('Delete'),
                       onPressed: () async {
-                        await _auth.currentUser!.delete();
                         Navigator.of(context).pop();
+                        await _auth.currentUser!.delete();
                       },
                     ),
                   ],

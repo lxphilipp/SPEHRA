@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_sdg/Chat/widgets/layout.dart';
 import 'package:flutter_sdg/homepage/challenges.dart';
 import 'package:flutter_sdg/homepage/create_own_challenge.dart';
 import 'package:flutter_sdg/homepage/edit_profil.dart';
@@ -123,7 +124,7 @@ class MenuDrawerStare extends State<MenuDrawer> {
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => UserListPage()));
+                      MaterialPageRoute(builder: (context) => LayoutApp()));
                 },
                 child: const ListTile(
                     title: Text('Chat',

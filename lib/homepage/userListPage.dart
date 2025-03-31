@@ -81,8 +81,8 @@ class UserListPage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                     builder: (context) => ChatPageLayout(
-                          receiverUserName: data['name'],
-                          receiverUserID: data['User UID'],
+                        //receiverUserName: data['name'],
+                        //receiverUserID: data['User UID'],
                         )));
           },
         ),

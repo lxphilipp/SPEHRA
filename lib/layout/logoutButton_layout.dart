@@ -9,7 +9,7 @@ class LogoutButton extends StatelessWidget {
     await _auth.signOut();
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const SignInScreen()));
-    Navigator.maybePop(context);
+    //Navigator.maybePop(context);
   }
 
   @override

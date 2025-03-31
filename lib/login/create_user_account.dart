@@ -53,9 +53,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
       String name = nameController.text;
       // Saves uid an E-Mail in Firestore
       FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'User UID': uid,
-        'Email': userEmail,
+        //'User UID': uid,
+        //'Email': userEmail,
+        'id': uid,
+        'email': userEmail,
         'name': name,
+        'about': '',
+        'imageURL': '',
+        'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
+        'lastActived': '',
+        'pushToken': '',
+        'online': true,
+        'my_users': [],
         'age': 0,
         'studyField': "",
         'school': "",
