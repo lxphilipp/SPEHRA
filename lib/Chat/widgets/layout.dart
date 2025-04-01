@@ -24,7 +24,7 @@ class _LayoutAppState extends State<LayoutApp> {
     List<Widget> screens = [];
     return Scaffold(
       // backgroundColor: const Color(0xff040324)
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Color(0xff040324),
       extendBodyBehindAppBar: true,
       body: PageView(
         onPageChanged: (value) {
@@ -41,6 +41,7 @@ class _LayoutAppState extends State<LayoutApp> {
         ],
       ),
       bottomNavigationBar: NavigationBar(
+          backgroundColor: Color(0xff040324),
           elevation: 0,
           selectedIndex: currentIndex,
           onDestinationSelected: (value) {

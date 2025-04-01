@@ -21,11 +21,16 @@ class _GroupScreensState extends State<GroupScreens> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       appBar: AppBar(
+        backgroundColor: Color(0xff040324),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.groupChat.name!),
+            Text(
+              widget.groupChat.name!,
+              style: TextStyle(color: Colors.white),
+            ),
             StreamBuilder(
                 stream: FirebaseFirestore.instance
                     .collection('users')
@@ -39,7 +44,7 @@ class _GroupScreensState extends State<GroupScreens> {
                     }
                     return Text(
                       membersName.join(' , '),
-                      style: Theme.of(context).textTheme.labelLarge,
+                      style: TextStyle(color: Colors.white, fontSize: 12),
                     );
                   }
                   return Container();

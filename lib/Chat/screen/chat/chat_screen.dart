@@ -28,11 +28,16 @@ class _Chat2ScreenState extends State<Chat2Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       appBar: AppBar(
+        backgroundColor: Color(0xff040324),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.chatUser.name!),
+            Text(
+              widget.chatUser.name!,
+              style: TextStyle(color: Colors.white),
+            ),
             Text(
               //widget.chatUser.lastActived!,
               widget.chatUser.lastActived != null

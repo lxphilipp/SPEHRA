@@ -21,8 +21,13 @@ class _GroupMemberState extends State<GroupMember> {
     bool isAdmin =
         widget.chatGroup.admin.contains(FirebaseAuth.instance.currentUser!.uid);
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       appBar: AppBar(
-        title: const Text('Group Member'),
+        backgroundColor: Color(0xff040324),
+        title: const Text(
+          'Group Member',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           isAdmin
               ? IconButton(
@@ -60,7 +65,10 @@ class _GroupMemberState extends State<GroupMember> {
                             bool admin =
                                 widget.chatGroup.admin.contains(user[index].id);
                             return ListTile(
-                              title: Text(user[index].name!),
+                              title: Text(
+                                user[index].name!,
+                                style: TextStyle(color: Colors.white),
+                              ),
                               subtitle: admin
                                   ? Text(
                                       "admin",

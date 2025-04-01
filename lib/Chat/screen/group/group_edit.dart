@@ -28,6 +28,7 @@ class _EditGroupScrenState extends State<EditGroupScren> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           FireData()
@@ -38,7 +39,11 @@ class _EditGroupScrenState extends State<EditGroupScren> {
         icon: const Icon(Iconsax.tick_circle),
       ),
       appBar: AppBar(
-        title: const Text('Edit Group'),
+        backgroundColor: Color(0xff040324),
+        title: const Text(
+          'Edit Group',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -54,12 +59,14 @@ class _EditGroupScrenState extends State<EditGroupScren> {
                       const CircleAvatar(
                         radius: 40,
                       ),
-                      Positioned(
-                          bottom: -10,
-                          right: -10,
-                          child: IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Iconsax.gallery)))
+                      // Positioned(
+                      //     bottom: -10,
+                      //     right: -10,
+                      //     child:
+                      //     // IconButton(
+                      //     //     onPressed: () {},
+                      //     //     icon: const Icon(Iconsax.gallery))
+                      //         ,)
                     ],
                   ),
                 ),
@@ -84,9 +91,12 @@ class _EditGroupScrenState extends State<EditGroupScren> {
             ),
             const Row(
               children: [
-                Text('Add Member'),
+                Text(
+                  'Add Member',
+                  style: TextStyle(color: Colors.white),
+                ),
                 Spacer(),
-                Text('0'),
+                Text('0', style: TextStyle(color: Colors.white)),
               ],
             ),
             Expanded(

@@ -21,6 +21,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
   Widget build(BuildContext context) {
     double logoHeight = AppBar().preferredSize.height - 16.0;
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showBottomSheet(
@@ -78,7 +79,11 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
         child: Icon(Iconsax.message_add_1),
       ),
       appBar: AppBar(
-        title: const Text('Chat'),
+        backgroundColor: Color(0xff040324),
+        title: const Text(
+          'Chat',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           GestureDetector(
             onTap: () {

@@ -23,6 +23,7 @@ class _UserlistHomeScreenState extends State<UserlistHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showBottomSheet(
@@ -76,6 +77,7 @@ class _UserlistHomeScreenState extends State<UserlistHomeScreen> {
         child: Icon(Iconsax.user_add),
       ),
       appBar: AppBar(
+        backgroundColor: Color(0xff040324),
         actions: [
           searched
               ? IconButton(
@@ -116,7 +118,10 @@ class _UserlistHomeScreenState extends State<UserlistHomeScreen> {
                   ),
                 ],
               )
-            : Text('My Favorite Contacts'),
+            : Text(
+                'My Favorite Contacts',
+                style: TextStyle(color: Colors.white),
+              ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

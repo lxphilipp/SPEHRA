@@ -44,12 +44,12 @@ class _Chat2messageCardState extends State<Chat2messageCard> {
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          isMe
-              ? IconButton(
-                  onPressed: () {},
-                  icon: Icon(Iconsax.message_edit),
-                )
-              : SizedBox(),
+          // isMe
+          //     ? IconButton(
+          //         onPressed: () {},
+          //         icon: Icon(Iconsax.message_edit),
+          //       )
+          //     : SizedBox(),
           Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(

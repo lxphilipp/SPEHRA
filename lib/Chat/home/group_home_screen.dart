@@ -17,6 +17,7 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff040324),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -27,7 +28,11 @@ class _GroupHomeScreenState extends State<GroupHomeScreen> {
         child: Icon(Iconsax.message_add_1),
       ),
       appBar: AppBar(
-        title: const Text('Group Chat'),
+        backgroundColor: Color(0xff040324),
+        title: const Text(
+          'Group Chat',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

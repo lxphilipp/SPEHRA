@@ -27,11 +27,11 @@ class GroupMassageCard extends StatelessWidget {
                   mainAxisAlignment:
                       isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                   children: [
-                    isMe
-                        ? IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Iconsax.message_edit))
-                        : const SizedBox(),
+                    // isMe
+                    //     ? IconButton(
+                    //         onPressed: () {},
+                    //         icon: const Icon(Iconsax.message_edit))
+                    //     : const SizedBox(),
                     Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.only(
