@@ -5,6 +5,7 @@ import 'package:flutter_sdg/homepage/challenges.dart';
 import 'package:flutter_sdg/homepage/create_own_challenge.dart';
 import 'package:flutter_sdg/homepage/edit_profil.dart';
 import 'package:flutter_sdg/homepage/homepage.dart';
+import 'package:flutter_sdg/homepage/new_Information.dart';
 import 'package:flutter_sdg/homepage/newsPage.dart';
 import 'package:flutter_sdg/homepage/profile_stats.dart';
 import 'package:flutter_sdg/homepage/userListPage.dart';
@@ -161,9 +162,16 @@ class MenuDrawerStare extends State<MenuDrawer> {
               });
             },
             children: [
-              const ListTile(
-                  title: Text('The 17 Goals',
-                      style: TextStyle(fontSize: 15, color: Colors.white))),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const NewInformation(),
+                  ));
+                },
+                child: const ListTile(
+                    title: Text('The 17 Goals',
+                        style: TextStyle(fontSize: 15, color: Colors.white))),
+              ),
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
