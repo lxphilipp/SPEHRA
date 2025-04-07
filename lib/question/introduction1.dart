@@ -14,7 +14,8 @@ class IntroductionPage extends StatelessWidget {
             child: TextButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NamePage()),
+                MaterialPageRoute(
+                    builder: (context) => const GettingStartedPage()),
               ),
               child: const Text(
                 'skip',
