@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Chat/widgets/link_text.dart';
 
 class NewInformation extends StatefulWidget {
   const NewInformation({super.key});
@@ -13,116 +14,291 @@ class _NewInformationState extends State<NewInformation> {
     final List<Map<String, dynamic>> goals = [
       {
         'image': 'assets/icons/17_SDG_Icons/1.png',
-        'label': 'Keine Armut',
-        'description':
-            'Ziel ist es hier, bis 2030 extreme Armut zu beseitigen, sozialen Schutz zu gewährleisten und Gleichheit und Widerstandsfähigkeit für alle zu fördern. Sobald eine Person mit weniger als 2,15 US-Dollar am Tag zu überleben hat, zählt sie als extreme Armut. Es können noch bis zu 575 Millionen Menschen in extremer Armut bis 2030 leben. Über 4 Milliarden Menschen sind nicht sozial abgesichert, darunter auch gefährdete Gruppen. Zum ****Beispiel: Kinder, Frauen und Mädchen, ältere Menschen, Menschen mit Behinderungen, Flüchtlinge, indigene Völker und ethnische Minderheiten, sowie Obdachlose . Mögliche Lösung: Für Politik einsetzen, die Ziele wie integratives Wachstum und sozialen Schutz fördern, um die Armut zu bekämpfen.',
+        'label': 'No Poverty',
+        'description': [
+          'SDG 1 aims to eradicate extreme poverty, ensure social protection, and promote equality and resilience for all by 2030.',
+          'Extreme poverty is defined as surviving on less than \$2.15 per person per day.',
+          'By 2030, 575 million may still live in extreme poverty.',
+          'Over 4 billion people lack social protection, including vulnerable groups.',
+          'What you can do: Advocate for policies promoting inclusive growth and social protection to combat poverty.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal1',
+          'https://www.bmuv.de/themen/nachhaltigkeit/nachhaltigkeitsziele-sdgs/sdg-1-keine-armut',
+          'https://www.un.org/sustainabledevelopment/poverty/',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/2.png',
-        'label': 'Kein Hunger',
-        'description':
-            'Hier müssen Nahrungsmittel Systeme umgestaltet werden, damit die Hungersnot verringert werden kann. Im Jahr 2022 leiden 230 Millionen Kindern an verschiedenen Krankheiten wie Auszehrung, Wachstumsverzögerungen und Übergewicht. Dafür sind grundlegende Wandel der Herangehensweise erforderlich. Mögliche Lösungen: lokale Landwirte unterstützen, nachhaltige Lebensmittel einkaufen und keine Lebensmittelverschwendung.',
+        'label': 'Zero Hunger',
+        'description': [
+          'SDG 2 is striving to achieve zero hunger by 2030, including addressing inequalities, transforming food systems, and mitigating the impact of conflict and the pandemic.',
+          'In 2022, 45 million children suffered from wasting, 148 million faced stunted growth, and 37 million were overweight.',
+          'A fundamental change in approach is necessary to meet the 2030 nutrition targets and ensure global food security.',
+          'How to support this SDG: support local farmers, choose sustainable food, fight food waste, and use your voice as a consumer and voter.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal2',
+          'https://www.fao.org/zero-hunger',
+          'https://www.wfp.org/',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/3.png',
-        'label': 'Gute Gesundheit und Wohlergehen',
-        'description':
-            'Es wird angestrebt, manche Krankheiten komplett zu vernichten, sowie eine allgemeine Gesundheitsversorgung und Impfstoffe für alle zugänglich zu machen. Die Ungleichheiten beim Zugang zur Gesundheitsversorgung werden nochmal durch Krisen, wie zum Beispiel die COVID-19-Pandemie, vor Augen gehalten. Es wird auch nochmal durch die Zahl der Impfungen im Kindesalter und die Zahl der Todesfälle durch Tuberkulose und Malaria, die erheblich gestiegen sind, ersichtlich. Mögliche Lösungen: individuelle und gemeinschaftliche Gesundheit zu unterstützen, sich für den Zugang zu einer hochwertigen medizinischen Versorgung zu engagieren und Regierungen dazu aufzufordern, ihre Gesundheit Zusagen einzuhalten.',
+        'label': 'Good Health and Well-being',
+        'description': [
+          'The aim is to end epidemics of AIDS, tuberculosis, malaria, and other communicable diseases by 2030.',
+          'Striving for universal health coverage and access to affordable medicines and vaccines for all.',
+          'Inequalities in healthcare access persist, exacerbated by crises like the COVID-19 pandemic.',
+          'Childhood vaccinations have declined; 68 million children are under-vaccinated as of 2022.',
+          'How to support this SDG: Promote health, advocate for access to care, and hold governments accountable.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal3',
+          'https://unstats.un.org/sdgs/report/2022/Goal-03/',
+          'https://www.un.org/sustainabledevelopment/health/',
+          'https://www.who.int/',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/4.png',
-        'label': 'Qualitative Bildung',
-        'description':
-            'Ziel ist es, eine kostenlose Grund- und Sekundarschulbildung anzubieten, sowie Ungleichheiten zu beseitigen und den allgemeinen Zugang zu einer hochwertigen Hochschulbildung zu gewährleisten. Vor der Pandemie verlief der Fortschritt in der Bildungsqualität nur schleppend. Die Auswirkungen von COVID-19 haben diese Situation weiter verschärft und zu erheblichen Lernrückständen geführt. Ohne gezielte Maßnahmen könnten bis 2030 rund 84 Millionen Kinder keinen Schulzugang erhalten, während etwa 300 Millionen Schüler grundlegende Lese- und Rechenfähigkeiten nicht erlernen könnten. So kann dieses SDG unterstützt werden: Mach dich für Bildung als zentrales Anliegen stark, setze dich für eine kostenlose und verpflichtende Schulbildung für alle ein und fördere Initiativen, die die Qualität des Unterrichts sowie die Bildungsinfrastruktur verbessern.',
+        'label': 'Quality Education',
+        'description': [
+          'The goal is to provide free primary and secondary schooling by 2030 and ensure access to quality higher education.',
+          'Progress pre-pandemic was slow, and COVID-19 worsened learning outcomes.',
+          'Without action, 84 million children may remain out of school by 2030.',
+          'Around 300 million students could lack basic numeracy and literacy skills.',
+          'Support this SDG: Advocate for education, free schooling, and improved teaching quality.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal4',
+          'https://unstats.un.org/sdgs/report/2022/goal-04/',
+          'https://www.unesco.org/en/sustainable-development/education',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/5.png',
-        'label': 'Gleichstellung der Geschlechter',
-        'description':
-            'Hier wird versucht, die Gleichstellung der Geschlechter zu erreichen.Frauen sind heutzutage noch immer mit erheblichen Ungleichheiten konfrontiert. Weltweit verdienen Frauen 23% weniger als Männer, übernehmen die Verantwortung für unbezahlte Pflegearbeit und sind in hohem Maße von Gewalt und Ausbeutung betroffen. Ohne gezielte Maßnahmen könnte es noch viele Generationen dauern, bis Gleichberechtigung in Bereichen wie Kinderheirat, Rechtsschutz, Führungspositionen und politischer Teilhabe vollständig verwirklicht ist. Um dieses SDG zu unterstützen, kann damit angefangen werden die Bildung von Mädchen zu unterstützen, Vorurteile in Frage zu stellen, sich für einen politischen Wandel einzusetzen und initiative zur Bekäpmfung von Gewalt gegen Frauen und Mädchen zu ergreifen.',
+        'label': 'Gender Equality',
+        'description': [
+          'SDG 5 aims to achieve gender equality and empower all women and girls.',
+          'Women still earn 23% less than men globally and bear unpaid care work.',
+          'They also face high rates of violence and exploitation.',
+          'Without additional measures, gender equality could take centuries.',
+          'Support girls\' education, challenge biases, and promote respectful relationships.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal5',
+          'https://unstats.un.org/sdgs/report/2022/goal-05/',
+          'https://spotlightinitiative.org/',
+          'https://www.unwomen.org/en',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/6.png',
-        'label': 'Sauberes Wasser und sanitäre Einrichtungen',
-        'description':
-            'Es wird angestrebt, die Verfügbarkeit und nachhaltige Bewirtschaftung von Wasser und sanitären Einrichtungen für alle zu gewährleisten. Sauberes Wasser, Sanitärversorgung und Hygiene sind essentiell für die Gesundheit und das Wohlbefinden der Menschen. Trotz erzielter Fortschritte hatten im Jahr 2022 jedoch weiterhin 2,2 Milliarden Menschen keinen sicheren Zugang zu Trinkwasser, 3,4 Milliarden fehlten an angemessenen sanitären Einrichtungen, und 1,9 Milliarden konnten keine grundlegenden Hygienedienste nutzen. Gleichzeitig steigt der Wasserbedarf durch das Bevölkerungswachstum und den Klimawandel stetig an. 7. 8. 9. In der Hälfte aller Länder fehlt es nach wie vor an effektiven Strategien für eine nachhaltige Wasserbewirtschaftung. So kann dieses SDG unterstützt werden: Es soll sparsam mit Wasser umgegangen werden, auf gute Hygiene achten und sich für sauberes Wasser in der Gemeinde und bessere sanitäre Einrichtungen eingesetzt werden.',
+        'label': 'Clean Water and Sanitation',
+        'description': [
+          'Ensure availability and sustainable management of water and sanitation for all.',
+          'In 2022, 2.2 billion people lacked safely managed drinking water.',
+          '3.4 billion lacked safely managed sanitation, and 1.9 billion lacked basic hygiene services.',
+          'Water demand is rising due to population growth and climate change.',
+          'Support this SDG: Conserve water, practice good hygiene, and advocate for clean water access.'
+        ],
+        'links': [
+          'https://unstats.un.org/sdgs/report/2022/goal-06/',
+          'https://sdgs.un.org/goals/goal6',
+          'https://www.unwater.org/',
+          'https://www.un.org/en/observances/water-day',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/7.png',
-        'label': 'Bezahlbare und saubere Energie',
-        'description':
-            'Dieses SDG setzt sich dafür ein, allen Menschen den Zugang zu bezahlbarer, verlässlicher, nachhaltiger und moderner Energie zu ermöglichen. Trotz positiver Entwicklungen werden bis 2030 voraussichtlich noch über 660 Millionen Menschen ohne Zugang zu Strom sein. Zudem werden fast 2 Milliarden Menschen weiterhin auf gesundheitsschädliche und umweltbelastende Brennstoffe zum Kochen angewiesen sein. SDG kann auf diese Art und Weisen unterstützt werden: Energieverbrauch reduzieren, indem ungenutzte Geräte ausgeschaltet und auf energieeffiziente Alternativen gesetzt werden. Sich für den Ausbau erneuerbarer Energien in einer Gemeinde zu engagieren und nachhaltige Praktiken im Alltag zu integrieren.',
+        'label': 'Affordable and Clean Energy',
+        'description': [
+          'Ensure access to affordable, reliable, sustainable, and modern energy for all.',
+          'Over 660 million people may still lack electricity by 2030.',
+          'Nearly 2 billion people rely on polluting fuels for cooking.',
+          'Support this SDG: Save electricity, switch to energy-efficient devices, advocate for renewables, and adopt sustainable habits.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal7',
+          'https://unstats.un.org/sdgs/report/2022/goal-07/',
+          'https://www.un.org/sustainabledevelopment/energy/',
+          'https://www.worldbank.org/en/topic/energy/overview',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/8.png',
-        'label': 'Würdevolle Arbeit und Wirtschaftswachstum',
-        'description':
-            'Dieses SDG setzt sich für ein nachhaltiges und gerechtes Wirtschaftswachstum sowie für gute Arbeitsbedingungen und Beschäftigungsmöglichkeiten für alle ein. Im Jahr 2022 war fast jeder vierte junge Mensch (23,5 %) weder in Ausbildung noch in Beschäftigung oder Weiterbildung. Zwar ist das ein kleiner Rückgang im Vergleich zu 2020, als diese Zahl besonders hoch war, doch sie liegt immer noch über dem Wert von 2015 (22,2 %) und weit entfernt vom Ziel für 2030. SDG unterstützen: Sich für faire Löhne und bessere Arbeitschancen einsetzen, besonders für junge Menschen und Frauen. Bildungs- und Ausbildungsprogramme fördern, damit mehr Menschen Zugang zu guten Jobs bekommen und Maßnahmen für soziale Sicherheit und grundlegende Dienstleistungen für alle unterstützen.',
+        'label': 'Decent Work and Economic Growth',
+        'description': [
+          'Promote sustained, inclusive, and sustainable economic growth, full and productive employment, and decent work for all.',
+          'In 2022, 23.5% of young people were not in education, employment, or training (NEET).',
+          'This rate remains higher than the 2015 level.',
+          'Support this SDG: Advocate for decent jobs, fair pay, especially for youth and women, and support education and training programs.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal8',
+          'https://unstats.un.org/sdgs/report/2022/goal-08/',
+          'https://www.un.org/sustainabledevelopment/economic-growth/',
+          'https://www.worldbank.org/en/topic',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/9.png',
-        'label': 'Industrie, Innovation und Infrastruktur',
-        'description':
-            'Ziel ist es hier, die Infrastruktur zu modernisieren, sie nachhaltiger zu gestalten und die Ressourcen effizienter zu nutzen. Nur 54% der Bevölkerung nutzen das Internet. Diese Zahl verringert sich um einiges in den am wenigsten entwickelten Ländern, da nur 19% überhaupt Zugang zum Internet haben. In der Fertigungsindustrie werden nur 2 von 3 neu geschaffen. Die am wenigsten entwickelten Länder haben nur einen Anteil von 1,15% vom Welthandel.',
+        'label': 'Industry, Innovation and Infrastructure',
+        'description': [
+          'Modernize infrastructure to be more sustainable and efficient.',
+          'Only 54% of the global population uses the internet; only 19% in least developed countries.',
+          'Two out of three jobs are in manufacturing.',
+          'Least developed countries have only 1.15% share in global trade.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal9',
+          'https://www.bmuv.de/.../sdg-9-industrie-innovation-und-infrastruktur',
+          'https://dashboards.sdgindex.org/rankings',
+          'https://www.bmz.de/de/agenda-2030/sdg-9',
+          'https://www.un.org/sustainabledevelopment/infrastructure-industrialization/',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/10.png',
-        'label': 'Verringerte Ungleichheit',
-        'description':
-            'Hier wird darauf abgezielt, Einkommensunterschiede und Unterschiede aufgrund von Politik, Religion, sexueller Orientierung, Herkunft und Behinderung zu verringern. Die ärmsten 40% haben weniger als 25% des internationalen Einkommens über 100 Millionen Flüchtlinge sind auf der Flucht. Jeder 5te Mensch wurde einmal in seinem Leben diskriminiert und die ärmsten 50% der Welt verfügen nur über 2% des weltweiten Wohlstandes. ',
+        'label': 'Reduced Inequalities',
+        'description': [
+          'Reduce income and other inequalities based on origin, politics, religion, etc.',
+          'The poorest 40% have less than 25% of global income.',
+          'Over 100 million refugees are displaced.',
+          '1 in 5 people has faced discrimination.',
+          'The poorest 50% of the world own just 2% of global wealth.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal10',
+          'https://unric.org/de/17ziele/sdg-10/',
+          'https://www.bmz.de/de/agenda-2030/sdg-10',
+          'https://www.un.org/sustainabledevelopment/inequality/',
+          'https://www.bundesregierung.de/.../weniger-ungleichheiten-1592836',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/11.png',
-        'label': 'Nachhaltige Städte und Gemeinden',
-        'description':
-            'Ein Viertel der Weltbevölkerung lebt in Städten mit mindestens einer Millionen Einwohnern. Über eine Milliarde Menschen wohnen in Slums oder vergleichbaren Siedlungen und in den nächsten 30 Jahren könnten weitere 2 Milliarden hinzukommen. Es werden voraussichtlich bis 2050 rund 70% der Weltbevölkerung in Städten leben und Afrika verfügt derzeit erst über ein Drittel der Infrastruktur, die bis dahin notwendig sein wird.',
+        'label': 'Sustainable Cities and Communities',
+        'description': [
+          '25% of people live in cities with more than 1 million people.',
+          'Over 1 billion live in slums; 2 billion more expected in 30 years.',
+          'By 2050, 70% of people will live in urban areas.',
+          'Africa currently has only one-third of the needed infrastructure by 2050.'
+        ],
+        'links': [
+          'https://www.bmz.de/de/agenda-2030/sdg-11',
+          'https://sdgs.un.org/goals/goal11',
+          'https://www.un.org/sustainabledevelopment/cities/',
+          'https://www.bundesregierung.de/.../nachhaltige-staedte-gemeinden-1006538',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/12.png',
-        'label': 'Verantwortungsvoller Verbrauch und Produktion',
-        'description':
-            'Im Jahr 2023 werden weltweit rund 1,3 Milliarden Tonnen Lebensmittel verschwendet, was etwa 17 % der gesamten produzierten Lebensmittel ausmacht. Jeder Mensch wirft im Durchschnitt 120 Kilogramm Lebensmittel pro Jahr weg. Darüber hinaus gehen fast 14 % der Ernten bereits bei der Ernte, dem Transport, der Lagerung und der Verarbeitung verloren. Diese enormen Verluste stellen ein ernstes Problem dar, das nicht nur die Umwelt belastet, sondern auch zur weltweiten Nahrungsmittelunsicherheit beiträgt..',
+        'label': 'Responsible Consumption and Production',
+        'description': [
+          '1.3 billion tons of food were wasted worldwide in 2023.',
+          '17% of produced food is thrown away.',
+          'Each person wastes on average 120 kg of food annually.',
+          '14% of crops are lost during harvesting, transport, or processing.'
+        ],
+        'links': [
+          'https://www.bmz.de/de/agenda-2030/sdg-12',
+          'https://sdgs.un.org/goals/goal12',
+          'https://www.un.org/sustainabledevelopment/sustainable-consumption-production/',
+          'https://www.bundesregierung.de/.../produzieren-konsumieren-181666',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/13.png',
-        'label': 'Klimamaßnahmen',
-        'description':
-            'Wegen der zunehmenden Dürreperioden könnten bis 2030 mehr als 700 Millionen Menschen gezwungen sein, ihre Heimatregionen zu verlassen. Wenn der Klimawandel weiterhin ungebremst voranschreitet, wird der Meeresspiegel voraussichtlich um 30 bis 60 Zentimeter ansteigen. Darüber hinaus könnten bis 2030 zusätzlich etwa 132 Millionen Menschen vor den Auswirkungen des Klimawandels fliehen. Besorgniserregend ist auch, dass sich die Geschwindigkeit des Meeresspiegelanstiegs im vergangenen Jahrzehnt verdoppelt hat, was die Bedrohung für Küstenregionen und Inselstaaten weiter verstärkt.',
+        'label': 'Climate Action',
+        'description': [
+          'Over 700 million people could be displaced due to droughts by 2030.',
+          'If climate change continues, sea level could rise by 30–60 cm.',
+          'By 2030, another 132 million could flee due to climate effects.',
+          'Sea level rise has doubled in speed in the last decade.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal13',
+          'https://unric.org/de/17ziele/sdg-13/',
+          'https://www.un.org/sustainabledevelopment/climate-change/',
+          'https://www.bundesregierung.de/.../weltweit-klimaschutz-umsetzen-181812',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/14.png',
-        'label': 'Leben Unterwasser',
-        'description':
-            'Mehr als ein Drittel der weltweiten Fischbestände ist heute überfischt, was die marinen Ökosysteme und die Artenvielfalt gefährdet. Obwohl die Meere etwa 70 % der Erdoberfläche bedecken, stehen lediglich 8 % dieser Gewässer unter Naturschutz. Fast 500 Millionen Menschen sind direkt von der Fischereiindustrie abhängig, sei es für ihren Lebensunterhalt oder ihre Ernährung. Ein besonders besorgniserregender Aspekt ist, dass jeder fünfte gefangene Fisch aus illegaler, nicht gemeldeter und unregulierter Fischerei stammt, was den Druck auf die Meeresressourcen weiter erhöht und den nachhaltigen Fischfang erschwert.',
+        'label': 'Life Below Water',
+        'description': [
+          'Over one-third of fish stocks are overfished, threatening ecosystems.',
+          'Only 8% of oceans are under protection despite covering 70% of Earth.',
+          'Nearly 500 million people depend on fisheries.',
+          '1 in 5 fish is from illegal, unreported, and unregulated sources.'
+        ],
+        'links': [
+          'https://sdgs.un.org/goals/goal14',
+          'https://www.bundesregierung.de/.../leben-unter-wasser-schuetzen-1522310',
+          'https://www.bmz.de/de/agenda-2030/sdg-14',
+          'https://www.un.org/sustainabledevelopment/oceans/',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/15.png',
-        'label': 'Leben an Land',
-        'description':
-            'Die Welt steht derzeit vor dem größten Artensterben seit der Ära der Dinosaurier, was die biologische Vielfalt weltweit ernsthaft gefährdet. Etwa 21 % aller Reptilienarten sind vom Aussterben bedroht, und auch viele andere Tier- und Pflanzenarten sind in Gefahr. Trotz der Bedeutung des Naturschutzes sind lediglich 17 % der globalen Landflächen geschützt, was die Erhaltung der Artenvielfalt erschwert. Zwischen 2015 und 2019 hat die Menschheit mindestens 100 Millionen Hektar gesunde Landflächen verloren, was die ohnehin schon besorgniserregende Lage weiter verschärft.',
+        'label': 'Life on Land',
+        'description': [
+          'The planet faces the largest extinction since the dinosaurs.',
+          '21% of all reptiles are endangered.',
+          'Only 17% of land areas are protected.',
+          'From 2015 to 2019, 100 million hectares of healthy land were lost.'
+        ],
+        'links': [
+          'https://www.bundesregierung.de/.../leben-an-land-1642288',
+          'https://www.un.org/sustainabledevelopment/biodiversity/',
+          'https://www.bmz.de/de/agenda-2030/sdg-15',
+          'https://sdgs.un.org/goals/goal15',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/16.png',
-        'label': 'Frieden, Gerechtigkeit und starke Institutionen',
-        'description':
-            'Das 16. SDG hat zum Ziel, Demokratien und die Wirtschaft zu stärken sowie die Gesellschaften und Rechtsstaatlichkeit zu stabilisieren. Aktuell lebt ein Viertel der Weltbevölkerung in Ländern, die sich in Konflikten oder Kriegen befinden, was zu großer Unsicherheit und Instabilität führt. Zudem leben 80 % der Weltbevölkerung in Ländern, die entweder nicht oder nur teilweise frei sind, was die Entwicklung von Demokratie und Menschenrechten erschwert. Besonders besorgniserregend ist, dass 70 % der Opfer von Ausbeutung, meist in Form von sexueller Gewalt, Frauen und Mädchen sind, was auf tief verwurzelte Ungleichheiten und Schutzlücken hinweist.',
+        'label': 'Peace, Justice and Strong Institutions',
+        'description': [
+          'SDG 16 aims to strengthen democracies, economies, and legal systems.',
+          '¼ of global population lives in conflict or war.',
+          '80% of people live in countries that are not fully free.',
+          '70% of exploitation victims are women and girls.'
+        ],
+        'links': [
+          'https://unric.org/de/17ziele/sdg-16/',
+          'https://www.un.org/sustainabledevelopment/peace-justice/',
+          'https://sdgs.un.org/goals/goal16',
+          'https://www.bundesregierung.de/.../institutionen-foerdern-199866',
+        ],
       },
       {
         'image': 'assets/icons/17_SDG_Icons/17.png',
-        'label': 'Partnerschaft für die Ziele',
-        'description':
-            'Das letzte SDG verfolgt das Ziel, „niemanden zurückzulassen“ und weltweit Partnerschaften zu fördern, um gemeinsam die Herausforderungen der nachhaltigen Entwicklung zu meistern. Im Jahr 2022 nutzten zwei von drei Menschen weltweit das Internet, doch es gibt immer noch eine erhebliche Geschlechterkluft, da 259 Millionen mehr Männer als Frauen online sind. Um die SDGs bis 2030 in den Entwicklungsländern zu erreichen, sind fast 4 Billionen Euro erforderlich, was die finanzielle Herausforderung deutlich macht. Zudem haben geopolitische Spannungen und der zunehmende Nationalismus in verschiedenen Teilen der Welt die internationale Zusammenarbeit und Koordination erschwert, was den Fortschritt bei der Umsetzung der globalen Ziele erheblich bremst.',
+        'label': 'Partnerships for the Goals',
+        'description': [
+          'The goal is to ensure no one is left behind and foster global partnerships.',
+          'In 2022, 2 in 3 people used the internet; men outnumbered women by 259 million.',
+          'Almost €4 trillion are needed in developing countries to meet the SDGs.',
+          'Geopolitical tensions and nationalism hinder global cooperation.'
+        ],
+        'links': [
+          'https://www.bmz.de/de/agenda-2030/sdg-17',
+          'https://www.un.org/sustainabledevelopment/globalpartnerships/',
+          'https://sdgs.un.org/goals/goal17',
+          'https://unric.org/de/17ziele/sdg-17/',
+        ],
       },
     ];
 
     return Scaffold(
-      backgroundColor: Color(0xff040324),
+      backgroundColor: const Color(0xff040324),
       appBar: AppBar(
         title: const Text(
-          'Die 17 Ziele',
+          'The 17 Goals',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Color(0xff040324),
+        backgroundColor: const Color(0xff040324),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -141,19 +317,40 @@ class _NewInformationState extends State<NewInformation> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Color(0xff040324),
+                    backgroundColor: const Color(0xff040324),
                     title: Text(goal['label'],
-                        style: TextStyle(color: Colors.white)),
+                        style: const TextStyle(color: Colors.white)),
                     content: Scrollbar(
                       thumbVisibility: true,
                       child: SingleChildScrollView(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Image.asset(goal['image']),
                             const SizedBox(height: 10),
-                            Text(goal['description'],
+                            ...goal['description'].map<Widget>((line) =>
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 6.0),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("• ",
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                      Expanded(
+                                          child: Text(line,
+                                              style: const TextStyle(
+                                                  color: Colors.white))),
+                                    ],
+                                  ),
+                                )),
+                            const SizedBox(height: 10),
+                            const Text('More Information at:',
                                 style: TextStyle(color: Colors.white)),
+                            ...goal['links']
+                                .map<Widget>((url) => LinkText(url)),
                           ],
                         ),
                       ),
@@ -161,7 +358,8 @@ class _NewInformationState extends State<NewInformation> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Zurück'),
+                        child: const Text('Close',
+                            style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -170,10 +368,10 @@ class _NewInformationState extends State<NewInformation> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Color(0xff040324),
+                  color: const Color(0xff040324),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xff040324),
+                      color: const Color(0xff040324),
                       blurRadius: 6,
                       offset: const Offset(2, 2),
                     ),
@@ -189,6 +387,5 @@ class _NewInformationState extends State<NewInformation> {
         ),
       ),
     );
-    ;
   }
 }

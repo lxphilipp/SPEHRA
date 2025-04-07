@@ -28,6 +28,7 @@ class _CustumFeldState extends State<CustumFeld> {
         validator: (value) => value!.isEmpty ? "Required" : null,
         obscureText: widget.isPass ? abscure : false,
         controller: widget.controller,
+        style: TextStyle(color: Colors.green),
         decoration: InputDecoration(
           suffixIcon: widget.isPass
               ? IconButton(

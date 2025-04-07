@@ -242,13 +242,7 @@ class _ChallengesState extends State<CreateOwnChallenges> {
                                 fontSize: 30),
                           ),
                           SizedBox(height: 10),
-                          Text(
-                            'lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                            style: TextStyle(
-                                fontFamily: 'OswaldLight',
-                                color: Colors.white,
-                                fontSize: 15),
-                          ),
+                          const ExpandableTextWidget(),
                         ],
                       ),
                     ),
@@ -446,6 +440,53 @@ class _ChallengesState extends State<CreateOwnChallenges> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ExpandableTextWidget extends StatefulWidget {
+  const ExpandableTextWidget({Key? key}) : super(key: key);
+
+  @override
+  _ExpandableTextWidgetState createState() => _ExpandableTextWidgetState();
+}
+
+class _ExpandableTextWidgetState extends State<ExpandableTextWidget> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    String fullText =
+        'The challenges are about implementing the SDGs (Sustainable Development Goals) in everyday life. You can take part in challenges that have already been created and create your own challenges on the SDGs of your choice. You will need support for some of them and you can encourage your friends to take part using the chat function!';
+    String previewText = fullText.substring(0, 100) + '...';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isExpanded ? fullText : previewText,
+          style: const TextStyle(
+            fontFamily: 'OswaldLight',
+            color: Colors.white,
+            fontSize: 15,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              isExpanded = !isExpanded;
+            });
+          },
+          child: Text(
+            isExpanded ? 'Read less' : 'Read more',
+            style: const TextStyle(
+              color: Colors.green,
+              decoration: TextDecoration.underline,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

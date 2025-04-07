@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/Chat/widgets/link_text.dart';
 import 'package:flutter_sdg/layout/backButton_layout.dart';
 import 'package:flutter_sdg/layout/login_layout.dart';
+import 'package:url_launcher/link.dart';
 
 class Goal8 extends StatelessWidget {
   const Goal8({super.key});
@@ -39,6 +41,26 @@ class Goal8 extends StatelessWidget {
                         color: Colors.white,
                         fontSize: 18),
                     "For close to three decades, the number of workers living in extreme poverty has reduced drastically. This is despite the lasting impact of the 2008 economic crisis and global recession. In developing countries, 34 per cent of total employments were for the middle class, a number that has increased rapidly between 1991 and 2015. SDG 8 aims at fostering sustainable and equitable economic growth for all workers, irrespective of their background, race or gender."),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'More Information at:',
+                      style: TextStyle(
+                        fontFamily: 'OswaldLight',
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    LinkText('https://sdgs.un.org/goals/goal8'),
+                    LinkText(
+                        'https://unstats.un.org/sdgs/report/2022/goal-08/'),
+                    LinkText(
+                        'https://www.un.org/sustainabledevelopment/economic-growth/'),
+                    LinkText('https://www.worldbank.org/en/topic'),
+                  ],
+                ),
                 const SizedBox(
                   height: 10,
                 ),

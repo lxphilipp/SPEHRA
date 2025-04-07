@@ -61,17 +61,7 @@ class chat2Card extends StatelessWidget {
                                 element.fromId !=
                                 FirebaseAuth.instance.currentUser!.uid) ??
                         [];
-                    // return unreadList.length != 0
-                    //     ? Badge(
-                    //         backgroundColor: Colors.green,
-                    //         padding: EdgeInsets.symmetric(horizontal: 12),
-                    //         label: Text(unreadList.length.toString()),
-                    //         largeSize: 30,
-                    //       )
-                    //     : Text(DateFormat.yMMMEd()
-                    //         .format(DateTime.fromMillisecondsSinceEpoch(
-                    //             int.parse(item.LastMassageTime.toString())))
-                    //         .toString());
+
                     if (unreadList.isNotEmpty) {
                       return Badge(
                         backgroundColor: Colors.green,

@@ -59,14 +59,6 @@ class _EditGroupScrenState extends State<EditGroupScren> {
                       const CircleAvatar(
                         radius: 40,
                       ),
-                      // Positioned(
-                      //     bottom: -10,
-                      //     right: -10,
-                      //     child:
-                      //     // IconButton(
-                      //     //     onPressed: () {},
-                      //     //     icon: const Icon(Iconsax.gallery))
-                      //         ,)
                     ],
                   ),
                 ),
@@ -130,7 +122,10 @@ class _EditGroupScrenState extends State<EditGroupScren> {
                               itemBuilder: (context, index) {
                                 return CheckboxListTile(
                                     checkboxShape: const CircleBorder(),
-                                    title: Text(items[index].name!),
+                                    title: Text(
+                                      items[index].name!,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                     value: members.contains(items[index].id),
                                     onChanged: (value) {
                                       setState(() {

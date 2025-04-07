@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/models/message.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 
 class GroupMassageCard extends StatelessWidget {
   final Message message;
@@ -83,7 +84,11 @@ class GroupMassageCard extends StatelessWidget {
                                     width: 6,
                                   ),
                                   Text(
-                                    message.createdAt!,
+                                    //message.createdAt!,
+                                    DateFormat('dd.MM.yyyy HH:mm').format(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(message.createdAt!)),
+                                    ),
                                     style:
                                         Theme.of(context).textTheme.labelSmall,
                                   ),

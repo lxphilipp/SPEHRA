@@ -105,21 +105,31 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
         child: Column(
           children: [
             Expanded(
-              //تم استعال ستريم بيلدر للتحديث بتوقيت لحظي
               child: StreamBuilder(
-                  //دخلنا هون من شان انو يجيب بيانات الغرف اللي انشاها فقط من الحساب اللي داخل فيه
                   stream: FirebaseFirestore.instance
                       .collection('rooms')
                       .where('member',
                           arrayContains: FirebaseAuth.instance.currentUser!.uid)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.hasData) {
+                    //if (snapshot.hasData) {
+                    //if (snapshot.hasData &&
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasData &&
+                        snapshot.data != null &&
+                        snapshot.data!.docs.isNotEmpty) {
                       List<ChatRoom> items = snapshot.data!.docs
                           .map((e) => ChatRoom.fromJson(e.data()))
                           .toList()
+                        // ..sort((a, b) =>
+                        //     b.LastMassageTime!.compareTo(a.LastMassageTime!));
                         ..sort((a, b) =>
-                            b.LastMassageTime!.compareTo(a.LastMassageTime!));
+                            int.tryParse(b.LastMassageTime ?? '0')?.compareTo(
+                              int.tryParse(a.LastMassageTime ?? '0') ?? 0,
+                            ) ??
+                            0);
+
                       return ListView.builder(
                           itemCount: items.length,
                           itemBuilder: (context, Index) {
@@ -128,8 +138,11 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                             );
                           });
                     } else {
-                      return Center(
-                        child: CircularProgressIndicator(),
+                      return const Center(
+                        child: Text(
+                          "No chats found",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       );
                     }
                   }),

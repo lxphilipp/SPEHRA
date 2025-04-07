@@ -10,6 +10,7 @@ import 'package:flutter_sdg/homepage/newsPage.dart';
 import 'package:flutter_sdg/homepage/profile_stats.dart';
 import 'package:flutter_sdg/homepage/userListPage.dart';
 import 'package:flutter_sdg/layout/logoutButton_layout.dart';
+import 'package:flutter_sdg/question/energy6.dart';
 import 'package:flutter_sdg/question/introduction1.dart';
 
 class MenuDrawer extends StatefulWidget {

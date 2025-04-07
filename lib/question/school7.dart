@@ -76,7 +76,7 @@ class SchoolPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const SDGPage())),
-                          child: Text(' Vegan ',
+                          child: Text(' 60% ',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -89,7 +89,7 @@ class SchoolPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const SDGPage())),
-                        child: Text('   Vegeterian   ',
+                        child: Text('   74%   ',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],
@@ -112,7 +112,7 @@ class SchoolPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const SDGPage())),
-                          child: Text('Pescerian',
+                          child: Text('90%',
                               style: TextStyle(
                                   color: Colors.white, fontSize: fontSize))),
                     ),
@@ -125,7 +125,7 @@ class SchoolPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const SDGPage())),
-                        child: Text('Omnivorian',
+                        child: Text('87%',
                             style: TextStyle(
                                 color: Colors.white, fontSize: fontSize))),
                   ],

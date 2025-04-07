@@ -153,17 +153,18 @@ class SignIn extends StatelessWidget {
                       .get()
                       .then((userSnapshot) async {
                     // Get the shared preferences instance
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
+                    // SharedPreferences prefs =
+                    //     await SharedPreferences.getInstance();
 
-                    // Check if it's the user's first login
-                    bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
+                    // // Check if it's the user's first login
+                    // bool isFirstLogin = prefs.getBool('isFirstLogin') ?? true;
 
-                    // If it's the first login, show the introduction page
-                    if (isFirstLogin) {
-                      // Set 'isFirstLogin' to false
-                      await prefs.setBool('isFirstLogin', false);
-
+                    // // If it's the first login, show the introduction page
+                    // if (isFirstLogin) {
+                    //   // Set 'isFirstLogin' to false
+                    //   await prefs.setBool('isFirstLogin', false);
+                    if (user.metadata.creationTime ==
+                        user.metadata.lastSignInTime) {
                       // Navigate to the introduction page
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const IntroductionPage()));

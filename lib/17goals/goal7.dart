@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/Chat/widgets/link_text.dart';
 import 'package:flutter_sdg/layout/backButton_layout.dart';
 import 'package:flutter_sdg/layout/login_layout.dart';
+import 'package:url_launcher/link.dart';
 
 class Goal7 extends StatelessWidget {
   const Goal7({super.key});
@@ -39,6 +41,27 @@ class Goal7 extends StatelessWidget {
                         color: Colors.white,
                         fontSize: 18),
                     "SDG 7 is tackling the problem of the high number of people globally who live without access to electricity or clean cooking solutions (0.8 billion and 2.4 billion people, respectively, in 2020). Energy is needed for many activities, for example jobs and transport, food security, health and education. People that are hard to reach with electricity and clean cooking solutions include those who live in remote areas or are internally displaced people, or those who live in urban slums or marginalized communities."),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'More Information at:',
+                      style: TextStyle(
+                        fontFamily: 'OswaldLight',
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    LinkText('https://sdgs.un.org/goals/goal7'),
+                    LinkText(
+                        'https://unstats.un.org/sdgs/report/2022/goal-07/'),
+                    LinkText(
+                        'https://www.un.org/sustainabledevelopment/energy/'),
+                    LinkText(
+                        'https://www.worldbank.org/en/topic/energy/overview'),
+                  ],
+                ),
                 const SizedBox(
                   height: 10,
                 ),

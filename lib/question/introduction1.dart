@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/question/gettingStarted3.dart';
 import 'package:flutter_sdg/question/name2.dart';
 
 class IntroductionPage extends StatelessWidget {
@@ -56,7 +57,7 @@ class IntroductionPage extends StatelessWidget {
                         fontSize: 30)),
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => NamePage()),
+                  MaterialPageRoute(builder: (context) => GettingStartedPage()),
                 ),
               ),
             ),
