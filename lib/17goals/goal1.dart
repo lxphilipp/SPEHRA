@@ -1,10 +1,10 @@
-import 'package:flutter/gestures.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/Chat/widgets/link_text.dart';
 import 'package:flutter_sdg/layout/backButton_layout.dart';
 import 'package:flutter_sdg/layout/login_layout.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/link.dart';
+// import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/link.dart';
 
 class Goal1 extends StatelessWidget {
   const Goal1({super.key});

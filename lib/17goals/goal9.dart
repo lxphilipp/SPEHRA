@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/Chat/widgets/link_text.dart';
 import 'package:flutter_sdg/layout/backButton_layout.dart';
 import 'package:flutter_sdg/layout/login_layout.dart';
-import 'package:url_launcher/link.dart';
+// import 'package:url_launcher/link.dart';
 
 class Goal9 extends StatelessWidget {
   const Goal9({super.key});
@@ -14,24 +14,29 @@ class Goal9 extends StatelessWidget {
         child: Padding(
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 100,
-                  width: 100,
-                  decoration: const BoxDecoration(
-                      image: DecorationImage(
-                          image:
-                              AssetImage('assets/icons/17_SDG_Icons/9.png'))),
+                Center(
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image:
+                                AssetImage('assets/icons/17_SDG_Icons/9.png'))),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
                 ),
-                const Text(
-                    style: TextStyle(
-                        fontFamily: 'OswaldLight',
-                        color: Colors.white,
-                        fontSize: 45),
-                    "Industry, Innovation and Infrastructure"),
+                Center(
+                  child: const Text(
+                      style: TextStyle(
+                          fontFamily: 'OswaldLight',
+                          color: Colors.white,
+                          fontSize: 45),
+                      "Industry, Innovation and Infrastructure"),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -65,7 +70,8 @@ class Goal9 extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                const GoBackButton().build(context),
+                // const GoBackButton().build(context),
+                Center(child: GoBackButton().build(context)),
               ],
             )),
       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/Chat/widgets/link_text.dart';
 import 'package:flutter_sdg/layout/backButton_layout.dart';
 import 'package:flutter_sdg/layout/login_layout.dart';
-import 'package:url_launcher/link.dart';
+// import 'package:url_launcher/link.dart';
 
 class Goal12 extends StatelessWidget {
   const Goal12({super.key});
@@ -14,24 +14,29 @@ class Goal12 extends StatelessWidget {
         child: Padding(
             padding: const EdgeInsets.only(left: 20, right: 20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 100,
-                  width: 100,
-                  decoration: const BoxDecoration(
-                      image: DecorationImage(
-                          image:
-                              AssetImage('assets/icons/17_SDG_Icons/12.png'))),
+                Center(
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage(
+                                'assets/icons/17_SDG_Icons/12.png'))),
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
                 ),
-                const Text(
-                    style: TextStyle(
-                        fontFamily: 'OswaldLight',
-                        color: Colors.white,
-                        fontSize: 40),
-                    "Responsible consumption and production"),
+                Center(
+                  child: const Text(
+                      style: TextStyle(
+                          fontFamily: 'OswaldLight',
+                          color: Colors.white,
+                          fontSize: 40),
+                      "Responsible consumption and production"),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -61,7 +66,7 @@ class Goal12 extends StatelessWidget {
                         'https://www.bundesregierung.de/breg-de/themen/nachhaltigkeitspolitik/produzieren-konsumieren-181666'),
                   ],
                 ),
-                const GoBackButton().build(context),
+                Center(child: const GoBackButton().build(context)),
               ],
             )),
       ),

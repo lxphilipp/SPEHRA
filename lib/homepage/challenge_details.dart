@@ -445,7 +445,10 @@ class ChallengeDetails extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
-                    child: const Text('Add to Ongoing'),
+                    child: const Text(
+                      'Add to Ongoing',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -468,7 +471,10 @@ class ChallengeDetails extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
-                    child: const Text('Mark as Completed'),
+                    child: const Text(
+                      'Mark as Completed',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -495,7 +501,10 @@ class ChallengeDetails extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
               ),
-              child: const Text('Remove from Ongoing'),
+              child: const Text(
+                'Remove from Ongoing',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ],
