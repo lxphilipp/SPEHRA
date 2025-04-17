@@ -110,11 +110,24 @@ class Profile extends StatelessWidget {
               .get()
               .then((completedTaskSnapshot) {
             if (completedTaskSnapshot.exists) {
-              String category = completedTaskSnapshot.data()!['category'];
-              int categoryIndex = goals.indexOf(category);
+              // String category = completedTaskSnapshot.data()!['category'];
+              // int categoryIndex = goals.indexOf(category);
 
-              if (categoryIndex >= 0 && categoryIndex < a.length) {
-                a[categoryIndex]++;
+              // if (categoryIndex >= 0 && categoryIndex < a.length) {
+              //   a[categoryIndex]++;
+              var categoryData = completedTaskSnapshot.data()!['category'];
+              if (categoryData is List) {
+                for (var cat in categoryData) {
+                  int index = goals.indexOf(cat);
+                  if (index >= 0 && index < a.length) {
+                    a[index]++;
+                  }
+                }
+              } else if (categoryData is String) {
+                int index = goals.indexOf(categoryData);
+                if (index >= 0 && index < a.length) {
+                  a[index]++;
+                }
               }
             }
           }).catchError((error) {
@@ -154,9 +167,15 @@ class Profile extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (profilPic != null)
+              if (profilPic != null && profilPic.startsWith('http'))
+                //if (profilPic != null)
                 Image.network(
                   profilPic,
+                  fit: BoxFit.cover,
+                )
+              else
+                Image.asset(
+                  'assets/images/start.png',
                   fit: BoxFit.cover,
                 ),
               Positioned(
@@ -252,7 +271,9 @@ class Profile extends StatelessWidget {
               return Text('Error: ${snapshot.error}');
             } else if (snapshot.hasData) {
               List<PieChartSectionData>? pieChartData = snapshot.data;
-              if (pieChartData != null) {
+              //if (pieChartData != null) { //////////////
+              if (pieChartData != null &&
+                  pieChartData.any((s) => s.value > 0)) {
                 return SizedBox(
                   height: 300,
                   child: Padding(
@@ -266,9 +287,12 @@ class Profile extends StatelessWidget {
                         child: PieChart(
                           PieChartData(
                             sections: pieChartData,
-                            sectionsSpace: 0,
-                            centerSpaceRadius: 60,
-                            borderData: FlBorderData(),
+                            // sectionsSpace: 0,
+                            // centerSpaceRadius: 60,
+                            // borderData: FlBorderData(),
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 40,
+                            borderData: FlBorderData(show: false),
                           ),
                         ),
                       ),
@@ -276,6 +300,13 @@ class Profile extends StatelessWidget {
                   ),
                 );
               }
+            } else {
+              return const Center(
+                child: Text(
+                  "No stats available",
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
             return Container();
           },
