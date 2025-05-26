@@ -89,6 +89,7 @@ flutter:
     - assets/texts/
     - assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png
     - assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche1Kopie8.png
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -118,8 +119,8 @@ flutter:
   fonts:
     - family: OswaldLight
       fonts:
-        - asset: lib/fonts/Oswald-Light.ttf
+        - asset: assets/fonts/Oswald-Light.ttf
     - family: OswaldRegular
       fonts:
-        - asset: lib/fonts/Oswald-Regular.ttf
+        - asset: assets/fonts/Oswald-Regular.ttf
   
