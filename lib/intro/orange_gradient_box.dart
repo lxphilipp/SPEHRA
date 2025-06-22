@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/intro/lime_green_gradient_box.dart';
 import 'package:flutter_sdg/layout/intro_layout.dart';
-import '../transistions/route_transitions.dart';
+import '../core/navigation/route_transitions.dart';
 
 class OrangeGradientBoxScreen extends StatelessWidget {
   const OrangeGradientBoxScreen({super.key});

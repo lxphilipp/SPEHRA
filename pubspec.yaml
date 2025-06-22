@@ -49,9 +49,12 @@ dependencies:
   iconsax: ^0.0.8
   uuid: ^4.5.1
   url_launcher: ^6.3.1
+  logger: ^2.4.0
   
  
 
+  intl: any
+  equatable: ^2.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -90,6 +93,7 @@ flutter:
     - assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png
     - assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche1Kopie8.png
     - assets/fonts/
+    - assets/data/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

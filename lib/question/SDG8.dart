@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/yourConcerns9.dart';
 
 class SDGPage extends StatelessWidget {
-  const SDGPage({Key? key}) : super(key: key);
+  const SDGPage({super.key});
 
   final double fontSize = 20;
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff040324),

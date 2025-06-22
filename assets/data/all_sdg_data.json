@@ -1,0 +1,274 @@
+[
+  {
+    "id": "goal1",
+    "title": "No Poverty",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/1.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/1.jpg",
+    "descriptionPoints": [
+      "End poverty in all its forms everywhere.",
+      "Implement nationally appropriate social protection systems and measures for all, including floors, and by 2030 achieve substantial coverage of the poor and the vulnerable.",
+      "Ensure that all men and women, in particular the poor and the vulnerable, have equal rights to economic resources, as well as access to basic services, ownership and control over land and other forms of property, inheritance, natural resources, appropriate new technology and financial services, including microfinance."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal1",
+      "https://www.un.org/sustainabledevelopment/poverty/"
+    ],
+    "textAssetPath": "assets/texts/SDG_1.txt"
+  },
+  {
+    "id": "goal2",
+    "title": "Zero Hunger",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/2.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/2.jpg",
+    "descriptionPoints": [
+      "End hunger, achieve food security and improved nutrition and promote sustainable agriculture.",
+      "By 2030, end hunger and ensure access by all people, in particular the poor and people in vulnerable situations, including infants, to safe, nutritious and sufficient food all year round.",
+      "By 2030, end all forms of malnutrition, including achieving, by 2025, the internationally agreed targets on stunting and wasting in children under 5 years of age, and address the nutritional needs of adolescent girls, pregnant and lactating women and older persons."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal2",
+      "https://www.fao.org/sustainable-development-goals/goals/goal-2/en/"
+    ],
+    "textAssetPath": "assets/texts/SDG_2.txt"
+  },
+  {
+    "id": "goal3",
+    "title": "Good Health and Well-Being",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/3.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/3.jpg",
+    "descriptionPoints": [
+      "Ensure healthy lives and promote well-being for all at all ages.",
+      "By 2030, reduce the global maternal mortality ratio to less than 70 per 100,000 live births.",
+      "By 2030, end preventable deaths of newborns and children under 5 years of age, with all countries aiming to reduce neonatal mortality to at least as low as 12 per 1,000 live births and under-5 mortality to at least as low as 25 per 1,000 live births."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal3",
+      "https://www.who.int/health-topics/sustainable-development-goals"
+    ],
+    "textAssetPath": "assets/texts/SDG_3.txt"
+  },
+  {
+    "id": "goal4",
+    "title": "Quality Education",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/4.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/4.jpg",
+    "descriptionPoints": [
+      "Ensure inclusive and equitable quality education and promote lifelong learning opportunities for all.",
+      "By 2030, ensure that all girls and boys complete free, equitable and quality primary and secondary education leading to relevant and effective learning outcomes.",
+      "By 2030, ensure that all girls and boys have access to quality early childhood development, care and pre-primary education so that they are ready for primary education."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal4",
+      "https://www.unesco.org/en/education/sustainable-development-goals"
+    ],
+    "textAssetPath": "assets/texts/SDG_4.txt"
+  },
+  {
+    "id": "goal5",
+    "title": "Gender Equality",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/5.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/5.jpg",
+    "descriptionPoints": [
+      "Achieve gender equality and empower all women and girls.",
+      "End all forms of discrimination against all women and girls everywhere.",
+      "Eliminate all forms of violence against all women and girls in the public and private spheres, including trafficking and sexual and other types of exploitation."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal5",
+      "https://www.unwomen.org/en/sdgs"
+    ],
+    "textAssetPath": "assets/texts/SDG_5.txt"
+  },
+  {
+    "id": "goal6",
+    "title": "Clean Water and Sanitation",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/6.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/6.jpg",
+    "descriptionPoints": [
+      "Ensure availability and sustainable management of water and sanitation for all.",
+      "By 2030, achieve universal and equitable access to safe and affordable drinking water for all.",
+      "By 2030, achieve access to adequate and equitable sanitation and hygiene for all and end open defecation, paying special attention to the needs of women and girls and those in vulnerable situations."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal6",
+      "https://www.unwater.org/our-work/sdg-6-global-acceleration-framework"
+    ],
+    "textAssetPath": "assets/texts/SDG_6.txt"
+  },
+  {
+    "id": "goal7",
+    "title": "Affordable and Clean Energy",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/7.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/7.jpg",
+    "descriptionPoints": [
+      "Ensure access to affordable, reliable, sustainable and modern energy for all.",
+      "By 2030, ensure universal access to affordable, reliable and modern energy services.",
+      "By 2030, increase substantially the share of renewable energy in the global energy mix."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal7",
+      "https://www.un.org/sustainabledevelopment/energy/"
+    ],
+    "textAssetPath": "assets/texts/SDG_7.txt"
+  },
+  {
+    "id": "goal8",
+    "title": "Decent Work and Economic Growth",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/8.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/8.jpg",
+    "descriptionPoints": [
+      "Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all.",
+      "Sustain per capita economic growth in accordance with national circumstances and, in particular, at least 7 per cent gross domestic product growth per annum in the least developed countries.",
+      "Achieve higher levels of economic productivity through diversification, technological upgrading and innovation, including through a focus on high-value added and labour-intensive sectors."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal8",
+      "https://www.ilo.org/global/topics/sdg-2030/goal-8/lang--en/index.htm"
+    ],
+    "textAssetPath": "assets/texts/SDG_8.txt"
+  },
+  {
+    "id": "goal9",
+    "title": "Industry, Innovation and Infrastructure",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/9.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/9.jpg",
+    "descriptionPoints": [
+      "Build resilient infrastructure, promote inclusive and sustainable industrialization and foster innovation.",
+      "Develop quality, reliable, sustainable and resilient infrastructure, including regional and transborder infrastructure, to support economic development and human well-being, with a focus on affordable and equitable access for all.",
+      "Promote inclusive and sustainable industrialization and, by 2030, significantly raise industry’s share of employment and gross domestic product, in line with national circumstances, and double its share in least developed countries."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal9",
+      "https://www.unido.org/sustainable-development-goals/goal-9-industry-innovation-infrastructure"
+    ],
+    "textAssetPath": "assets/texts/SDG_9.txt"
+  },
+  {
+    "id": "goal10",
+    "title": "Reduced Inequalities",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/10.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/10.jpg",
+    "descriptionPoints": [
+      "Reduce inequality within and among countries.",
+      "By 2030, progressively achieve and sustain income growth of the bottom 40 per cent of the population at a rate higher than the national average.",
+      "By 2030, empower and promote the social, economic and political inclusion of all, irrespective of age, sex, disability, race, ethnicity, origin, religion or economic or other status."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal10",
+      "https://www.un.org/sustainabledevelopment/inequality/"
+    ],
+    "textAssetPath": "assets/texts/SDG_10.txt"
+  },
+  {
+    "id": "goal11",
+    "title": "Sustainable Cities and Communities",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/11.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/11.jpg",
+    "descriptionPoints": [
+      "Make cities and human settlements inclusive, safe, resilient and sustainable.",
+      "By 2030, ensure access for all to adequate, safe and affordable housing and basic services and upgrade slums.",
+      "By 2030, provide access to safe, affordable, accessible and sustainable transport systems for all, improving road safety, notably by expanding public transport, with special attention to the needs of those in vulnerable situations, women, children, persons with disabilities and older persons."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal11",
+      "https://www.unhabitat.org/sdg-11"
+    ],
+    "textAssetPath": "assets/texts/SDG_11.txt"
+  },
+  {
+    "id": "goal12",
+    "title": "Responsible Consumption and Production",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/12.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/12.jpg",
+    "descriptionPoints": [
+      "Ensure sustainable consumption and production patterns.",
+      "Implement the 10-Year Framework of Programmes on Sustainable Consumption and Production Patterns, all countries taking action, with developed countries taking the lead, taking into account the development and capabilities of developing countries.",
+      "By 2030, achieve the sustainable management and efficient use of natural resources."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal12",
+      "https://www.unep.org/explore-topics/sustainable-development-goals/why-do-sustainable-development-goals-matter/goal-12"
+    ],
+    "textAssetPath": "assets/texts/SDG_12.txt"
+  },
+  {
+    "id": "goal13",
+    "title": "Climate Action",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/13.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/13.jpg",
+    "descriptionPoints": [
+      "Take urgent action to combat climate change and its impacts.",
+      "Strengthen resilience and adaptive capacity to climate-related hazards and natural disasters in all countries.",
+      "Integrate climate change measures into national policies, strategies and planning."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal13",
+      "https://www.un.org/sustainabledevelopment/climate-change/"
+    ],
+    "textAssetPath": "assets/texts/SDG_13.txt"
+  },
+  {
+    "id": "goal14",
+    "title": "Life Below Water",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/14.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/14.jpg",
+    "descriptionPoints": [
+      "Conserve and sustainably use the oceans, seas and marine resources for sustainable development.",
+      "By 2025, prevent and significantly reduce marine pollution of all kinds, in particular from land-based activities, including marine debris and nutrient pollution.",
+      "By 2020, sustainably manage and protect marine and coastal ecosystems to avoid significant adverse impacts, including by strengthening their resilience, and take action for their restoration in order to achieve healthy and productive oceans."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal14",
+      "https://www.undp.org/sustainable-development-goals/life-below-water"
+    ],
+    "textAssetPath": "assets/texts/SDG_14.txt"
+  },
+  {
+    "id": "goal15",
+    "title": "Life on Land",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/15.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/15.jpg",
+    "descriptionPoints": [
+      "Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification, and halt and reverse land degradation and halt biodiversity loss.",
+      "By 2020, ensure the conservation, restoration and sustainable use of terrestrial and inland freshwater ecosystems and their services, in particular forests, wetlands, mountains and drylands, in line with obligations under international agreements.",
+      "By 2030, combat desertification, restore degraded land and soil, including land affected by desertification, drought and floods, and strive to achieve a land degradation-neutral world."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal15",
+      "https://www.un.org/sustainabledevelopment/biodiversity/"
+    ],
+    "textAssetPath": "assets/texts/SDG_15.txt"
+  },
+  {
+    "id": "goal16",
+    "title": "Peace, Justice and Strong Institutions",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/16.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/16.jpg",
+    "descriptionPoints": [
+      "Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels.",
+      "Significantly reduce all forms of violence and related death rates everywhere.",
+      "End abuse, exploitation, trafficking and all forms of violence against and torture of children."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal16",
+      "https://www.un.org/sustainabledevelopment/peace-justice/"
+    ],
+    "textAssetPath": "assets/texts/SDG_16.txt"
+  },
+  {
+    "id": "goal17",
+    "title": "Partnerships for the Goals",
+    "listImageAssetPath": "assets/icons/17_SDG_Icons/17.png",
+    "detailImageAssetPath": "assets/icons/sdg_named/17.jpg",
+    "descriptionPoints": [
+      "Strengthen the means of implementation and revitalize the Global Partnership for Sustainable Development.",
+      "Strengthen domestic resource mobilization, including through international support to developing countries, to improve domestic capacity for tax and other revenue collection.",
+      "Developed countries to implement fully their official development assistance commitments, including the commitment by many developed countries to achieve the target of 0.7 per cent of gross national income for official development assistance (ODA/GNI) to developing countries and 0.15 to 0.20 per cent of ODA/GNI to least developed countries; ODA providers are encouraged to consider setting a target to provide at least 0.20 per cent of ODA/GNI to least developed countries."
+    ],
+    "externalLinks": [
+      "https://sdgs.un.org/goals/goal17",
+      "https://www.un.org/sustainabledevelopment/globalpartnerships/"
+    ],
+    "textAssetPath": "assets/texts/SDG_17.txt"
+  }
+]

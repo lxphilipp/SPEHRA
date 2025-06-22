@@ -1,18 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/services/chat_service.dart';
 
 class ChatPageLayout extends StatefulWidget {
   //final String receiverUserName;
   //final String receiverUserID;
 
   const ChatPageLayout({
-    Key? key,
+    super.key,
     //required this.receiverUserName,
     //required this.receiverUserID,
-  }) : super(key: key);
+  });
 
+  @override
   ChatPageLayoutState createState() => ChatPageLayoutState();
 }
 
@@ -20,6 +18,7 @@ class ChatPageLayoutState extends State<ChatPageLayout> {
   // final TextEditingController _messageController = TextEditingController();
   // final ChatService _service = ChatService();
   // final FirebaseAuth _finalAuth = FirebaseAuth.instance;
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         // backgroundColor: const Color(0xff040324),

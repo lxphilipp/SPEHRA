@@ -142,7 +142,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/school7.dart';
 
 class EnergyPage extends StatelessWidget {
-  const EnergyPage({Key? key}) : super(key: key);
+  const EnergyPage({super.key});
 
   final double fontSize = 22;
 

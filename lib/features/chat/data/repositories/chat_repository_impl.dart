@@ -1,0 +1,370 @@
+// lib/features/chat/data/repositories/chat_repository_impl.dart
+
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../../core/utils/app_logger.dart';
+import '../../domain/entities/chat_room_entity.dart';
+import '../../domain/entities/group_chat_entity.dart';
+import '../../domain/entities/message_entity.dart';
+import '../../domain/entities/chat_user_entity.dart';
+import '../../domain/repositories/chat_repository.dart';
+import '../datasources/chat_remote_data_source.dart'; // Das Interface
+import '../models/chat_room_model.dart';
+import '../models/group_chat_model.dart';
+import '../models/message_model.dart';
+
+class ChatRepositoryImpl implements ChatRepository {
+  final ChatRemoteDataSource remoteDataSource;
+
+  ChatRepositoryImpl({required this.remoteDataSource});
+
+  // --- Mapping Hilfsmethoden (Model zu Entity) ---
+  ChatRoomEntity _mapChatRoomModelToEntity(ChatRoomModel model) {
+    // Wandle die Map<String, dynamic> (mit Timestamps) in eine Map<String, DateTime> um
+    final clearedAtMap = <String, DateTime>{};
+    model.clearedAt.forEach((key, value) {
+      if (value is Timestamp) {
+        clearedAtMap[key] = value.toDate();
+      }
+    });
+
+    return ChatRoomEntity(
+      id: model.id,
+      members: model.members,
+      lastMessage: model.lastMessage,
+      lastMessageTime: model.lastMessageTime,
+      createdAt: model.createdAt,
+      hiddenFor: model.hiddenFor,
+      clearedAt: clearedAtMap,
+    );
+  }
+
+  GroupChatEntity _mapGroupChatModelToEntity(GroupChatModel model) {
+    return GroupChatEntity(
+      id: model.id,
+      name: model.name,
+      imageUrl: model.imageUrl,
+      adminIds: model.adminIds,
+      memberIds: model.memberIds,
+      lastMessage: model.lastMessage,
+      lastMessageTime: model.lastMessageTime,
+      createdAt: model.createdAt,
+    );
+  }
+
+  MessageEntity _mapMessageModelToEntity(MessageModel model) {
+    return MessageEntity(
+      id: model.id,
+      toId: model.toId,
+      fromId: model.fromId,
+      msg: model.msg,
+      type: model.type,
+      createdAt: model.createdAt,
+      readAt: model.readAt,
+    );
+  }
+
+  MessageModel _mapMessageEntityToModel(MessageEntity entity) {
+    // Wird benötigt, wenn Entities an die DataSource übergeben werden
+    return MessageModel(
+      id: entity.id, // ID kann hier leer sein, wenn sie von der DS generiert wird
+      toId: entity.toId,
+      fromId: entity.fromId,
+      msg: entity.msg,
+      type: entity.type,
+      createdAt: entity.createdAt, // DS wird dies ggf. neu setzen
+      readAt: entity.readAt,
+    );
+  }
+
+  GroupChatModel _mapGroupChatEntityToModel(GroupChatEntity entity) {
+    return GroupChatModel(
+      id: entity.id,
+      name: entity.name,
+      imageUrl: entity.imageUrl,
+      adminIds: entity.adminIds,
+      memberIds: entity.memberIds,
+      lastMessage: entity.lastMessage,
+      lastMessageTime: entity.lastMessageTime,
+      createdAt: entity.createdAt,
+    );
+  }
+
+
+  // --- Implementierung der Repository-Methoden ---
+
+  @override
+  Future<String?> createOrGetChatRoom(String currentUserId, String partnerUserId, {MessageEntity? initialMessage}) async {
+    try {
+      // Hier müssen wir currentUserId explizit übergeben, da die DataSource es braucht.
+      return await remoteDataSource.createOrGetChatRoom(
+        currentUserId: currentUserId, // Explizit übergeben
+        partnerUserId: partnerUserId,
+        initialMessage: initialMessage != null ? _mapMessageEntityToModel(initialMessage) : null,
+      );
+    } on ChatDataSourceException catch (e) {
+      print("ChatRepo Error: $e"); // Logging
+      return null;
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler in createOrGetChatRoom: $e");
+      return null;
+    }
+  }
+
+  @override
+  Stream<List<ChatRoomEntity>> getChatRoomsStream(String currentUserId) {
+    try {
+      return remoteDataSource.getChatRoomsStream(currentUserId)
+          .map((models) => models.map(_mapChatRoomModelToEntity).toList())
+          .handleError((error) {
+        print("ChatRepo Error in stream: $error");
+        // Fehler im Stream weitergeben
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Chatraum-Stream: $error");
+      });
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Chatraum-Streams: $e");
+      return Stream.error(Exception("Fehler beim Erstellen des Chatraum-Streams: $e"));
+    }
+  }
+
+  @override
+  Future<void> updateChatRoomWithMessage({ required String roomId, required String lastMessage, required String messageType}) async {
+    try {
+      await remoteDataSource.updateChatRoomWithMessage(roomId: roomId, lastMessage: lastMessage, messageType: messageType);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String?> createGroupChat({ required String name, required List<String> memberIds, required List<String> adminIds,required String currentUserId, String? imageUrl, MessageEntity? initialMessage}) async {
+    try {
+      return await remoteDataSource.createGroupChat(
+        name: name,
+        memberIds: memberIds,
+        adminIds: adminIds,
+        currentUserId: currentUserId,
+        imageUrl: imageUrl,
+        initialMessage: initialMessage != null ? _mapMessageEntityToModel(initialMessage) : null,
+      );
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      return null;
+    }
+  }
+
+  @override
+  Stream<List<GroupChatEntity>> getGroupChatsStream(String currentUserId) {
+    try {
+      return remoteDataSource.getGroupChatsStream(currentUserId)
+          .map((models) => models.map(_mapGroupChatModelToEntity).toList())
+          .handleError((error) {
+        print("ChatRepo Error in stream: $error");
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Gruppenchat-Stream: $error");
+      });
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Gruppenchat-Streams: $e");
+      return Stream.error(Exception("Fehler beim Erstellen des Gruppenchat-Streams: $e"));
+    }
+  }
+
+  @override
+  Future<void> updateGroupChatWithMessage({ required String groupId, required String lastMessage, required String messageType}) async {
+    try {
+      await remoteDataSource.updateGroupChatWithMessage(groupId: groupId, lastMessage: lastMessage, messageType: messageType);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateGroupChatDetails(GroupChatEntity groupChatEntity) async {
+    try {
+      await remoteDataSource.updateGroupChatDetails(_mapGroupChatEntityToModel(groupChatEntity));
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> addMembersToGroup(String groupId, List<String> memberIdsToAdd) async {
+    try {
+      await remoteDataSource.addMembersToGroup(groupId, memberIdsToAdd);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeMemberFromGroup(String groupId, String memberIdToRemove) async {
+    try {
+      await remoteDataSource.removeMemberFromGroup(groupId, memberIdToRemove);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendMessage({ required MessageEntity message, required String contextId, required bool isGroupMessage}) async {
+    try {
+      await remoteDataSource.sendMessage(
+        message: _mapMessageEntityToModel(message),
+        contextId: contextId,
+        isGroupMessage: isGroupMessage,
+      );
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<MessageEntity>> getMessagesStream(String roomId) {
+    try {
+      return remoteDataSource.getMessagesStream(roomId)
+          .map((models) => models.map(_mapMessageModelToEntity).toList())
+          .handleError((error) {
+        print("ChatRepo Error in stream: $error");
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Nachrichten-Stream: $error");
+      });
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Nachrichten-Streams: $e");
+      return Stream.error(Exception("Fehler beim Erstellen des Nachrichten-Streams: $e"));
+    }
+  }
+
+  @override
+  Stream<List<MessageEntity>> getGroupMessagesStream(String groupId) {
+    try {
+      return remoteDataSource.getGroupMessagesStream(groupId)
+          .map((models) => models.map(_mapMessageModelToEntity).toList())
+          .handleError((error) {
+        print("ChatRepo Error in stream: $error");
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Gruppennachrichten-Stream: $error");
+      });
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Gruppennachrichten-Streams: $e");
+      return Stream.error(Exception("Fehler beim Erstellen des Gruppennachrichten-Streams: $e"));
+    }
+  }
+
+  @override
+  Future<void> markMessageAsRead({ required String contextId, required String messageId, required bool isGroupMessage, required String readerUserId}) async {
+    try {
+      await remoteDataSource.markMessageAsRead(contextId: contextId, messageId: messageId, isGroupMessage: isGroupMessage, readerUserId: readerUserId);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteMessage({ required String contextId, required String messageId, required bool isGroupMessage}) async {
+    try {
+      await remoteDataSource.deleteMessage(contextId: contextId, messageId: messageId, isGroupMessage: isGroupMessage);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ChatUserEntity?> getChatUserById(String userId) async {
+    try {
+      // Die DataSource liefert bereits ChatUserEntity (nachdem sie UserModel -> ChatUserEntity gemappt hat)
+      return await remoteDataSource.getChatUserById(userId);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      return null;
+    }
+  }
+
+  @override
+  Stream<List<ChatUserEntity>> getChatUsersStreamByIds(List<String> userIds) {
+    try {
+      // Die DataSource liefert bereits Stream<List<ChatUserEntity>>
+      return remoteDataSource.getChatUsersStreamByIds(userIds)
+          .handleError((error) {
+        print("ChatRepo Error in stream: $error");
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Chat-User-Stream: $error");
+      });
+    } catch (e) {
+      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Chat-User-Streams: $e");
+      return Stream.error(Exception("Fehler beim Erstellen des Chat-User-Streams: $e"));
+    }
+  }
+
+  @override
+  Future<List<ChatUserEntity>> findChatUsersByNamePrefix(String namePrefix, {List<String> excludeIds = const []}) async {
+    try {
+      // Die DataSource liefert bereits List<ChatUserEntity>
+      return await remoteDataSource.findChatUsersByNamePrefix(namePrefix);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      return []; // Leere Liste bei Fehler
+    }
+  }
+
+  @override
+  Future<String?> uploadChatImage({ required File imageFile, required String contextId, required String uploaderUserId}) async {
+    try {
+      return await remoteDataSource.uploadChatImage(imageFile: imageFile, contextId: contextId, uploaderUserId: uploaderUserId);
+    } catch (e) {
+      print("ChatRepo Error: $e");
+      return null;
+    }
+  }
+  @override
+  Stream<GroupChatEntity?> watchGroupChatById({required String groupId}) {
+    try {
+      return remoteDataSource.watchGroupChatById(groupId).map((model) {
+        // Mappe das Model zu Entity, wenn es nicht null ist
+        return model != null ? _mapGroupChatModelToEntity(model) : null;
+      }).handleError((error) {
+        AppLogger.error("ChatRepo: Fehler im watchGroupChatById Stream für $groupId", error);
+        if (error is ChatDataSourceException) throw error;
+        throw Exception("Unbekannter Fehler im Stream der Gruppendetails: $error");
+      });
+    } catch (e) {
+      AppLogger.error("ChatRepo: Fehler beim Erstellen des watchGroupChatById Streams für $groupId", e);
+      return Stream.error(Exception("Fehler beim Erstellen des Streams für Gruppendetails: $e"));
+    }
+  }
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    await remoteDataSource.deleteGroup(groupId);
+  }
+
+  @override
+  Future<void> hideChatForUser(String roomId, String userId) async {
+    await remoteDataSource.hideChatForUser(roomId, userId);
+  }
+
+  @override
+  Future<void> unhideChatForUser(String roomId, String userId) async {
+    await remoteDataSource.unhideChatForUser(roomId, userId);
+  }
+
+  @override
+  Future<void> setChatClearedTimestamp(String roomId, String userId) async {
+    await remoteDataSource.setChatClearedTimestamp(roomId, userId);
+  }
+
+  @override
+  Stream<ChatRoomEntity?> watchChatRoomById(String roomId) {
+    return remoteDataSource
+        .watchChatRoomById(roomId)
+        .map((model) => model != null ? _mapChatRoomModelToEntity(model) : null);
+  }
+}

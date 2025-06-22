@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/layout/intro_layout.dart';
-import '../login/signin.dart';
-import '../transistions/route_transitions.dart';
+import '../features/auth/presentation/screens/sign_in_screen.dart';
+import '../core/navigation/route_transitions.dart';
 
 class LimeGreenGradientBoxScreen extends StatelessWidget {
   const LimeGreenGradientBoxScreen({super.key});

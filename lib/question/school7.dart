@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/SDG8.dart';
 
 class SchoolPage extends StatelessWidget {
-  const SchoolPage({Key? key}) : super(key: key);
+  const SchoolPage({super.key});
 
   final double fontSize = 22;
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff040324),

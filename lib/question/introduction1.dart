@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/gettingStarted3.dart';
-import 'package:flutter_sdg/question/name2.dart';
 
 class IntroductionPage extends StatelessWidget {
-  const IntroductionPage({Key? key}) : super(key: key);
+  const IntroductionPage({super.key});
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(

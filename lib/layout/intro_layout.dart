@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/intro/background_image.dart';
+import 'package:flutter_sdg/core/widgets/background_image.dart';
 
 class IntroLayout extends StatelessWidget {
   final Widget body;
 
   const IntroLayout({
-    Key? key,
+    super.key,
     required this.body,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

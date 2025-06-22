@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:flutter_sdg/homepage/homepage.dart';
+// import 'package:flutter_sdg/homepage/home_screen.dart';
 
 // class YourConcernsPage extends StatelessWidget {
 //   const YourConcernsPage({Key? key}) : super(key: key);
@@ -221,10 +221,10 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/homepage/homepage.dart';
+import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart';
 
 class YourConcernsPage extends StatefulWidget {
-  const YourConcernsPage({Key? key}) : super(key: key);
+  const YourConcernsPage({super.key});
 
   @override
   State<YourConcernsPage> createState() => _YourConcernsPageState();
@@ -292,7 +292,7 @@ class _YourConcernsPageState extends State<YourConcernsPage> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const HomePageScreen(),
+                builder: (context) => const HomeScreen(),
               ),
             ),
             child: const Text(
@@ -345,7 +345,7 @@ class _YourConcernsPageState extends State<YourConcernsPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomePageScreen(),
+                          builder: (context) => const HomeScreen(),
                         ),
                       );
                     }

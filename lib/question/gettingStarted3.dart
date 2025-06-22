@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/question/transport4.dart';
 
 class GettingStartedPage extends StatelessWidget {
-  const GettingStartedPage({Key? key}) : super(key: key);
+  const GettingStartedPage({super.key});
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xff040324),
