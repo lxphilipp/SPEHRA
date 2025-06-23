@@ -205,10 +205,102 @@ class IndividualChatProvider with ChangeNotifier {
     }
   }
 
-  // --- Bestehende Methoden (sendTextMessage, sendSelectedImage etc. bleiben gleich) ---
-  Future<void> sendTextMessage(String text) async { /* ... unverändert ... */ }
-  void setImageForPreview(File? imageFile) { /* ... unverändert ... */ }
-  Future<void> sendSelectedImage() async { /* ... unverändert ... */ }
+  Future<void> sendTextMessage(String text) async {
+    // Grundlegende Validierung
+    if (text.trim().isEmpty || currentUserId.isEmpty) {
+      return;
+    }
+
+    _isSendingMessage = true;
+    _error = null; // Sendefehler sind separat von Ladefehlern
+    notifyListeners();
+
+    // Erstelle die Message-Entity
+    final message = MessageEntity(
+      id: '', // Wird im Repository/DataSource generiert
+      fromId: currentUserId,
+      toId: chatPartner.id, // Wichtig für 1-zu-1-Chats
+      msg: text.trim(),
+      type: 'text',
+      createdAt: DateTime.now(), // Client-Zeit, wird in DS ggf. durch Server-Zeit ersetzt
+    );
+
+    try {
+      // Rufe den UseCase auf.
+      // Dieser ruft intern die sendMessage-Methode auf, die wiederum den Chat "unhidet".
+      await _sendMessageUseCase(
+        message: message,
+        contextId: roomId,
+        isGroupMessage: false,
+      );
+      AppLogger.info("IndividualChatProvider: Text message sent to ${chatPartner.name}");
+    } catch (e, stackTrace) {
+      AppLogger.error("IndividualChatProvider: Error sending text message", e, stackTrace);
+      _error = "Nachricht konnte nicht gesendet werden.";
+    } finally {
+      // Setze den Ladezustand zurück, egal was passiert.
+      _isSendingMessage = false;
+      notifyListeners();
+    }
+  }
+
+  /// Setzt ein Bild für die Vorschau in der UI.
+  void setImageForPreview(File? imageFile) {
+    _imagePreview = imageFile;
+    notifyListeners();
+  }
+
+  /// Lädt das ausgewählte Bild hoch und sendet es als Bildnachricht.
+  Future<void> sendSelectedImage() async {
+    // Grundlegende Validierung
+    if (_imagePreview == null || currentUserId.isEmpty) {
+      return;
+    }
+
+    _isSendingMessage = true;
+    _error = null;
+    File imageToSend = _imagePreview!;
+    // Entferne die Vorschau sofort, während gesendet wird.
+    setImageForPreview(null);
+    notifyListeners(); // UI sofort aktualisieren
+
+    try {
+      AppLogger.debug("IndividualChatProvider: Uploading image for chat with ${chatPartner.name}");
+      // 1. Bild hochladen und URL erhalten
+      final imageUrl = await _uploadChatImageUseCase(
+        imageFile: imageToSend,
+        contextId: roomId,
+        uploaderUserId: currentUserId,
+      );
+
+      // 2. Wenn der Upload erfolgreich war, sende die Bild-Nachricht
+      if (imageUrl != null) {
+        final message = MessageEntity(
+          id: '',
+          fromId: currentUserId,
+          toId: chatPartner.id,
+          msg: imageUrl, // Die URL ist der Inhalt der Nachricht
+          type: 'image',
+          createdAt: DateTime.now(),
+        );
+
+        await _sendMessageUseCase(
+          message: message,
+          contextId: roomId,
+          isGroupMessage: false,
+        );
+        AppLogger.info("IndividualChatProvider: Image message sent to ${chatPartner.name}");
+      } else {
+        _error = "Bild-Upload fehlgeschlagen.";
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error("IndividualChatProvider: Error sending image message", e, stackTrace);
+      _error = "Bildnachricht konnte nicht gesendet werden.";
+    } finally {
+      _isSendingMessage = false;
+      notifyListeners();
+    }
+  }
 
   // --- Dispose ---
   @override

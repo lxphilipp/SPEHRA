@@ -55,7 +55,6 @@ class _IndividualChatContentWidgetState extends State<IndividualChatContentWidge
   }
 
   void _sendMessage() {
-    // Verwende context.read für Aktionen, um unnötige Rebuilds zu vermeiden.
     final provider = context.read<IndividualChatProvider>();
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
