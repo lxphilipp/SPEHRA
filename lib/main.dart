@@ -13,6 +13,10 @@ import 'features/chat/domain/usecases/delete_group_usecase.dart';
 import 'features/chat/domain/usecases/hide_chat_usecase.dart';
 import 'features/chat/domain/usecases/set_chat_cleared_timestamp_usecase.dart';
 import 'features/chat/domain/usecases/watch_chat_room_by_id_usecase.dart';
+import 'features/introduction/data/datasources/intro_local_datasource.dart';
+import 'features/introduction/data/repositories/intro_repository_impl.dart';
+import 'features/introduction/domain/repositories/intro_repository.dart';
+import 'features/introduction/domain/usecases/get_intro_pages_usecase.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
 
@@ -264,6 +268,11 @@ Future<void> main() async {
             sdgListProvider: sdgList,
           ),
         ),
+
+        // --- INTRODUCTION FEATURE --- //
+        Provider<IntroLocalDataSource>(create: (_) => IntroLocalDataSourceImpl()),
+        Provider<IntroRepository>(create: (context) => IntroRepositoryImpl(localDataSource: context.read<IntroLocalDataSource>())),
+        Provider<GetIntroPagesUseCase>(create: (context) => GetIntroPagesUseCase(context.read<IntroRepository>())),
 
         // --- CHAT FEATURE ---
         // DataSources

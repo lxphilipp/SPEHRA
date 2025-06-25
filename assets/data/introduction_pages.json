@@ -1,0 +1,42 @@
+[
+  {
+    "id": "question_intro",
+    "type": "question",
+    "widgetName": "IntroductionPageContent"
+  },
+  {
+    "id": "question_start",
+    "type": "question",
+    "widgetName": "GettingStartedPageContent"
+  },
+  {
+    "id": "question_transport",
+    "type": "question",
+    "widgetName": "TransportPageContent"
+  },
+  {
+    "id": "question_diet",
+    "type": "question",
+    "widgetName": "DietPageContent"
+  },
+  {
+    "id": "question_energy",
+    "type": "question",
+    "widgetName": "EnergyPageContent"
+  },
+  {
+    "id": "question_school",
+    "type": "question",
+    "widgetName": "SchoolPageContent"
+  },
+  {
+    "id": "question_sdg",
+    "type": "question",
+    "widgetName": "SDGPageContent"
+  },
+  {
+    "id": "question_concerns",
+    "type": "question",
+    "widgetName": "YourConcernsPageContent"
+  }
+]

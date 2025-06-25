@@ -5,6 +5,7 @@ import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart'
 import 'package:flutter_sdg/question/introduction1.dart'; // Pfad anpassen
 import 'package:flutter_sdg/features/auth/presentation/screens/registration_screen.dart'; // Pfad anpassen
 import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_screen.dart'; // Pfad anpassen
+import '../../../introduction/presentation/screens/introduction_main_screen.dart';
 import '../providers/auth_provider.dart';
 
 class SignInForm extends StatefulWidget {
@@ -61,7 +62,7 @@ class _SignInFormState extends State<SignInForm> {
       if (user != null) {
         if (user.metadata.creationTime == user.metadata.lastSignInTime) {
           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const IntroductionPage()));
+              MaterialPageRoute(builder: (context) => const IntroductionMainScreen()));
         } else {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const HomeScreen()));

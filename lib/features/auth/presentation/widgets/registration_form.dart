@@ -111,11 +111,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
   @override
   Widget build(BuildContext context) {
 
-    // Beispielhafter Aufbau (passe ihn an dein aktuelles UI an!):
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch, // Macht Buttons breiter
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 20),
           const Text(
