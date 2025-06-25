@@ -5,7 +5,7 @@ class ChatRoomModel {
   final List<String> members;
   final String? lastMessage;
   final DateTime? lastMessageTime;
-  final DateTime createdAt; // Sollte beim Erstellen nie null sein
+  final DateTime createdAt;
 
   // --- NEUE FELDER ---
   final List<String> hiddenFor;
@@ -29,8 +29,6 @@ class ChatRoomModel {
       members: List<String>.from(json['members'] ?? []),
       lastMessage: json['last_message'] as String?,
       lastMessageTime: (json['last_message_time'] as Timestamp?)?.toDate(),
-      // Wenn 'created_at' aus irgendeinem Grund fehlt, nehmen wir die aktuelle Zeit als Fallback,
-      // aber eine Warnung wäre hier gut. In der Regel sollte es immer da sein.
       createdAt: (json['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
 
       // --- NEUE FELDER AUS JSON LESEN ---

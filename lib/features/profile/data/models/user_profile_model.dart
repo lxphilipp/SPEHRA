@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals;
 
 @immutable
@@ -13,7 +16,7 @@ class UserProfileModel {
   final int level;
   final List<String> ongoingTasks;
   final List<String> completedTasks;
-  final String? createdAt;
+  final DateTime? createdAt;
 
   const UserProfileModel({
     required this.id,
@@ -31,6 +34,7 @@ class UserProfileModel {
   });
 
   factory UserProfileModel.fromMap(Map<String, dynamic> map, String documentId) {
+    // Robust parsing for numbers
     final ageNum = map['age'] as num?;
     final pointsNum = map['points'] as num?;
     final levelNum = map['level'] as num?;
@@ -47,20 +51,24 @@ class UserProfileModel {
       level: levelNum?.toInt() ?? 1,
       ongoingTasks: List<String>.from(map['ongoingTasks'] ?? []),
       completedTasks: List<String>.from(map['completedTasks'] ?? []),
-      createdAt: map['createdAt'] as String?,
+      // CORRECTED: Fallback to null instead of DateTime.now()
+      createdAt: (map['created_at'] as Timestamp?)?.toDate(),
     );
   }
 
+  /// Creates a map for partial updates.
   Map<String, dynamic> toUpdateMap() {
     return {
       'name': name,
       'age': age,
       'studyField': studyField,
       'school': school,
-      if (imageURL != null) 'imageURL': imageURL,
+      // By not having an `if`, this allows setting the imageURL to null.
+      'imageURL': imageURL,
     };
   }
 
+  /// Creates a map containing all data, suitable for creating a new document.
   Map<String, dynamic> toFullMap() {
     return {
       'name': name,
@@ -68,15 +76,15 @@ class UserProfileModel {
       'age': age,
       'studyField': studyField,
       'school': school,
-      if (imageURL != null) 'imageURL': imageURL,
+      'imageURL': imageURL,
       'points': points,
       'level': level,
       'ongoingTasks': ongoingTasks,
       'completedTasks': completedTasks,
-      if (createdAt != null) 'createdAt': createdAt,
+      // CORRECTED: Explicitly use Timestamp.fromDate for writing to Firestore
+      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
     };
   }
-
 
   UserProfileModel copyWith({
     String? id,
@@ -91,7 +99,8 @@ class UserProfileModel {
     int? level,
     List<String>? ongoingTasks,
     List<String>? completedTasks,
-    String? createdAt,
+    // CORRECTED: Parameter type changed from String? to DateTime?
+    DateTime? createdAt,
   }) {
     return UserProfileModel(
       id: id ?? this.id,
@@ -130,7 +139,10 @@ class UserProfileModel {
   @override
   int get hashCode => Object.hash(
     id, name, email, age, studyField, school, imageURL,
-    points, level, Object.hashAll(ongoingTasks), Object.hashAll(completedTasks),
-    createdAt, /* about */
+    points, level,
+    // Hashing the lists like this is robust.
+    Object.hashAll(ongoingTasks),
+    Object.hashAll(completedTasks),
+    createdAt,
   );
 }

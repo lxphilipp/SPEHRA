@@ -1,30 +1,57 @@
-import 'dart:async';
+// lib/features/challenges/presentation/providers/challenge_provider.dart
+
+
 import 'package:flutter/material.dart';
+
+// Core & Dependencies
 import '/core/utils/app_logger.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
+
+// Domain & Entities
 import '../../domain/entities/challenge_entity.dart';
 import '../../domain/usecases/get_all_challenges_stream_usecase.dart';
 import '../../domain/usecases/get_challenge_by_id_usecase.dart';
 import '../../domain/usecases/create_challenge_usecase.dart';
-// Importiere die Use Cases für Challenge-Interaktionen (Accept, Complete, Remove)
-import '../../domain/usecases/accept_challenge_usecase.dart'; // Annahme: Diese existieren jetzt
+import '../../domain/usecases/accept_challenge_usecase.dart';
 import '../../domain/usecases/complete_challenge_usecase.dart';
 import '../../domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 
-
+/// Manages state related to challenges.
+///
+/// This provider handles:
+/// - Providing a stream of all available challenges.
+/// - Fetching details for a single selected challenge.
+/// - Managing state for creating and interacting with challenges (accept, complete, etc.).
+/// It is designed to be updated by a `ChangeNotifierProxyProvider2` that watches
+/// `AuthenticationProvider` and `UserProfileProvider`.
 class ChallengeProvider with ChangeNotifier {
+  // --- UseCases ---
   final GetAllChallengesStreamUseCase _getAllChallengesStreamUseCase;
   final GetChallengeByIdUseCase _getChallengeByIdUseCase;
   final CreateChallengeUseCase _createChallengeUseCase;
-  // Use Cases für User-Interaktionen mit Challenges
   final AcceptChallengeUseCase _acceptChallengeUseCase;
   final CompleteChallengeUseCase _completeChallengeUseCase;
   final RemoveChallengeFromOngoingUseCase _removeChallengeFromOngoingUseCase;
 
-  final AuthenticationProvider _authProvider;
-  final UserProfileProvider _userProfileProvider; // Für Task-Updates und Punkte/Level
+  // --- Internal Provider References ---
+  // These will be kept up-to-date by the `updateDependencies` method.
+  late AuthenticationProvider _authProvider;
+  late UserProfileProvider _userProfileProvider;
 
+  // --- State ---
+  Stream<List<ChallengeEntity>> _allChallengesStream = Stream.empty();
+  ChallengeEntity? _selectedChallenge;
+  bool _isLoadingSelectedChallenge = false;
+  String? _selectedChallengeError;
+
+  bool _isCreatingChallenge = false;
+  String? _createChallengeError;
+
+  bool _isUpdatingUserChallengeStatus = false;
+  String? _userChallengeStatusError;
+
+  /// The constructor is now simple and only requires its own UseCases.
   ChallengeProvider({
     required GetAllChallengesStreamUseCase getAllChallengesStreamUseCase,
     required GetChallengeByIdUseCase getChallengeByIdUseCase,
@@ -32,49 +59,51 @@ class ChallengeProvider with ChangeNotifier {
     required AcceptChallengeUseCase acceptChallengeUseCase,
     required CompleteChallengeUseCase completeChallengeUseCase,
     required RemoveChallengeFromOngoingUseCase removeChallengeFromOngoingUseCase,
-    required AuthenticationProvider authProvider,
-    required UserProfileProvider userProfileProvider,
   })  : _getAllChallengesStreamUseCase = getAllChallengesStreamUseCase,
         _getChallengeByIdUseCase = getChallengeByIdUseCase,
         _createChallengeUseCase = createChallengeUseCase,
         _acceptChallengeUseCase = acceptChallengeUseCase,
         _completeChallengeUseCase = completeChallengeUseCase,
-        _removeChallengeFromOngoingUseCase = removeChallengeFromOngoingUseCase,
-        _authProvider = authProvider,
-        _userProfileProvider = userProfileProvider;
-
-  // --- State für Challenge-Liste ---
-  Stream<List<ChallengeEntity>?> get allChallengesStream {
-    AppLogger.info("ChallengeProvider: Creating challenges stream");
-    return _getAllChallengesStreamUseCase().map((challenges) {
-      AppLogger.info("ChallengeProvider: Stream received ${challenges?.length ?? 0} challenges");
-      if (challenges != null && challenges.isNotEmpty) {
-        AppLogger.debug("ChallengeProvider: Challenge IDs: ${challenges.map((c) => c.id).join(', ')}");
-      }
-      return challenges;
-    });
+        _removeChallengeFromOngoingUseCase = removeChallengeFromOngoingUseCase {
+    _initializeStreams();
   }
 
-  // --- State für ausgewählte Challenge-Details ---
-  ChallengeEntity? _selectedChallenge;
+  /// Initialize streams that don't depend on user login state.
+  void _initializeStreams() {
+    AppLogger.info("ChallengeProvider: Initializing all-challenges stream once.");
+    // The stream is created once and converted to a broadcast stream
+    // to allow multiple listeners throughout the app's lifecycle.
+    _allChallengesStream = _getAllChallengesStreamUseCase()
+        .map((challenges) => challenges ?? [])
+        .asBroadcastStream();
+  }
+
+  // --- Getters for the UI ---
+  Stream<List<ChallengeEntity>> get allChallengesStream => _allChallengesStream;
+
   ChallengeEntity? get selectedChallenge => _selectedChallenge;
-  bool _isLoadingSelectedChallenge = false;
   bool get isLoadingSelectedChallenge => _isLoadingSelectedChallenge;
-  String? _selectedChallengeError;
   String? get selectedChallengeError => _selectedChallengeError;
 
-  // --- State für das Erstellen einer Challenge ---
-  bool _isCreatingChallenge = false;
   bool get isCreatingChallenge => _isCreatingChallenge;
-  String? _createChallengeError;
   String? get createChallengeError => _createChallengeError;
 
-  // --- State für User-Interaktionen ---
-  bool _isUpdatingUserChallengeStatus = false;
   bool get isUpdatingUserChallengeStatus => _isUpdatingUserChallengeStatus;
-  String? _userChallengeStatusError;
   String? get userChallengeStatusError => _userChallengeStatusError;
 
+  // --- Dependency Update Method ---
+
+  /// The gateway for receiving updates from other providers.
+  /// Called by `ChangeNotifierProxyProvider2`.
+  void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
+    _authProvider = auth;
+    _userProfileProvider = profile;
+    // No specific logic is needed here on every update unless a feature
+    // in this provider directly depends on the user's ID changing.
+    // The internal references are now fresh for other methods to use.
+  }
+
+  // --- Public Methods for UI Interaction ---
 
   Future<void> fetchChallengeDetails(String challengeId) async {
     _isLoadingSelectedChallenge = true;
@@ -86,7 +115,7 @@ class ChallengeProvider with ChangeNotifier {
     if (challenge != null) {
       _selectedChallenge = challenge;
     } else {
-      _selectedChallengeError = "Challenge nicht gefunden oder Fehler beim Laden.";
+      _selectedChallengeError = "Challenge not found or failed to load.";
     }
     _isLoadingSelectedChallenge = false;
     notifyListeners();
@@ -107,23 +136,25 @@ class ChallengeProvider with ChangeNotifier {
 
     _isCreatingChallenge = false;
     if (newChallengeId != null) {
-      notifyListeners(); // UI informieren, dass sich die Challenge-Liste ändern könnte
+      // The allChallengesStream will update automatically.
+      notifyListeners();
       return true;
     } else {
-      _createChallengeError = "Challenge konnte nicht erstellt werden.";
+      _createChallengeError = "Could not create challenge.";
       notifyListeners();
       return false;
     }
   }
 
-  // --- Methoden für User-Interaktionen ---
+  // --- Methods for User Interactions ---
   Future<bool> acceptChallenge(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
-      _userChallengeStatusError = "Benutzer nicht eingeloggt.";
+      _userChallengeStatusError = "User not logged in.";
       notifyListeners();
       return false;
     }
+
     _isUpdatingUserChallengeStatus = true;
     _userChallengeStatusError = null;
     notifyListeners();
@@ -131,20 +162,23 @@ class ChallengeProvider with ChangeNotifier {
     final success = await _acceptChallengeUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
 
     _isUpdatingUserChallengeStatus = false;
-    if (success) {
-      // Triggere ein Neuladen des User-Profils, damit die Task-Listen aktuell sind
-      await _userProfileProvider.fetchUserProfileManually();
-    } else {
-      _userChallengeStatusError = "Challenge konnte nicht angenommen werden.";
+    if (!success) {
+      _userChallengeStatusError = "Could not accept challenge.";
     }
+
+    // REMOVED: `await _userProfileProvider.fetchUserProfileManually();`
+    // The UserProfileProvider should reactively listen to its own data source.
+    // When this use case succeeds, it changes data in the backend, which the
+    // UserProfileProvider's stream will automatically pick up. This decouples the providers.
+
     notifyListeners();
     return success;
   }
 
   Future<bool> completeChallenge(String challengeId) async {
     final userId = _authProvider.currentUserId;
-    if (userId == null) { // Kein User eingeloggt
-      _userChallengeStatusError = "Benutzer nicht eingeloggt.";
+    if (userId == null) {
+      _userChallengeStatusError = "User not logged in.";
       notifyListeners();
       return false;
     }
@@ -153,18 +187,17 @@ class ChallengeProvider with ChangeNotifier {
     _userChallengeStatusError = null;
     notifyListeners();
 
-    // Rufe den Use Case NUR mit userId und challengeId auf
     final success = await _completeChallengeUseCase(CompleteChallengeParams(
       userId: userId,
       challengeId: challengeId,
     ));
 
     _isUpdatingUserChallengeStatus = false;
-    if (success) {
-      await _userProfileProvider.fetchUserProfileManually();
-    } else {
-      _userChallengeStatusError = "Challenge konnte nicht als erledigt markiert werden.";
+    if (!success) {
+      _userChallengeStatusError = "Could not mark challenge as completed.";
     }
+
+    // The reactive UserProfileProvider will handle its own state update.
     notifyListeners();
     return success;
   }
@@ -172,10 +205,11 @@ class ChallengeProvider with ChangeNotifier {
   Future<bool> removeChallengeFromOngoing(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
-      _userChallengeStatusError = "Benutzer nicht eingeloggt.";
+      _userChallengeStatusError = "User not logged in.";
       notifyListeners();
       return false;
     }
+
     _isUpdatingUserChallengeStatus = true;
     _userChallengeStatusError = null;
     notifyListeners();
@@ -183,11 +217,11 @@ class ChallengeProvider with ChangeNotifier {
     final success = await _removeChallengeFromOngoingUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
 
     _isUpdatingUserChallengeStatus = false;
-    if (success) {
-      await _userProfileProvider.fetchUserProfileManually();
-    } else {
-      _userChallengeStatusError = "Challenge konnte nicht von 'Laufend' entfernt werden.";
+    if (!success) {
+      _userChallengeStatusError = "Could not remove challenge from 'Ongoing'.";
     }
+
+    // The reactive UserProfileProvider will handle its own state update.
     notifyListeners();
     return success;
   }

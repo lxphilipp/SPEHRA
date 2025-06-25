@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Wird noch für user.metadata benötigt
-import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart'; // Pfad anpassen
-import 'package:flutter_sdg/question/introduction1.dart'; // Pfad anpassen
-import 'package:flutter_sdg/features/auth/presentation/screens/registration_screen.dart'; // Pfad anpassen
-import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_screen.dart'; // Pfad anpassen
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart';
+import 'package:flutter_sdg/features/auth/presentation/screens/registration_screen.dart';
+import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_screen.dart';
 import '../../../introduction/presentation/screens/introduction_main_screen.dart';
 import '../providers/auth_provider.dart';
 

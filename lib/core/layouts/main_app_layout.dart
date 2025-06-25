@@ -185,29 +185,10 @@ class _AppBarLogo extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        // Prüfe, ob der aktuelle oberste Screen bereits der HomeScreen ist.
-        // ModalRoute.of(context) kann null sein, wenn das Widget nicht Teil einer Route ist (selten).
-        // Die Prüfung auf `is Current` ist eine gängige Methode.
         final ModalRoute<dynamic>? currentRoute = ModalRoute.of(context);
         bool isAlreadyHome = false;
         if (currentRoute is MaterialPageRoute) { // Oder CupertinoPageRoute etc.
-          // Vergleiche den Typ des Builders oder den Screen selbst, wenn möglich
-          // Dies ist nicht 100% sicher, wenn der Builder eine anonyme Funktion ist,
-          // aber für direkt instanziierte Widgets oft ausreichend.
-          // Eine robustere Methode wäre, wenn HomeScreen eine eindeutige Eigenschaft hätte
-          // oder wenn du einen Navigations-Observer verwendest, um den aktuellen Screen zu tracken.
-          // Für den Moment versuchen wir es mit einem Typvergleich, wenn der Builder bekannt ist.
-          // Alternativ: Wenn HomeScreen IMMER die initiale Route ist, ist der Name oft '/'.
           if (currentRoute.settings.name == '/' || currentRoute.settings.name == null && Navigator.of(context).canPop() == false) {
-            // Annahme: '/' ist die initiale Route für HomeScreen oder es ist die einzige Route im Stack
-            // Diese Annahme ist nicht immer sicher.
-            // Besser: Vergleiche den Widget-Typ, wenn möglich.
-            // Wenn der Builder direkt `HomeScreen()` ist:
-            // if (currentRoute.builder(context) is HomeScreen) { isAlreadyHome = true; }
-            // Da der Builder aber oft komplexer ist, ist diese Prüfung schwierig.
-
-            // Einfachere, aber weniger exakte Methode für den Moment:
-            // Wenn wir nicht zurück poppen können, sind wir wahrscheinlich auf der obersten/ersten Seite.
             if (!Navigator.of(context).canPop()) {
               isAlreadyHome = true;
             }
@@ -244,10 +225,10 @@ class _AppBarUserStats extends StatelessWidget {
     final authProvider = Provider.of<AuthenticationProvider>(context, listen: false); // listen: false, nur für isLoggedIn
 
     final UserProfileEntity? userProfile = profileProvider.userProfile;
-    double iconHeight = kToolbarHeight - 36.0; // Noch kleiner für Stats
+    double iconHeight = kToolbarHeight - 36.0;
 
     if (!authProvider.isLoggedIn) {
-      return const SizedBox.shrink(); // Nichts anzeigen, wenn nicht eingeloggt
+      return const SizedBox.shrink();
     }
 
     if (profileProvider.isLoadingProfile && userProfile == null) {

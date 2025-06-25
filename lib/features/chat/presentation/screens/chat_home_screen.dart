@@ -115,14 +115,6 @@ class ChatHomeScreen extends StatelessWidget {
           _navigateToChat(context, tappedRoomId, tappedChatPartner);
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.bug_report),
-        onPressed: () {
-          // Rufe die Test-Methode im Provider auf
-          context.read<ChatRoomListProvider>().testRemoveFirstChat();
-        },
-      ),
     );
   }
 }

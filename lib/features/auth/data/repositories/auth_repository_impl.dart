@@ -118,15 +118,20 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final currentUser = await remoteDataSource.getCurrentFirebaseUser();
       if (currentUser != null) {
-        // Rufe die neue Methode auf, bevor Firebase sign out aufgerufen wird
-        await remoteDataSource.updateUserPresence(
-          userId: currentUser.uid,
-          isOnline: false,
-        );
+        try {
+          await remoteDataSource.updateUserPresence(
+            userId: currentUser.uid,
+            isOnline: false,
+          );
+        } catch (e, stackTrace) {
+          AppLogger.error("AuthRepo: Fehler beim Aktualisieren der Präsenz vor dem Ausloggen.", e, stackTrace);
+        }
       }
+    } finally {
+      // Der finally-Block wird IMMER ausgeführt, egal ob der try-Block
+      // erfolgreich war oder eine Exception geworfen hat.
+      AppLogger.info("AuthRepo: Signing out user.");
       await remoteDataSource.signOut();
-    } catch (e, stackTrace) {
-      AppLogger.error("AuthRepo: Fehler beim Ausloggen oder Aktualisieren der Präsenz: $e", e, stackTrace);
     }
   }
 }

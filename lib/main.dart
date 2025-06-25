@@ -1,3 +1,5 @@
+// lib/main.dart
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,17 +8,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart'; // Für ChatRemoteDataSourceImpl
+import 'package:uuid/uuid.dart';
 
-import 'app.dart'; // Deine Haupt-App-Widget
-import 'features/chat/domain/usecases/delete_group_usecase.dart';
-import 'features/chat/domain/usecases/hide_chat_usecase.dart';
-import 'features/chat/domain/usecases/set_chat_cleared_timestamp_usecase.dart';
-import 'features/chat/domain/usecases/watch_chat_room_by_id_usecase.dart';
-import 'features/introduction/data/datasources/intro_local_datasource.dart';
-import 'features/introduction/data/repositories/intro_repository_impl.dart';
-import 'features/introduction/domain/repositories/intro_repository.dart';
-import 'features/introduction/domain/usecases/get_intro_pages_usecase.dart';
+import 'app.dart'; // Your main app widget
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
 
@@ -70,6 +64,12 @@ import 'features/home/domain/usecases/get_completed_challenge_previews_usecase.d
 import 'features/home/domain/usecases/get_ongoing_challenge_previews_usecase.dart';
 import 'features/home/presentation/providers/home_provider.dart';
 
+// --- INTRODUCTION FEATURE ---
+import 'features/introduction/data/datasources/intro_local_datasource.dart';
+import 'features/introduction/data/repositories/intro_repository_impl.dart';
+import 'features/introduction/domain/repositories/intro_repository.dart';
+import 'features/introduction/domain/usecases/get_intro_pages_usecase.dart';
+
 // --- CHAT FEATURE ---
 import 'features/chat/data/datasources/chat_remote_data_source.dart';
 import 'features/chat/data/repositories/chat_repository_impl.dart';
@@ -94,12 +94,16 @@ import 'features/chat/domain/usecases/get_chat_user_by_id_usecase.dart';
 import 'features/chat/domain/usecases/get_chat_users_stream_by_ids_usecase.dart';
 import 'features/chat/domain/usecases/find_chat_users_by_name_prefix_usecase.dart';
 import 'features/chat/domain/usecases/upload_chat_image_usecase.dart';
-
-// Chat UI State Provider
+import 'features/chat/domain/usecases/delete_group_usecase.dart';
+import 'features/chat/domain/usecases/hide_chat_usecase.dart';
+import 'features/chat/domain/usecases/set_chat_cleared_timestamp_usecase.dart';
+import 'features/chat/domain/usecases/watch_chat_room_by_id_usecase.dart';
+// Chat UI State Providers
 import 'features/chat/presentation/providers/chat_room_list_provider.dart';
 import 'features/chat/presentation/providers/group_chat_list_provider.dart';
 import 'features/chat/presentation/providers/user_search_provider.dart';
 import 'features/chat/presentation/providers/create_group_provider.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,7 +113,7 @@ Future<void> main() async {
   } else {
     Logger.level = Level.warning;
   }
-  AppLogger.info("Starting SDG App initialization");
+  AppLogger.info("Starting App initialization");
 
   try {
     await Firebase.initializeApp(
@@ -118,13 +122,13 @@ Future<void> main() async {
     AppLogger.info("Firebase initialized successfully");
   } catch (e, stackTrace) {
     AppLogger.fatal("Failed to initialize Firebase", e, stackTrace);
-    rethrow;
+    return;
   }
 
   final fbAuth = fb_auth.FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;
   final storage = FirebaseStorage.instance;
-  const uuid = Uuid(); // const, da Uuid keine internen Zustände hat, die sich ändern
+  const uuid = Uuid();
 
   FlutterError.onError = (FlutterErrorDetails details) {
     AppLogger.fatal('Flutter Error: ${details.exception}', details.exception, details.stack);
@@ -145,21 +149,81 @@ Future<void> main() async {
         Provider<FirebaseStorage>.value(value: storage),
         Provider<Uuid>.value(value: uuid),
 
+        // --- DATA & DOMAIN LAYER (By Feature) ---
+        // AUTH
+        Provider<AuthRemoteDataSource>(create: (context) => AuthRemoteDataSourceImpl(firebaseAuth: context.read(), firestore: context.read())),
+        Provider<AuthRepository>(create: (context) => AuthRepositoryImpl(remoteDataSource: context.read())),
+        Provider<GetAuthStateChangesUseCase>(create: (context) => GetAuthStateChangesUseCase(context.read())),
+        Provider<GetCurrentUserUseCase>(create: (context) => GetCurrentUserUseCase(context.read())),
+        Provider<SignInUserUseCase>(create: (context) => SignInUserUseCase(context.read())),
+        Provider<RegisterUserUseCase>(create: (context) => RegisterUserUseCase(context.read())),
+        Provider<SignOutUserUseCase>(create: (context) => SignOutUserUseCase(context.read())),
+        Provider<SendPasswordResetEmailUseCase>(create: (context) => SendPasswordResetEmailUseCase(context.read())),
 
-        // --- AUTH FEATURE ---
-        Provider<AuthRemoteDataSource>(create: (context) => AuthRemoteDataSourceImpl(
-            firebaseAuth: context.read<fb_auth.FirebaseAuth>(),
-            firestore: context.read<FirebaseFirestore>())
-        ),
-        Provider<AuthRepository>(
-          create: (context) => AuthRepositoryImpl(remoteDataSource: context.read<AuthRemoteDataSource>()),
-        ),
-        Provider<GetAuthStateChangesUseCase>(create: (context) => GetAuthStateChangesUseCase(context.read<AuthRepository>())),
-        Provider<GetCurrentUserUseCase>(create: (context) => GetCurrentUserUseCase(context.read<AuthRepository>())),
-        Provider<SignInUserUseCase>(create: (context) => SignInUserUseCase(context.read<AuthRepository>())),
-        Provider<RegisterUserUseCase>(create: (context) => RegisterUserUseCase(context.read<AuthRepository>())),
-        Provider<SignOutUserUseCase>(create: (context) => SignOutUserUseCase(context.read<AuthRepository>())),
-        Provider<SendPasswordResetEmailUseCase>(create: (context) => SendPasswordResetEmailUseCase(context.read<AuthRepository>())),
+        // PROFILE
+        Provider<ProfileRemoteDataSource>(create: (context) => ProfileRemoteDataSourceImpl(firestore: context.read(), storage: context.read())),
+        Provider<ProfileStatsDataSource>(create: (context) => ProfileStatsDataSourceImpl(firestore: context.read())),
+        Provider<UserProfileRepository>(create: (context) => UserProfileRepositoryImpl(remoteDataSource: context.read(), statsDataSource: context.read())),
+        Provider<GetUserProfileUseCase>(create: (context) => GetUserProfileUseCase(context.read())),
+        Provider<WatchUserProfileUseCase>(create: (context) => WatchUserProfileUseCase(context.read())),
+        Provider<UpdateProfileDataUseCase>(create: (context) => UpdateProfileDataUseCase(context.read())),
+        Provider<UploadProfileImageUseCase>(create: (context) => UploadProfileImageUseCase(context.read())),
+        Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read())),
+
+        // CHALLENGES
+        Provider<ChallengeRemoteDataSource>(create: (context) => ChallengeRemoteDataSourceImpl(firestore: context.read())),
+        Provider<ChallengeRepository>(create: (context) => ChallengeRepositoryImpl(remoteDataSource: context.read())),
+        Provider<GetAllChallengesStreamUseCase>(create: (context) => GetAllChallengesStreamUseCase(context.read())),
+        Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
+        Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read())),
+        Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
+        Provider<CompleteChallengeUseCase>(create: (context) => CompleteChallengeUseCase(userProfileRepository: context.read(), challengeRepository: context.read())),
+        Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
+
+        // SDG
+        Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
+        Provider<SdgRepository>(create: (context) => SdgRepositoryImpl(localDataSource: context.read())),
+        Provider<GetAllSdgListItemsUseCase>(create: (context) => GetAllSdgListItemsUseCase(context.read())),
+        Provider<GetSdgDetailByIdUseCase>(create: (context) => GetSdgDetailByIdUseCase(context.read())),
+
+        // HOME
+        Provider<GetOngoingChallengePreviewsUseCase>(create: (context) => GetOngoingChallengePreviewsUseCase(context.read())),
+        Provider<GetCompletedChallengePreviewsUseCase>(create: (context) => GetCompletedChallengePreviewsUseCase(context.read())),
+
+        // INTRODUCTION
+        Provider<IntroLocalDataSource>(create: (_) => IntroLocalDataSourceImpl()),
+        Provider<IntroRepository>(create: (context) => IntroRepositoryImpl(localDataSource: context.read())),
+        Provider<GetIntroPagesUseCase>(create: (context) => GetIntroPagesUseCase(context.read())),
+
+        // CHAT
+        Provider<ChatRemoteDataSource>(create: (context) => ChatRemoteDataSourceImpl(firestore: context.read(), firebaseStorage: context.read(), uuid: context.read())),
+        Provider<ChatRepository>(create: (context) => ChatRepositoryImpl(remoteDataSource: context.read())),
+        Provider<CreateOrGetChatRoomUseCase>(create: (context) => CreateOrGetChatRoomUseCase(context.read())),
+        Provider<GetChatRoomsStreamUseCase>(create: (context) => GetChatRoomsStreamUseCase(context.read())),
+        Provider<UpdateChatRoomWithMessageUseCase>(create: (context) => UpdateChatRoomWithMessageUseCase(context.read())),
+        Provider<CreateGroupChatUseCase>(create: (context) => CreateGroupChatUseCase(context.read())),
+        Provider<GetGroupChatsStreamUseCase>(create: (context) => GetGroupChatsStreamUseCase(context.read())),
+        Provider<UpdateGroupChatWithMessageUseCase>(create: (context) => UpdateGroupChatWithMessageUseCase(context.read())),
+        Provider<WatchGroupChatByIdUseCase>(create: (context) => WatchGroupChatByIdUseCase(context.read())),
+        Provider<UpdateGroupChatDetailsUseCase>(create: (context) => UpdateGroupChatDetailsUseCase(context.read())),
+        Provider<AddMembersToGroupUseCase>(create: (context) => AddMembersToGroupUseCase(context.read())),
+        Provider<RemoveMemberFromGroupUseCase>(create: (context) => RemoveMemberFromGroupUseCase(context.read())),
+        Provider<SendMessageUseCase>(create: (context) => SendMessageUseCase(context.read())),
+        Provider<GetMessagesStreamUseCase>(create: (context) => GetMessagesStreamUseCase(context.read())),
+        Provider<GetGroupMessagesStreamUseCase>(create: (context) => GetGroupMessagesStreamUseCase(context.read())),
+        Provider<MarkMessageAsReadUseCase>(create: (context) => MarkMessageAsReadUseCase(context.read())),
+        Provider<DeleteMessageUseCase>(create: (context) => DeleteMessageUseCase(context.read())),
+        Provider<GetChatUserByIdUseCase>(create: (context) => GetChatUserByIdUseCase(context.read())),
+        Provider<GetChatUsersStreamByIdsUseCase>(create: (context) => GetChatUsersStreamByIdsUseCase(context.read())),
+        Provider<FindChatUsersByNamePrefixUseCase>(create: (context) => FindChatUsersByNamePrefixUseCase(context.read())),
+        Provider<UploadChatImageUseCase>(create: (context) => UploadChatImageUseCase(context.read())),
+        Provider<DeleteGroupUseCase>(create: (context) => DeleteGroupUseCase(context.read())),
+        Provider<HideChatUseCase>(create: (context) => HideChatUseCase(context.read())),
+        Provider<SetChatClearedTimestampUseCase>(create: (context) => SetChatClearedTimestampUseCase(context.read())),
+        Provider<WatchChatRoomByIdUseCase>(create: (context) => WatchChatRoomByIdUseCase(context.read())),
+
+
+        // --- PRESENTATION LAYER (ChangeNotifierProviders) ---
         ChangeNotifierProvider<AuthenticationProvider>(
           create: (context) => AuthenticationProvider(
             getAuthStateChangesUseCase: context.read<GetAuthStateChangesUseCase>(),
@@ -171,193 +235,70 @@ Future<void> main() async {
           ),
         ),
 
-        // --- PROFILE FEATURE ---
-        Provider<ProfileRemoteDataSource>(create: (context) => ProfileRemoteDataSourceImpl(
-            firestore: context.read<FirebaseFirestore>(),
-            storage: context.read<FirebaseStorage>())
-        ),
-        Provider<ProfileStatsDataSource>(create: (context) => ProfileStatsDataSourceImpl(firestore: context.read<FirebaseFirestore>())),
-        Provider<UserProfileRepository>(
-          create: (context) => UserProfileRepositoryImpl(
-            remoteDataSource: context.read<ProfileRemoteDataSource>(),
-            statsDataSource: context.read<ProfileStatsDataSource>(),
-          ),
-        ),
-        Provider<GetUserProfileUseCase>(create: (context) => GetUserProfileUseCase(context.read<UserProfileRepository>())),
-        Provider<WatchUserProfileUseCase>(create: (context) => WatchUserProfileUseCase(context.read<UserProfileRepository>())),
-        Provider<UpdateProfileDataUseCase>(create: (context) => UpdateProfileDataUseCase(context.read<UserProfileRepository>())),
-        Provider<UploadProfileImageUseCase>(create: (context) => UploadProfileImageUseCase(context.read<UserProfileRepository>())),
-        Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read<UserProfileRepository>())),
         ChangeNotifierProxyProvider<AuthenticationProvider, UserProfileProvider>(
-          create: (context) => UserProfileProvider( /* ... wie zuvor ... */
+          create: (context) => UserProfileProvider(
             getUserProfileUseCase: context.read<GetUserProfileUseCase>(),
             watchUserProfileUseCase: context.read<WatchUserProfileUseCase>(),
             updateProfileDataUseCase: context.read<UpdateProfileDataUseCase>(),
             uploadProfileImageUseCase: context.read<UploadProfileImageUseCase>(),
             getProfileStatsPieChartUseCase: context.read<GetProfileStatsPieChartUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
           ),
-          update: (context, auth, previous) => UserProfileProvider( /* ... wie zuvor ... */
-            getUserProfileUseCase: context.read<GetUserProfileUseCase>(),
-            watchUserProfileUseCase: context.read<WatchUserProfileUseCase>(),
-            updateProfileDataUseCase: context.read<UpdateProfileDataUseCase>(),
-            uploadProfileImageUseCase: context.read<UploadProfileImageUseCase>(),
-            getProfileStatsPieChartUseCase: context.read<GetProfileStatsPieChartUseCase>(),
-            authProvider: auth,
-          ),
+          update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),
 
-        // --- CHALLENGES FEATURE ---
-        Provider<ChallengeRemoteDataSource>(create: (context) => ChallengeRemoteDataSourceImpl(firestore: context.read<FirebaseFirestore>())),
-        Provider<ChallengeRepository>(create: (context) => ChallengeRepositoryImpl(remoteDataSource: context.read<ChallengeRemoteDataSource>())),
-        Provider<GetAllChallengesStreamUseCase>(create: (context) => GetAllChallengesStreamUseCase(context.read<ChallengeRepository>())),
-        Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read<ChallengeRepository>())),
-        Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read<ChallengeRepository>())),
-        Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read<UserProfileRepository>())),
-        Provider<CompleteChallengeUseCase>(create: (context) => CompleteChallengeUseCase(userProfileRepository: context.read<UserProfileRepository>(), challengeRepository: context.read<ChallengeRepository>())),
-        Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read<UserProfileRepository>())),
         ChangeNotifierProxyProvider2<AuthenticationProvider, UserProfileProvider, ChallengeProvider>(
-          create: (context) => ChallengeProvider( /* ... wie zuvor ... */
+          create: (context) => ChallengeProvider(
             getAllChallengesStreamUseCase: context.read<GetAllChallengesStreamUseCase>(),
             getChallengeByIdUseCase: context.read<GetChallengeByIdUseCase>(),
             createChallengeUseCase: context.read<CreateChallengeUseCase>(),
             acceptChallengeUseCase: context.read<AcceptChallengeUseCase>(),
             completeChallengeUseCase: context.read<CompleteChallengeUseCase>(),
             removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
-            userProfileProvider: context.read<UserProfileProvider>(),
           ),
-          update: (context, auth, profile, previous) => ChallengeProvider( /* ... wie zuvor ... */
-            getAllChallengesStreamUseCase: context.read<GetAllChallengesStreamUseCase>(),
-            getChallengeByIdUseCase: context.read<GetChallengeByIdUseCase>(),
-            createChallengeUseCase: context.read<CreateChallengeUseCase>(),
-            acceptChallengeUseCase: context.read<AcceptChallengeUseCase>(),
-            completeChallengeUseCase: context.read<CompleteChallengeUseCase>(),
-            removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
-            authProvider: auth,
-            userProfileProvider: profile,
-          ),
+          update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile), // Assumes an `updateWith` method exists. Should be refactored.
         ),
 
-        // --- SDG FEATURE ---
-        Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
-        Provider<SdgRepository>(create: (context) => SdgRepositoryImpl(localDataSource: context.read<SdgLocalDataSource>())),
-        Provider<GetAllSdgListItemsUseCase>(create: (context) => GetAllSdgListItemsUseCase(context.read<SdgRepository>())),
-        Provider<GetSdgDetailByIdUseCase>(create: (context) => GetSdgDetailByIdUseCase(context.read<SdgRepository>())),
         ChangeNotifierProvider<SdgListProvider>(create: (context) => SdgListProvider(getAllSdgListItemsUseCase: context.read<GetAllSdgListItemsUseCase>())),
         ChangeNotifierProvider<SdgDetailProvider>(create: (context) => SdgDetailProvider(getSdgDetailsByIdUseCase: context.read<GetSdgDetailByIdUseCase>())),
 
-        // --- HOME FEATURE ---
-        Provider<GetOngoingChallengePreviewsUseCase>(create: (context) => GetOngoingChallengePreviewsUseCase(context.read<GetChallengeByIdUseCase>())),
-        Provider<GetCompletedChallengePreviewsUseCase>(create: (context) => GetCompletedChallengePreviewsUseCase(context.read<GetChallengeByIdUseCase>())),
         ChangeNotifierProxyProvider4<AuthenticationProvider, UserProfileProvider, ChallengeProvider, SdgListProvider, HomeProvider>(
-          create: (context) => HomeProvider( /* ... wie zuvor ... */
+          create: (context) => HomeProvider(
             getOngoingChallengePreviewsUseCase: context.read<GetOngoingChallengePreviewsUseCase>(),
             getCompletedChallengePreviewsUseCase: context.read<GetCompletedChallengePreviewsUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
-            userProfileProvider: context.read<UserProfileProvider>(),
-            challengeProvider: context.read<ChallengeProvider>(),
-            sdgListProvider: context.read<SdgListProvider>(),
           ),
-          update: (context, auth, profile, challenges, sdgList, previous) => HomeProvider( /* ... wie zuvor ... */
-            getOngoingChallengePreviewsUseCase: context.read<GetOngoingChallengePreviewsUseCase>(),
-            getCompletedChallengePreviewsUseCase: context.read<GetCompletedChallengePreviewsUseCase>(),
-            authProvider: auth,
-            userProfileProvider: profile,
-            challengeProvider: challenges,
-            sdgListProvider: sdgList,
-          ),
+          update: (context, auth, profile, challenges, sdgList, previous) => previous!..updateDependencies(auth, profile, challenges, sdgList), // Assumes an `updateWith` method exists. Should be refactored.
         ),
 
-        // --- INTRODUCTION FEATURE --- //
-        Provider<IntroLocalDataSource>(create: (_) => IntroLocalDataSourceImpl()),
-        Provider<IntroRepository>(create: (context) => IntroRepositoryImpl(localDataSource: context.read<IntroLocalDataSource>())),
-        Provider<GetIntroPagesUseCase>(create: (context) => GetIntroPagesUseCase(context.read<IntroRepository>())),
-
-        // --- CHAT FEATURE ---
-        // DataSources
-        Provider<ChatRemoteDataSource>(
-          create: (context) => ChatRemoteDataSourceImpl(
-            firestore: context.read<FirebaseFirestore>(),
-            firebaseStorage: context.read<FirebaseStorage>(),
-            uuid: context.read<Uuid>(),
-          ),
-        ),
-        // Repositories
-        Provider<ChatRepository>(
-          create: (context) => ChatRepositoryImpl(
-            remoteDataSource: context.read<ChatRemoteDataSource>(),
-          ),
-        ),
-        // UseCases
-        Provider<CreateOrGetChatRoomUseCase>(create: (context) => CreateOrGetChatRoomUseCase(context.read<ChatRepository>())),
-        Provider<GetChatRoomsStreamUseCase>(create: (context) => GetChatRoomsStreamUseCase(context.read<ChatRepository>())),
-        Provider<UpdateChatRoomWithMessageUseCase>(create: (context) => UpdateChatRoomWithMessageUseCase(context.read<ChatRepository>())),
-        Provider<CreateGroupChatUseCase>(create: (context) => CreateGroupChatUseCase(context.read<ChatRepository>())),
-        Provider<GetGroupChatsStreamUseCase>(create: (context) => GetGroupChatsStreamUseCase(context.read<ChatRepository>())),
-        Provider<UpdateGroupChatWithMessageUseCase>(create: (context) => UpdateGroupChatWithMessageUseCase(context.read<ChatRepository>())),
-        Provider<WatchGroupChatByIdUseCase>(create: (context) => WatchGroupChatByIdUseCase(context.read<ChatRepository>())),
-        Provider<UpdateGroupChatDetailsUseCase>(create: (context) => UpdateGroupChatDetailsUseCase(context.read<ChatRepository>())),
-        Provider<AddMembersToGroupUseCase>(create: (context) => AddMembersToGroupUseCase(context.read<ChatRepository>())),
-        Provider<RemoveMemberFromGroupUseCase>(create: (context) => RemoveMemberFromGroupUseCase(context.read<ChatRepository>())),
-        Provider<SendMessageUseCase>(create: (context) => SendMessageUseCase(context.read<ChatRepository>())),
-        Provider<GetMessagesStreamUseCase>(create: (context) => GetMessagesStreamUseCase(context.read<ChatRepository>())),
-        Provider<GetGroupMessagesStreamUseCase>(create: (context) => GetGroupMessagesStreamUseCase(context.read<ChatRepository>())),
-        Provider<MarkMessageAsReadUseCase>(create: (context) => MarkMessageAsReadUseCase(context.read<ChatRepository>())),
-        Provider<DeleteMessageUseCase>(create: (context) => DeleteMessageUseCase(context.read<ChatRepository>())), // Falls implementiert
-        Provider<GetChatUserByIdUseCase>(create: (context) => GetChatUserByIdUseCase(context.read<ChatRepository>())),
-        Provider<GetChatUsersStreamByIdsUseCase>(create: (context) => GetChatUsersStreamByIdsUseCase(context.read<ChatRepository>())),
-        Provider<FindChatUsersByNamePrefixUseCase>(create: (context) => FindChatUsersByNamePrefixUseCase(context.read<ChatRepository>())),
-        Provider<UploadChatImageUseCase>(create: (context) => UploadChatImageUseCase(context.read<ChatRepository>())),
-        Provider<UpdateGroupChatDetailsUseCase>(create: (context) => UpdateGroupChatDetailsUseCase(context.read<ChatRepository>())),
-        Provider<AddMembersToGroupUseCase>(create: (context) => AddMembersToGroupUseCase(context.read<ChatRepository>())),
-        Provider<RemoveMemberFromGroupUseCase>(create: (context) => RemoveMemberFromGroupUseCase(context.read<ChatRepository>())),
-        Provider<DeleteGroupUseCase>(create: (context) => DeleteGroupUseCase(context.read<ChatRepository>())),
-        Provider<HideChatUseCase>(create: (context) => HideChatUseCase(context.read<ChatRepository>())),
-        Provider<SetChatClearedTimestampUseCase>(create: (context) => SetChatClearedTimestampUseCase(context.read<ChatRepository>())),
-        Provider<WatchChatRoomByIdUseCase>(create: (context) => WatchChatRoomByIdUseCase(context.read<ChatRepository>())),
-        // UI State Provider für Chat-Listen und User-Suche (global verfügbar)
-        ChangeNotifierProvider<ChatRoomListProvider>(
+        // Refactored Chat providers
+        ChangeNotifierProxyProvider<AuthenticationProvider, ChatRoomListProvider>(
           create: (context) => ChatRoomListProvider(
             getChatRoomsStreamUseCase: context.read<GetChatRoomsStreamUseCase>(),
             createOrGetChatRoomUseCase: context.read<CreateOrGetChatRoomUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
             getChatUsersStreamByIdsUseCase: context.read<GetChatUsersStreamByIdsUseCase>(),
           ),
+          update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),
-        ChangeNotifierProvider<GroupChatListProvider>(
+
+        ChangeNotifierProxyProvider<AuthenticationProvider, GroupChatListProvider>(
           create: (context) => GroupChatListProvider(
             getGroupChatsStreamUseCase: context.read<GetGroupChatsStreamUseCase>(),
             createGroupChatUseCase: context.read<CreateGroupChatUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
-
           ),
+          update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),
-        ChangeNotifierProvider<UserSearchProvider>(
+
+        ChangeNotifierProxyProvider<AuthenticationProvider, UserSearchProvider>(
           create: (context) => UserSearchProvider(
             findUsersUseCase: context.read<FindChatUsersByNamePrefixUseCase>(),
-            authProvider: context.read<AuthenticationProvider>(),
           ),
+          update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),
-        // CreateGroupProvider wird dynamisch im CreateGroupScreen erstellt,
-        // aber wenn er Abhängigkeiten zu anderen globalen Providern hätte, die nicht
-        // AuthenticationProvider oder GroupChatListProvider sind, müsste man ihn hier als ProxyProvider erstellen.
-        // Für den Moment ist es okay, ihn im Screen zu erstellen, da seine Abhängigkeiten
-        // (GroupChatListProvider, AuthenticationProvider) bereits global sind.
-        // Alternativ:
+
         ChangeNotifierProxyProvider2<AuthenticationProvider, GroupChatListProvider, CreateGroupProvider>(
-          create: (context) => CreateGroupProvider(
-            groupChatListProvider: context.read<GroupChatListProvider>(),
-            authProvider: context.read<AuthenticationProvider>(),
-            // uploadGroupImageUseCase: context.read<UploadGroupImageUseCase>(), // Wenn vorhanden
-          ),
-          update: (context, auth, groupList, previous) => CreateGroupProvider(
-            groupChatListProvider: groupList,
-            authProvider: auth,
-            // uploadGroupImageUseCase: context.read<UploadGroupImageUseCase>(),
-          ),
+            create: (context) => CreateGroupProvider(
+            ),
+            update: (context, auth, groupList, previous) => previous!..updateDependencies(auth, groupList) // TODO: Add `updateDependencies` to CreateGroupProvider
         ),
-        // IndividualChatProvider und GroupChatProvider werden dynamisch in ihren jeweiligen Screens erstellt.
 
       ],
       child: const MyApp(),

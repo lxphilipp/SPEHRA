@@ -1,7 +1,11 @@
+// features/auth/presentation/providers/auth_provider.dart
+
 import 'dart:async';
-import 'package:flutter/material.dart';
+
+import 'package:flutter/cupertino.dart';
+
+// Domain-Layer Imports
 import '../../domain/entities/user_entity.dart';
-// Importiere die Auth Use Cases
 import '../../domain/usecases/get_auth_state_changes_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/sign_in_user_usecase.dart';
@@ -9,7 +13,14 @@ import '../../domain/usecases/register_user_usecase.dart';
 import '../../domain/usecases/sign_out_user_usecase.dart';
 import '../../domain/usecases/send_password_reset_email_usecase.dart';
 
+/// Manages the authentication state of the application.
+///
+/// This provider is the single source of truth for everything related to
+/// user login, registration, and sign-out.
+/// It listens to authentication state changes from the repository (via UseCase)
+/// and informs dependent providers and the UI using `notifyListeners()`.
 class AuthenticationProvider with ChangeNotifier {
+  // Use cases from the domain layer, containing the business logic.
   final GetAuthStateChangesUseCase _getAuthStateChangesUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final SignInUserUseCase _signInUserUseCase;
@@ -17,9 +28,11 @@ class AuthenticationProvider with ChangeNotifier {
   final SignOutUserUseCase _signOutUserUseCase;
   final SendPasswordResetEmailUseCase _sendPasswordResetEmailUseCase;
 
+  // Internal state of the provider
   UserEntity? _currentUser;
-  bool _isLoading = false;
+  bool _isLoading = true; // Starts with true to check the initial state.
   String? _errorMessage;
+
   StreamSubscription<UserEntity?>? _authStateSubscription;
 
   AuthenticationProvider({
@@ -35,82 +48,143 @@ class AuthenticationProvider with ChangeNotifier {
         _registerUserUseCase = registerUserUseCase,
         _signOutUserUseCase = signOutUserUseCase,
         _sendPasswordResetEmailUseCase = sendPasswordResetEmailUseCase {
+    // As soon as the provider is created, it starts listening to auth changes.
     _listenToAuthStateChanges();
-    _checkInitialAuthStatus();
   }
 
+  // --- Public Getters ---
+  // These are used by the UI or ProxyProviders to read the current state.
+
+  /// The currently signed-in user. `null` if nobody is signed in.
   UserEntity? get currentUser => _currentUser;
+
+  /// Returns `true` if a user is signed in.
   bool get isLoggedIn => _currentUser != null;
+
+  /// The ID of the currently signed-in user.
   String? get currentUserId => _currentUser?.id;
+
+  /// The email of the currently signed-in user.
   String? get currentUserEmail => _currentUser?.email;
-  // KEINE Getter mehr für points, level etc. hier, da UserEntity schlank ist
+
+  /// Returns `true` while an asynchronous operation (e.g., login) is in progress.
   bool get isLoading => _isLoading;
+
+  /// Contains an error message if an operation has failed.
   String? get errorMessage => _errorMessage;
 
-  // Wichtig: Expose den Stream für andere Provider (z.B. UserProfileProvider)
-  Stream<UserEntity?> get authStateChanges => _getAuthStateChangesUseCase();
 
+  // --- Private methods for state management ---
 
+  /// Starts the stream that listens for changes in the authentication state.
   void _listenToAuthStateChanges() {
-    _authStateSubscription?.cancel();
+    _authStateSubscription?.cancel(); // Cancel any old subscription as a safety measure.
     _authStateSubscription = _getAuthStateChangesUseCase().listen((userEntity) {
+      _setLoading(false); // The first value from the stream ends the initial loading state.
       _updateCurrentUser(userEntity);
-      _clearError();
     });
   }
 
-  Future<void> _checkInitialAuthStatus() async {
-    _setLoading(true);
-    _currentUser = await _getCurrentUserUseCase();
-    _setLoading(false);
-  }
-
-  Future<bool> performSignIn(String email, String password) async {
-    _setLoading(true); _clearError();
-    final userEntity = await _signInUserUseCase(SignInParams(email: email, password: password));
-    _setLoading(false);
-    if (userEntity != null) { _updateCurrentUser(userEntity); return true; }
-    _setErrorMessage("Login fehlgeschlagen."); notifyListeners(); return false;
-  }
-
-  Future<bool> performRegistration({required String email, required String password, required String name}) async {
-    _setLoading(true); _clearError();
-    final userEntity = await _registerUserUseCase(RegisterParams(email: email, password: password, name: name));
-    _setLoading(false);
-    if (userEntity != null) { _updateCurrentUser(userEntity); return true; }
-    _setErrorMessage("Registrierung fehlgeschlagen."); notifyListeners(); return false;
-  }
-
-  Future<bool> performSendPasswordResetEmail(String email) async {
-    _setLoading(true); _clearError();
-    final success = await _sendPasswordResetEmailUseCase(email);
-    _setLoading(false);
-    if (!success) { _setErrorMessage("Passwort-Reset E-Mail konnte nicht gesendet werden."); notifyListeners(); }
-    return success;
-  }
-
-  Future<void> performSignOut() async {
-    _setLoading(true); _clearError();
-    try {
-      await _signOutUserUseCase();
-      // Der authStateChanges Stream wird _currentUser auf null setzen
-    } catch (e) { _setErrorMessage("Fehler beim Ausloggen."); }
-    _setLoading(false); // notifyListeners() wird durch setLoading gerufen oder wenn _currentUser sich ändert
-  }
-
+  /// Updates the internal user state and notifies all listeners.
   void _updateCurrentUser(UserEntity? user) {
     if (_currentUser != user) {
       _currentUser = user;
+      // This is the crucial call! Every time the user changes,
+      // all dependent ProxyProviders and widgets in the UI are notified.
       notifyListeners();
     }
   }
-  void _setLoading(bool loading) { /* ... */ if(_isLoading != loading) {_isLoading = loading; notifyListeners();} }
-  void _setErrorMessage(String? message) { /* ... */ _errorMessage = message; /* notifyListeners(); */ }
-  void _clearError() { /* ... */ if(_errorMessage != null) _errorMessage = null; /* notifyListeners(); */ }
 
+  /// Sets the loading state and notifies the UI.
+  void _setLoading(bool loading) {
+    if (_isLoading != loading) {
+      _isLoading = loading;
+      notifyListeners();
+    }
+  }
+
+  /// Sets an error message and notifies the UI.
+  void _setErrorMessage(String? message) {
+    if (_errorMessage != message) {
+      _errorMessage = message;
+      notifyListeners();
+    }
+  }
+
+  /// Clears any existing error message.
+  void _clearError() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
+
+  // --- Public methods for actions ---
+  // These methods are called from the UI to trigger actions.
+
+  /// Performs a user sign-in.
+  Future<bool> performSignIn(String email, String password) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      final userEntity = await _signInUserUseCase(SignInParams(email: email, password: password));
+      // The authStateChanges stream will handle the rest (updating the user).
+      return userEntity != null;
+    } catch (e) {
+      _setErrorMessage("Login failed: ${e.toString()}");
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Performs a user registration.
+  Future<bool> performRegistration({required String email, required String password, required String name}) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      final userEntity = await _registerUserUseCase(RegisterParams(email: email, password: password, name: name));
+      // The authStateChanges stream will handle the rest.
+      return userEntity != null;
+    } catch (e) {
+      _setErrorMessage("Registration failed: ${e.toString()}");
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Sends a password reset email.
+  Future<bool> performSendPasswordResetEmail(String email) async {
+    _setLoading(true);
+    _clearError();
+    try {
+      await _sendPasswordResetEmailUseCase(email);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setErrorMessage("Could not send email: ${e.toString()}");
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Signs out the current user.
+  Future<void> performSignOut() async {
+    _setLoading(true);
+    _clearError();
+    try {
+      await _signOutUserUseCase();
+      // The authStateChanges stream will set the user to `null`.
+    } catch (e) {
+      _setErrorMessage("Error during sign out: ${e.toString()}");
+      _setLoading(false);
+    }
+  }
+
+  /// Called when the provider is removed from the widget tree.
   @override
   void dispose() {
-    _authStateSubscription?.cancel();
+    _authStateSubscription?.cancel(); // Important: Clean up the stream subscription!
     super.dispose();
   }
 }

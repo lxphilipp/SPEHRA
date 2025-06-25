@@ -1,147 +1,158 @@
+// lib/features/chat/presentation/providers/group_chat_list_provider.dart
+
 import 'dart:async';
-import 'package:flutter/material.dart';
 
-// Entities
+// Domain & Entities
+import 'package:flutter/cupertino.dart';
+
 import '../../domain/entities/group_chat_entity.dart';
-import '../../domain/entities/message_entity.dart'; // Für die initialMessage beim Erstellen
-import '../../../auth/domain/entities/user_entity.dart'; // Für den Auth-Status
-
-// UseCases
+import '../../domain/entities/message_entity.dart';
 import '../../domain/usecases/get_group_chats_stream_usecase.dart';
 import '../../domain/usecases/create_group_chat_usecase.dart';
 
-// Auth Provider
+// Auth Feature
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 // Core
 import '../../../../core/utils/app_logger.dart';
 
+/// Manages the state for the list of group chats.
+///
+/// This provider is responsible for:
+/// - Subscribing to the user's group chats based on their auth state.
+/// - Providing methods to create new group chats.
+/// It is designed to be updated by a `ChangeNotifierProxyProvider` that watches
+/// the `AuthenticationProvider`.
 class GroupChatListProvider with ChangeNotifier {
+  // --- UseCases ---
   final GetGroupChatsStreamUseCase _getGroupChatsStreamUseCase;
   final CreateGroupChatUseCase _createGroupChatUseCase;
-  final AuthenticationProvider _authProvider;
 
+  // --- State ---
   List<GroupChatEntity> _groupChats = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
   String? _error;
 
-  StreamSubscription<List<GroupChatEntity>>? _groupChatsSubscription;
-  StreamSubscription<UserEntity?>? _authStateSubscription;
+  /// The provider's "memory" of the current user's ID.
+  /// It's the single source of truth WITHIN this provider.
+  String? _currentUserId;
 
+  // --- Stream Subscriptions ---
+  StreamSubscription<List<GroupChatEntity>>? _groupChatsSubscription;
+
+  /// The constructor is simple and only requires its own UseCases.
   GroupChatListProvider({
     required GetGroupChatsStreamUseCase getGroupChatsStreamUseCase,
     required CreateGroupChatUseCase createGroupChatUseCase,
-    required AuthenticationProvider authProvider,
   })  : _getGroupChatsStreamUseCase = getGroupChatsStreamUseCase,
-        _createGroupChatUseCase = createGroupChatUseCase,
-        _authProvider = authProvider {
-    AppLogger.debug("GroupChatListProvider: Initializing...");
-    _authStateSubscription = _authProvider.authStateChanges.listen(_onAuthStateChanged);
-    _loadGroupChatsIfNeeded(isInitialCall: true);
+        _createGroupChatUseCase = createGroupChatUseCase {
+    AppLogger.debug("GroupChatListProvider: Instance created.");
   }
 
-  // --- Getter ---
+  // --- Getters for the UI ---
   List<GroupChatEntity> get groupChats => _groupChats;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String get currentUserId => _authProvider.currentUserId ?? '';
 
+  // --- Dependency Update Method ---
 
-  // --- Private Methoden ---
-  void _onAuthStateChanged(UserEntity? user) {
-    AppLogger.debug("GroupChatListProvider: Auth state changed. User: ${user?.id}");
-    _loadGroupChatsIfNeeded();
-  }
+  /// The gateway for receiving updates from the `AuthenticationProvider`.
+  /// This method is called by the `ChangeNotifierProxyProvider`.
+  void updateDependencies(AuthenticationProvider authProvider) {
+    final newUserId = authProvider.currentUserId;
 
-  void _loadGroupChatsIfNeeded({bool isInitialCall = false}) {
-    final userId = currentUserId; // currentUserId vom Getter verwenden
-    AppLogger.debug("GroupChatListProvider: _loadGroupChatsIfNeeded called. CurrentUserId: $userId, IsLoggedIn: ${_authProvider.isLoggedIn}, IsInitialCall: $isInitialCall");
+    // 1. Compare the new user ID with the provider's internal "memory".
+    if (newUserId != _currentUserId) {
+      // 2. Update the internal memory.
+      _currentUserId = newUserId;
+      AppLogger.debug("GroupChatListProvider: Auth dependency updated. New User ID: $newUserId");
 
-    if (userId.isNotEmpty && _authProvider.isLoggedIn) {
-      if (_isLoading && !isInitialCall) {
-        AppLogger.debug("GroupChatListProvider: Already loading, skipping reload.");
-        return;
-      }
-
-      _isLoading = true;
-      _error = null;
-      if (!isInitialCall || _groupChats.isNotEmpty || _error != null) {
-        notifyListeners();
-      }
-
-      _groupChatsSubscription?.cancel();
-      _groupChatsSubscription = _getGroupChatsStreamUseCase(currentUserId: userId).listen(
-            (groups) {
-          _groupChats = groups;
-          _isLoading = false;
-          _error = null;
-          AppLogger.info("GroupChatListProvider: Received ${groups.length} group chats.");
-          notifyListeners();
-        },
-        onError: (e, stackTrace) {
-          AppLogger.error("GroupChatListProvider: Error loading group chats stream", e, stackTrace);
-          _groupChats = [];
-          _isLoading = false;
-          _error = "Fehler beim Laden der Gruppenchats.";
-          notifyListeners();
-        },
-      );
-    } else {
-      AppLogger.debug("GroupChatListProvider: User not logged in or no UserId, resetting state.");
-      if (_groupChats.isNotEmpty || _isLoading || _error != null) {
-        _groupChats = [];
-        _isLoading = false;
-        _error = null;
-        _groupChatsSubscription?.cancel();
-        _groupChatsSubscription = null;
-        notifyListeners();
+      // 3. React to the change based on the new internal state.
+      if (_currentUserId != null) {
+        _subscribeToGroupChats(_currentUserId!);
       } else {
-        _groupChatsSubscription?.cancel();
-        _groupChatsSubscription = null;
+        _resetState();
       }
     }
   }
 
-  // --- Public Methoden ---
-  void forceReloadGroupChats() {
-    AppLogger.info("GroupChatListProvider: forceReloadGroupChats called.");
+  // --- Private Methods for State Management ---
+
+  /// Subscribes to the group chats stream for the given user.
+  void _subscribeToGroupChats(String userId) {
     _isLoading = true;
     _error = null;
-    notifyListeners(); // UI zeigen, dass wir neu laden
-    _loadGroupChatsIfNeeded();
+    notifyListeners();
+
+    _groupChatsSubscription?.cancel();
+    _groupChatsSubscription = _getGroupChatsStreamUseCase(currentUserId: userId).listen(
+          (groups) {
+        _groupChats = groups;
+        _isLoading = false;
+        _error = null;
+        AppLogger.info("GroupChatListProvider: Received ${groups.length} group chats.");
+        notifyListeners();
+      },
+      onError: (e, stackTrace) {
+        AppLogger.error("GroupChatListProvider: Error loading group chats stream", e, stackTrace);
+        _groupChats = [];
+        _isLoading = false;
+        _error = "Error loading group chats.";
+        notifyListeners();
+      },
+    );
   }
 
-  /// Erstellt eine neue Gruppe.
-  /// Gibt die Gruppen-ID zurück oder null bei Fehler.
+  /// Resets all data, for example on logout.
+  void _resetState() {
+    AppLogger.debug("GroupChatListProvider: User logged out, resetting state.");
+    _groupChats = [];
+    _isLoading = false;
+    _error = null;
+    _groupChatsSubscription?.cancel();
+    notifyListeners();
+  }
+
+  // --- Public Methods for UI Interaction ---
+
+  /// Explicitly triggers a reload of the group chats.
+  void forceReloadGroupChats() {
+    final userId = _currentUserId;
+    if (userId != null) {
+      AppLogger.info("GroupChatListProvider: Force reloading group chats.");
+      _subscribeToGroupChats(userId);
+    }
+  }
+
+  /// Creates a new group.
+  /// Returns the group ID or null on failure.
   Future<String?> createNewGroup({
     required String name,
-    required List<String> memberIds, // Muss den currentUserId bereits enthalten
-    required List<String> adminIds,  // Muss den currentUserId bereits enthalten
+    required List<String> memberIds,
+    required List<String> adminIds,
     String? imageUrl,
     String? initialTextMessage,
   }) async {
-    final userId = currentUserId;
-    if (userId.isEmpty) {
-      _error = "Nicht eingeloggt, um eine Gruppe zu erstellen.";
+    // Correctly uses the internal _currentUserId field.
+    final userId = _currentUserId;
+    if (userId == null || userId.isEmpty) {
+      _error = "Not logged in, cannot create a group.";
       notifyListeners();
       return null;
     }
 
-    // Sicherstellen, dass der Ersteller auch Mitglied und Admin ist
+    // Ensure the creator is also a member and admin
     if (!memberIds.contains(userId)) memberIds.add(userId);
     if (!adminIds.contains(userId)) adminIds.add(userId);
 
-
-    _error = null; // Fehler vor dem Versuch zurücksetzen
-    // Ein spezifischer Ladezustand für diese Aktion könnte hier nützlich sein,
-    // z.B. _isCreatingGroup, um einen Button im UI zu deaktivieren.
+    _error = null;
 
     MessageEntity? initialMessage;
     if (initialTextMessage != null && initialTextMessage.isNotEmpty) {
       initialMessage = MessageEntity(
-        id: '', // Wird im Repo/DS generiert
+        id: '', // Will be generated in the repo/data source
         fromId: userId,
-        toId: '', // Wird im Repo/DS die groupId sein
+        toId: '', // Will be the groupId in the repo/data source
         msg: initialTextMessage,
         type: 'text',
         createdAt: DateTime.now(),
@@ -154,24 +165,25 @@ class GroupChatListProvider with ChangeNotifier {
         name: name,
         memberIds: memberIds,
         adminIds: adminIds,
-        currentUserId: userId, // Wird für die initialMessage benötigt
+        currentUserId: userId,
         imageUrl: imageUrl,
         initialMessage: initialMessage,
       );
 
       if (groupId == null) {
-        _error = "Gruppe konnte nicht erstellt werden.";
+        _error = "Could not create group.";
         AppLogger.warning("GroupChatListProvider: createNewGroup - groupId was null.");
       } else {
         AppLogger.info("GroupChatListProvider: Group $groupId created: $name.");
-        _error = null; // Erfolgreich
+        _error = null; // Success
       }
-      // Die Gruppenliste wird automatisch durch den Stream aktualisiert.
-      notifyListeners(); // Um ggf. _error zu aktualisieren
+      // The group list will be updated automatically by the stream.
+      // We only notify to update the error state if necessary.
+      if (_error != null) notifyListeners();
       return groupId;
     } catch (e, stackTrace) {
       AppLogger.error("GroupChatListProvider: Error creating new group", e, stackTrace);
-      _error = "Fehler beim Erstellen der Gruppe.";
+      _error = "An error occurred while creating the group.";
       notifyListeners();
       return null;
     }
@@ -181,8 +193,6 @@ class GroupChatListProvider with ChangeNotifier {
   void dispose() {
     AppLogger.debug("GroupChatListProvider: Disposing...");
     _groupChatsSubscription?.cancel();
-    _authStateSubscription?.cancel();
     super.dispose();
-    AppLogger.debug("GroupChatListProvider: Disposed.");
   }
 }
