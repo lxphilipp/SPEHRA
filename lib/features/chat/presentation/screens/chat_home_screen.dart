@@ -30,7 +30,7 @@ class ChatHomeScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (pageContext) => ChangeNotifierProvider<IndividualChatProvider>(
           create: (providerContext) => IndividualChatProvider(
-            roomId: roomId,                            // Wird an den Provider übergeben
+            roomId: roomId,
             chatPartner: chatPartner,                  // Wird an den Provider übergeben
             getMessagesStreamUseCase: providerContext.read<GetMessagesStreamUseCase>(),
             sendMessageUseCase: providerContext.read<SendMessageUseCase>(),
@@ -94,27 +94,11 @@ class ChatHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.debug("ChatHomeScreen: Build method called.");
-    return Scaffold(
-      backgroundColor: const Color(0xff040324),
-      appBar: AppBar(
-        backgroundColor: const Color(0xff040324),
-        title: const Text('Meine Chats', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_comment_outlined, color: Colors.white),
-            onPressed: () => _startNewChatFlow(context),
-            tooltip: "Neuer Chat",
-          )
-        ],
-      ),
-      body: ChatListContentWidget(
-        onChatRoomTap: (tappedRoomId, tappedChatPartner) {
-          _navigateToChat(context, tappedRoomId, tappedChatPartner);
-        },
-      ),
+    return ChatListContentWidget(
+      onChatRoomTap: (tappedRoomId, tappedChatPartner) {
+        _navigateToChat(context, tappedRoomId, tappedChatPartner);
+      },
     );
   }
+
 }

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter_sdg/features/auth/presentation/screens/registration_screen.dart';
 import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_screen.dart';
+import '../../../../core/layouts/responsive_main_navigation.dart';
 import '../../../introduction/presentation/screens/introduction_main_screen.dart';
 import '../providers/auth_provider.dart';
 
@@ -64,7 +65,7 @@ class _SignInFormState extends State<SignInForm> {
               MaterialPageRoute(builder: (context) => const IntroductionMainScreen()));
         } else {
           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const HomeScreen()));
+              MaterialPageRoute(builder: (context) => const ResponsiveMainNavigation()));
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

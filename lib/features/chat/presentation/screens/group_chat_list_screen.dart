@@ -25,28 +25,6 @@ class GroupChatListScreen extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
-      AppLogger.debug("GroupChatListScreen: Building.");
-      // Der GroupChatListProvider wird bereits in main.dart global bereitgestellt
-      // oder im übergeordneten ChatMainTabsScreen, falls dieser existiert und Provider bereitstellt.
-      // Für den Moment gehen wir davon aus, dass er im Kontext verfügbar ist.
-
-      return Scaffold(
-        backgroundColor: const Color(0xff040324),
-        appBar: AppBar(
-          backgroundColor: const Color(0xff040324),
-          title: const Text(
-              'Gruppenchats', style: TextStyle(color: Colors.white)),
-          iconTheme: const IconThemeData(color: Colors.white),
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.group_add_outlined, color: Colors.white),
-              onPressed: () => _startCreateGroupFlow(context),
-              tooltip: "Neue Gruppe erstellen",
-            ),
-          ],
-        ),
-        body: const GroupChatListContentWidget(),
-      );
+      return GroupChatListContentWidget();
     }
   }

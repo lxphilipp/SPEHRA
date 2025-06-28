@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 // Importiere dein Layout, wenn es verwendet wird
-import '../../../../core/layouts/main_app_layout.dart'; // Beispiel
+import '../../../../core/layouts/responsive_main_navigation.dart'; // Beispiel
+import '../../../../core/widgets/custom_main_app_bar.dart';
+import '../../../home/presentation/widgets/home_content.dart';
 import '../widgets/profile_stats_content.dart';
 
 class ProfileStatsScreen extends StatelessWidget {
@@ -8,21 +10,9 @@ class ProfileStatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dein altes ProfileScreen hat HomePageLayout verwendet.
-    // Wenn das immer noch passt:
-    return const MainAppLayout( // Oder ein anderes passendes Layout
-      body: ProfileStatsContent(),
+    return const Scaffold(
+        appBar: CustomMainAppBar(),
+        body: ProfileStatsContent(),
     );
-    // Oder ein einfaches Scaffold, wenn kein spezielles Layout nötig:
-    /*
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text('My Stats', style: Theme.of(context).appBarTheme.titleTextStyle),
-        // ...
-      ),
-      body: const ProfileStatsContent(),
-    );
-    */
   }
 }

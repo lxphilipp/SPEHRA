@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // Importiere dein Haupt-Layout, wenn du eines hast, das hier passt
-// z.B. import 'package:dein_projekt_name/features/home/presentation/layouts/main_app_layout.dart';
+// z.B. import 'package:dein_projekt_name/features/home/presentation/layouts/responsive_main_navigation.dart';
 import '../widgets/challenge_details_content.dart'; // Der Hauptinhalt
 
 class ChallengeDetailsScreen extends StatelessWidget {
