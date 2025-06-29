@@ -1,4 +1,3 @@
-// lib/features/introduction/presentation/widgets/question_widgets/transport_page_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
@@ -8,20 +7,24 @@ class TransportPageContent extends StatelessWidget {
 
   Widget _buildOptionButton(BuildContext context, String label) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme holen
+
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: const BorderSide(color: Color(0xff3BBE6B)),
+        side: BorderSide(color: theme.colorScheme.primary),
       ),
       onPressed: () => provider.nextPage(context),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 22)),
+      child: Text(label, style: const TextStyle(fontSize: 22)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -31,21 +34,22 @@ class TransportPageContent extends StatelessWidget {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => provider.nextPage(context),
-                child: const Text('skip', style: TextStyle(color: Color(0xff3BBE6B))),
+                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 29, color: Colors.white),
+                textAlign: TextAlign.center, // Bessere Zentrierung
+                text: TextSpan(
+                  style: theme.textTheme.headlineSmall,
                   children: <TextSpan>[
-                    TextSpan(text: ' What is your go to '),
+                    const TextSpan(text: 'What is your go to '),
                     TextSpan(
                       text: 'method of transport',
-                      style: TextStyle(color: Color(0xff3BBE6B), fontStyle: FontStyle.italic),
+                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
                     ),
-                    TextSpan(text: '?'),
+                    const TextSpan(text: '?'),
                   ],
                 ),
               ),

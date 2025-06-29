@@ -33,6 +33,17 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     });
   }
 
+  Widget _buildRailHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
+      child: Image.asset(
+        'assets/logo/Logo-Bild.png', // Stelle sicher, dass der Pfad stimmt
+        width: 40,
+        height: 40,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -65,6 +76,8 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
                         ? NavigationRailLabelType.selected
                         : NavigationRailLabelType.all,
                     destinations: _navRailDestinations,
+                    groupAlignment: 0.0,
+                    leading: _buildRailHeader(),
                   ),
                   Expanded(
                     child: IndexedStack(

@@ -1,4 +1,3 @@
-// lib/features/introduction/presentation/widgets/question_widgets/diet_page_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
@@ -8,23 +7,26 @@ class DietPageContent extends StatelessWidget {
 
   Widget _buildOptionButton(BuildContext context, String label) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context);
+
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: const BorderSide(color: Color(0xff3BBE6B)),
+        side: BorderSide(color: theme.colorScheme.primary),
       ),
       onPressed: () {
-        // Hier könntest du die Auswahl speichern, z.B. im Provider
-        // provider.saveAnswer('diet', label);
         provider.nextPage(context);
       },
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 22)),
+      // OPTIMIERT: Die Textfarbe wird vom Button-Theme geerbt.
+      child: Text(label, style: const TextStyle(fontSize: 22)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
+    // OPTIMIERT: Holen des Themes für den Zugriff auf Farben und Stile
+    final theme = Theme.of(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -34,21 +36,24 @@ class DietPageContent extends StatelessWidget {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => provider.nextPage(context),
-                child: const Text('skip', style: TextStyle(color: Color(0xff3BBE6B))),
+                // OPTIMIERT: Die Textfarbe wird vom TextButtonTheme geerbt,
+                // kann aber für eine Akzentuierung überschrieben werden.
+                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 30, color: Colors.white),
+                text: TextSpan(
+                  style: theme.textTheme.headlineSmall,
                   children: <TextSpan>[
-                    TextSpan(text: ' What does your '),
+                    const TextSpan(text: ' What does your '),
                     TextSpan(
                       text: 'diet',
-                      style: TextStyle(color: Color(0xff3BBE6B), fontStyle: FontStyle.italic),
+                      // OPTIMIERT: Die Akzentfarbe kommt aus dem ColorScheme
+                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
                     ),
-                    TextSpan(text: ' look\n like ?'),
+                    const TextSpan(text: ' look\n like ?'),
                   ],
                 ),
               ),

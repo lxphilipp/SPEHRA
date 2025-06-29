@@ -17,8 +17,9 @@ class IntroductionMainScreen extends StatelessWidget {
       ),
       child: Consumer<IntroductionProvider>(
         builder: (context, provider, _) {
+          final theme = Theme.of(context);
+
           return Scaffold(
-            backgroundColor: const Color(0xff040324),
             body: SafeArea(
               child: provider.isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -37,7 +38,15 @@ class IntroductionMainScreen extends StatelessWidget {
 
                     if (pageEntity.type == IntroPageType.question) {
                       final contentWidget = IntroWidgetFactory.createWidget(pageEntity.widgetName);
-                      return contentWidget ?? const Center(child: Text("Widget not found"));
+                      return contentWidget ??
+                          Center(
+                            child: Text(
+                              "Widget not found",
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.error,
+                              ),
+                            ),
+                          );
                     }
 
                     return const SizedBox.shrink();

@@ -1,4 +1,3 @@
-// lib/features/introduction/presentation/widgets/question_widgets/your_concerns_page_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
@@ -18,14 +17,21 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
   final Set<String> selectedTopics = {};
 
   Widget _buildSelectableButton(String label) {
+    final theme = Theme.of(context); // Theme für den Zugriff auf Farben holen
     final bool isSelected = selectedTopics.contains(label);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: OutlinedButton(
+        // OPTIMIERT: Der Stil wird jetzt dynamisch aus dem Theme abgeleitet
         style: OutlinedButton.styleFrom(
-          backgroundColor: isSelected ? const Color(0xff3BBE6B).withOpacity(0.3) : Colors.transparent,
+          // Hintergrundfarbe ändert sich je nach Zustand
+          backgroundColor: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.5) : Colors.transparent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          side: const BorderSide(color: Color(0xff3BBE6B)),
+          side: BorderSide(
+            color: isSelected ? theme.colorScheme.primaryContainer : theme.colorScheme.primary,
+          ),
+          foregroundColor: theme.colorScheme.onSurface, // Textfarbe für beide Zustände
         ),
         onPressed: () {
           setState(() {
@@ -42,7 +48,7 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
             }
           });
         },
-        child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 19)),
+        child: Text(label, style: const TextStyle(fontSize: 19)),
       ),
     );
   }
@@ -50,6 +56,8 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme für den Zugriff auf Farben holen
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -59,18 +67,24 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => provider.nextPage(context),
-                child: const Text('skip', style: TextStyle(color: Color(0xff3BBE6B))),
+                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 32, color: Colors.white),
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  // OPTIMIERT: Basis-Stil aus dem Theme
+                  style: theme.textTheme.headlineSmall,
                   children: <TextSpan>[
-                    TextSpan(text: 'What thoughts on the global sustainable development of our Sphere '),
-                    TextSpan(text: 'concern', style: TextStyle(color: Color(0xff3BBE6B), fontStyle: FontStyle.italic)),
-                    TextSpan(text: ' you most?'),
+                    const TextSpan(text: 'What thoughts on the global sustainable development of our Sphere '),
+                    TextSpan(
+                      text: 'concern',
+                      // OPTIMIERT: Akzentfarbe aus dem Theme
+                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
+                    ),
+                    const TextSpan(text: ' you most?'),
                   ],
                 ),
               ),
@@ -89,14 +103,11 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
         Padding(
           padding: const EdgeInsets.only(bottom: 40.0, top: 20),
           child: ElevatedButton(
+            // OPTIMIERT: Der Stil wird vollständig vom globalen ElevatedButtonTheme gesteuert
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff3BBE6B),
-              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
             ),
-            onPressed: selectedTopics.isNotEmpty
-                ? () => provider.nextPage(context)
-                : null, // Button ist deaktiviert, wenn nichts ausgewählt ist
+            onPressed: selectedTopics.isNotEmpty ? () => provider.nextPage(context) : null,
             child: const Text("Continue"),
           ),
         ),

@@ -1,4 +1,3 @@
-// lib/features/introduction/presentation/widgets/question_widgets/energy_page_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
@@ -8,19 +7,23 @@ class EnergyPageContent extends StatelessWidget {
 
   Widget _buildOptionButton(BuildContext context, String label) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme holen
+
     return OutlinedButton(
+      // OPTIMIERT: Stil wird vom Theme abgeleitet
       style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: const BorderSide(color: Color(0xff3BBE6B)),
+        side: BorderSide(color: theme.colorScheme.primary),
       ),
       onPressed: () => provider.nextPage(context),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 22)),
+      child: Text(label, style: const TextStyle(fontSize: 22)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme holen
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -30,21 +33,25 @@ class EnergyPageContent extends StatelessWidget {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => provider.nextPage(context),
-                child: const Text('skip', style: TextStyle(color: Color(0xff3BBE6B))),
+                // OPTIMIERT: Farbe aus dem Theme
+                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 32, color: Colors.white),
+                textAlign: TextAlign.center, // Bessere Zentrierung für den Text
+                text: TextSpan(
+                  // OPTIMIERT: Basis-Stil aus dem Theme
+                  style: theme.textTheme.headlineSmall,
                   children: <TextSpan>[
-                    TextSpan(text: 'What '),
+                    const TextSpan(text: 'What '),
                     TextSpan(
                       text: 'kind of energy',
-                      style: TextStyle(color: Color(0xff3BBE6B), fontStyle: FontStyle.italic),
+                      // OPTIMIERT: Akzentfarbe aus dem Theme
+                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
                     ),
-                    TextSpan(text: ' do you use in your household?'),
+                    const TextSpan(text: ' do you use in your household?'),
                   ],
                 ),
               ),

@@ -1,4 +1,3 @@
-// lib/features/introduction/presentation/widgets/question_widgets/school_page_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
@@ -8,20 +7,25 @@ class SchoolPageContent extends StatelessWidget {
 
   Widget _buildOptionButton(BuildContext context, String label) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme holen
+
     return OutlinedButton(
+      // OPTIMIERT: Stil wird vom Theme abgeleitet
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: const BorderSide(color: Color(0xff3BBE6B)),
+        side: BorderSide(color: theme.colorScheme.primary),
       ),
       onPressed: () => provider.nextPage(context),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 22)),
+      child: Text(label, style: const TextStyle(fontSize: 22)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
+    final theme = Theme.of(context); // Theme holen
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -31,21 +35,25 @@ class SchoolPageContent extends StatelessWidget {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => provider.nextPage(context),
-                child: const Text('skip', style: TextStyle(color: Color(0xff3BBE6B))),
+                // OPTIMIERT: Farbe aus dem Theme
+                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 32, color: Colors.white),
+                textAlign: TextAlign.center, // Bessere Zentrierung
+                text: TextSpan(
+                  // OPTIMIERT: Basis-Stil aus dem Theme
+                  style: theme.textTheme.headlineSmall,
                   children: <TextSpan>[
-                    TextSpan(text: 'How many children do you think '),
+                    const TextSpan(text: 'How many children do you think '),
                     TextSpan(
                       text: 'finish',
-                      style: TextStyle(color: Color(0xff3BBE6B), fontStyle: FontStyle.italic),
+                      // OPTIMIERT: Akzentfarbe aus dem Theme
+                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
                     ),
-                    TextSpan(text: ' primary school?'),
+                    const TextSpan(text: ' primary school?'),
                   ],
                 ),
               ),
