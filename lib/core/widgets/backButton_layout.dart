@@ -7,7 +7,6 @@ class GoBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BackButton(
       onPressed: () => Navigator.pop(context),
-      color: Colors.white,
     );
   }
 }

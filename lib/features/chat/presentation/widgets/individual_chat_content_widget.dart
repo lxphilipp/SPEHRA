@@ -1,12 +1,12 @@
-import 'dart:io'; // Für File
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // Für Bildauswahl
-import 'package:provider/provider.dart'; // Für Provider-Zugriff
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 // Provider
 import '../providers/individual_chat_provider.dart';
 
-// Kleinere UI-Komponenten-Widgets
+// Widgets
 import 'message_list_widget.dart';
 import 'image_preview_widget.dart';
 import 'message_input_widget.dart';
@@ -27,18 +27,8 @@ class _IndividualChatContentWidgetState extends State<IndividualChatContentWidge
   final FocusNode _messageInputFocusNode = FocusNode();
 
   @override
-  void initState() {
-    super.initState();
-    AppLogger.debug("IndividualChatContentWidget: initState");
-    // Die meiste Logik hier ist jetzt überflüssig.
-  }
-
-  // Wir verwenden didUpdateWidget, um auf Änderungen der Nachrichtenliste zu reagieren.
-  @override
   void didUpdateWidget(covariant IndividualChatContentWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Dieser Check ist nicht perfekt, aber er fängt das Hinzufügen einer neuen Nachricht gut ab.
-    // Ein komplexerer Vergleich wäre hier möglich, wenn nötig.
     final provider = context.read<IndividualChatProvider>();
     if (provider.messages.isNotEmpty) {
       _scrollToBottom();
@@ -47,57 +37,57 @@ class _IndividualChatContentWidgetState extends State<IndividualChatContentWidge
 
   @override
   void dispose() {
-    AppLogger.debug("IndividualChatContentWidget: dispose");
     _messageController.dispose();
     _scrollController.dispose();
     _messageInputFocusNode.dispose();
     super.dispose();
   }
 
+  // OPTIMIERT: Helper-Methode für themenkonforme Snackbars
+  void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    final theme = Theme.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? theme.colorScheme.error : theme.colorScheme.primary,
+      ),
+    );
+  }
+
   void _sendMessage() {
     final provider = context.read<IndividualChatProvider>();
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
-      AppLogger.debug("IndividualChatContentWidget: Sending text message: '$text'");
       provider.sendTextMessage(text);
       _messageController.clear();
       _messageInputFocusNode.requestFocus();
     } else if (provider.imagePreview != null) {
-      AppLogger.debug("IndividualChatContentWidget: Sending selected image.");
       provider.sendSelectedImage();
     }
   }
 
   Future<void> _pickImage() async {
     final provider = context.read<IndividualChatProvider>();
-    AppLogger.debug("IndividualChatContentWidget: Pick image called.");
     _messageInputFocusNode.unfocus();
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-      if (image != null) {
-        provider.setImageForPreview(File(image.path));
-      } else {
-        provider.setImageForPreview(null);
-      }
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      provider.setImageForPreview(image != null ? File(image.path) : null);
     } catch (e, stackTrace) {
       AppLogger.error("IndividualChatContentWidget: ImagePicker Error", e, stackTrace);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Fehler beim Auswählen des Bildes."), backgroundColor: Colors.red),
-        );
-      }
+      // OPTIMIERT: Verwendet die neue Snackbar-Helper-Methode
+      _showSnackbar("Fehler beim Auswählen des Bildes.", isError: true);
       provider.setImageForPreview(null);
     }
   }
 
   void _scrollToBottom({bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    // Verzögerung mit addPostFrameCallback, um sicherzustellen, dass die Liste gezeichnet wurde.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          0.0, // In einer umgekehrten Liste ist 0 der untere Rand.
+          0.0,
           duration: Duration(milliseconds: animated ? 300 : 1),
           curve: Curves.easeOut,
         );
@@ -107,40 +97,33 @@ class _IndividualChatContentWidgetState extends State<IndividualChatContentWidge
 
   @override
   Widget build(BuildContext context) {
-    // context.watch sorgt dafür, dass das Widget neu gebaut wird, wenn sich der Provider-Zustand ändert.
     final chatProvider = context.watch<IndividualChatProvider>();
     final theme = Theme.of(context);
-    AppLogger.debug("IndividualChatContentWidget: Building. Messages: ${chatProvider.messages.length}, Loading: ${chatProvider.isLoading}, Sending: ${chatProvider.isSendingMessage}, Error: ${chatProvider.error}");
 
     return Column(
       children: [
         Expanded(
           child: MessageListWidget(
             messages: chatProvider.messages,
-            // --- KORRIGIERTE PROPERTY-NAMEN ---
             isLoading: chatProvider.isLoading && chatProvider.messages.isEmpty,
             listError: chatProvider.error,
             scrollController: _scrollController,
             isGroupChat: false,
           ),
         ),
-        // Zeige den Fehler nur an, wenn wir nicht gerade senden (vermeidet doppelte Anzeigen)
         if (chatProvider.error != null && !chatProvider.isSendingMessage)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             child: Text(
               chatProvider.error!,
-              style: TextStyle(color: theme.colorScheme.error, fontSize: 12),
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ),
         if (chatProvider.imagePreview != null)
           ImagePreviewWidget(
-              imageFile: chatProvider.imagePreview!,
-              onCancel: () {
-                AppLogger.debug("IndividualChatContentWidget: Cancel image preview.");
-                context.read<IndividualChatProvider>().setImageForPreview(null);
-              }
+            imageFile: chatProvider.imagePreview!,
+            onCancel: () => context.read<IndividualChatProvider>().setImageForPreview(null),
           ),
         MessageInputWidget(
           controller: _messageController,

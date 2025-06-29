@@ -3,12 +3,12 @@ import 'package:provider/provider.dart';
 
 // Entities
 import '../../domain/entities/message_entity.dart';
-import '../../domain/entities/chat_user_entity.dart'; // Für ChatUserEntity
+import '../../domain/entities/chat_user_entity.dart';
 
 // Widgets
-import 'chat_message_item_widget.dart'; // Das Widget für einzelne Nachrichten
+import 'chat_message_item_widget.dart';
 
-// Provider (um currentUserId und Partner/Mitglieder-Details zu bekommen)
+// Provider
 import '../providers/individual_chat_provider.dart';
 import '../providers/group_chat_provider.dart';
 
@@ -17,10 +17,10 @@ import '../../../../core/utils/app_logger.dart';
 
 class MessageListWidget extends StatelessWidget {
   final List<MessageEntity> messages;
-  final bool isLoading; // Zeigt an, ob die Nachrichtenliste initial geladen wird
-  final String? listError; // Spezifischer Fehler für das Laden der Liste
+  final bool isLoading;
+  final String? listError;
   final ScrollController scrollController;
-  final bool isGroupChat; // Unterscheidet, ob es ein Gruppenchat oder 1-zu-1 Chat ist
+  final bool isGroupChat;
 
   const MessageListWidget({
     super.key,
@@ -33,32 +33,34 @@ class MessageListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Theme am Anfang holen
     AppLogger.debug("MessageListWidget: Building. Message count: ${messages.length}, isLoading: $isLoading, isGroupChat: $isGroupChat, Error: $listError");
 
     if (isLoading && messages.isEmpty) {
-      AppLogger.debug("MessageListWidget: Showing initial loading indicator.");
       return const Center(child: CircularProgressIndicator());
     }
 
     if (listError != null && messages.isEmpty) {
-      AppLogger.error("MessageListWidget: Displaying list error: $listError");
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text("Fehler beim Laden der Nachrichten:\n$listError",
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.redAccent)),
+          child: Text(
+            "Fehler beim Laden der Nachrichten:\n$listError",
+            textAlign: TextAlign.center,
+            // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+          ),
         ),
       );
     }
 
     if (messages.isEmpty) {
-      AppLogger.debug("MessageListWidget: No messages to display.");
-      return const Center(
+      return Center(
         child: Text(
           "Sende eine Nachricht, um die Unterhaltung zu beginnen!",
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70, fontSize: 16),
+          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -79,13 +81,18 @@ class MessageListWidget extends StatelessWidget {
 
     if (currentUserId.isEmpty) {
       AppLogger.error("MessageListWidget: currentUserId is empty. Cannot determine message sender.");
-      // Fallback oder Fehleranzeige, wenn currentUserId nicht verfügbar ist
-      return const Center(child: Text("Fehler: Benutzer-ID nicht verfügbar.", style: TextStyle(color: Colors.redAccent)));
+      return Center(
+        child: Text(
+          "Fehler: Benutzer-ID nicht verfügbar.",
+          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+        ),
+      );
     }
 
     return ListView.builder(
       controller: scrollController,
-      reverse: true, // Wichtig für Chat-Layout (neueste Nachrichten unten)
+      reverse: true,
       padding: const EdgeInsets.all(8.0),
       itemCount: messages.length,
       itemBuilder: (context, index) {
@@ -100,13 +107,8 @@ class MessageListWidget extends StatelessWidget {
               AppLogger.warning("MessageListWidget: Sender details not found for group member ${message.fromId} in message ${message.id}");
             }
           } else {
-            // In 1-zu-1 ist der Absender (wenn nicht ich) der Chat-Partner
-            if (chatPartnerForIndividualChat != null && message.fromId == chatPartnerForIndividualChat.id) {
+            if (chatPartnerForIndividualChat?.id == message.fromId) {
               senderDetails = chatPartnerForIndividualChat;
-            } else if (chatPartnerForIndividualChat == null) {
-              AppLogger.warning("MessageListWidget: chatPartnerForIndividualChat is null for message ${message.id} from ${message.fromId}");
-            } else if (message.fromId != chatPartnerForIndividualChat.id) {
-              AppLogger.warning("MessageListWidget: Message ${message.id} fromId ${message.fromId} does not match partnerId ${chatPartnerForIndividualChat.id}");
             }
           }
         }

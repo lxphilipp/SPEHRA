@@ -23,10 +23,6 @@ class LinkTextWidget extends StatelessWidget { // Umbenannt für Klarheit
         style: TextStyle(color: theme.colorScheme.error), // Fehlerfarbe aus Theme
       );
     }
-
-    // Definiere einen Link-Stil, der auf dem Theme basiert
-    // Du könntest auch einen spezifischen Stil im TextTheme deines AppTheme definieren
-    // z.B. theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary, decoration: TextDecoration.underline)
     final TextStyle linkStyle = theme.textTheme.bodyMedium?.copyWith( // Basisstil
       color: theme.colorScheme.primary, // Typische Link-Farbe (oft primär oder eine Akzentfarbe)
       decoration: TextDecoration.underline,

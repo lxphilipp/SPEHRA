@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/core/utils/app_logger.dart';
 import '/core/widgets/expandable_text_widget.dart';
-// Für Theme-Zugriff
-import '/core/theme/sdg_color_theme.dart';
-import '/features/auth/presentation/providers/auth_provider.dart'; // Für isLoggedIn Check
+import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
-import 'challenge_card_widget.dart'; // Das neue Widget für eine Kachel
+import 'challenge_card_widget.dart';
 
 class ChallengeListContent extends StatefulWidget {
   final int? initialTabIndex;
@@ -20,11 +18,10 @@ class ChallengeListContent extends StatefulWidget {
 
 class _ChallengeListContentState extends State<ChallengeListContent> {
   int _selectedTab = 0;
-  final List<int> _selectedCategoryIndices = []; // Indizes der ausgewählten SDG-Icons
+  final List<int> _selectedCategoryIndices = [];
 
   final List<String> _categoryKeys = List.generate(17, (i) => 'goal${i + 1}');
   final List<String> _categoryImagePaths = List.generate(17, (i) => 'assets/icons/17_SDG_Icons/${i + 1}.png');
-
 
   @override
   void initState() {
@@ -68,18 +65,18 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16), // Mehr Padding
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
               color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-              width: 3, // Etwas dicker für bessere Sichtbarkeit
+              width: 3,
             ),
           ),
         ),
         child: Text(
           title,
-          style: theme.textTheme.titleSmall?.copyWith( // Angepasster Textstil
+          style: theme.textTheme.titleSmall?.copyWith(
             color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
@@ -91,44 +88,36 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final sdgTheme = theme.extension<SdgColorTheme>();
-
-    final authProvider = Provider.of<AuthenticationProvider>(context, listen: false); // listen:false, wenn nur für Aktionen
-    final userProfileProvider = Provider.of<UserProfileProvider>(context); // listen:true für Task-Listen
-    final challengeProvider = Provider.of<ChallengeProvider>(context); // listen:true für Challenge-Stream
+    final authProvider = context.read<AuthenticationProvider>();
+    final userProfileProvider = context.watch<UserProfileProvider>();
+    final challengeProvider = context.watch<ChallengeProvider>();
 
     if (!authProvider.isLoggedIn || userProfileProvider.userProfile == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    List<Widget> sdgFilterIcons = List.generate(_categoryImagePaths.length, (index) =>
-        _buildCategoryFilterIcon(index, _categoryImagePaths[index], theme)
+    final List<Widget> sdgFilterIcons = List.generate(
+      _categoryImagePaths.length,
+          (index) => _buildCategoryFilterIcon(index, _categoryImagePaths[index], theme),
     );
 
     return CustomScrollView(
       slivers: <Widget>[
         SliverAppBar(
           title: Text('Challenges', style: theme.appBarTheme.titleTextStyle),
-          backgroundColor: theme.appBarTheme.backgroundColor,
-          iconTheme: theme.appBarTheme.iconTheme,
           pinned: true,
           elevation: 0,
-          expandedHeight: MediaQuery.of(context).size.height / 3, // Höhe anpassbar
+          expandedHeight: MediaQuery.of(context).size.height / 3,
           flexibleSpace: FlexibleSpaceBar(
-            // Dein Header-Design hier
-            background: Container(color: theme.scaffoldBackgroundColor), // Fallback
-            // ... (Gradienten, Bilder etc. wie in deinem alten Design)
-            titlePadding: const EdgeInsets.only(left: 20, bottom: 60), // Titel weiter unten
-            title: Column( // Verwende Column für Titel und ExpandableText
+            background: Container(color: theme.scaffoldBackgroundColor),
+            titlePadding: const EdgeInsets.only(left: 20, bottom: 60),
+            title: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Explore Challenges',
-                  style: theme.textTheme.headlineSmall?.copyWith(color: theme.colorScheme.onSurface),
-                ),
+                Text('Explore Challenges', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),
-                const SizedBox(width: 250, child: ExpandableTextWidget()), // Max Breite für Text
+                const SizedBox(width: 250, child: ExpandableTextWidget()),
               ],
             ),
           ),
@@ -136,13 +125,13 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
         SliverPersistentHeader(
           pinned: true,
           delegate: _SliverAppBarDelegate(
-            minHeight: 70.0, // Höhe für die SDG Icons
+            minHeight: 70.0,
             maxHeight: 70.0,
             child: Container(
               color: theme.scaffoldBackgroundColor,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical:10),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 children: sdgFilterIcons,
               ),
             ),
@@ -151,7 +140,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
         SliverPersistentHeader(
           pinned: true,
           delegate: _SliverAppBarDelegate(
-            minHeight: 50.0, // Höhe für Tabs
+            minHeight: 50.0,
             maxHeight: 50.0,
             child: Container(
               color: theme.scaffoldBackgroundColor,
@@ -167,77 +156,83 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
             ),
           ),
         ),
-        StreamBuilder<List<ChallengeEntity>?>(
+        // KORRIGIERTER StreamBuilder
+        StreamBuilder<List<ChallengeEntity>>(
+          // Wir erwarten jetzt eine non-nullable Liste, der Stream im Provider wurde angepasst
           stream: challengeProvider.allChallengesStream,
           builder: (context, snapshot) {
-            AppLogger.info("ChallengeList: StreamBuilder called - ConnectionState: ${snapshot.connectionState}, HasData: ${snapshot.hasData}, Error: ${snapshot.error}");
-            
-            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-              AppLogger.info("ChallengeList: Showing loading indicator");
+            // 1. Ladezustand explizit prüfen
+            if (snapshot.connectionState == ConnectionState.waiting) {
               return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
             }
+
+            // 2. Fehlerzustand explizit prüfen
             if (snapshot.hasError) {
-              AppLogger.error("ChallengeList: Error in stream: ${snapshot.error}");
-              return SliverFillRemaining(child: Center(child: Text('Error loading challenges: ${snapshot.error}', style: TextStyle(color: theme.colorScheme.error))));
-            }
-            final allChallenges = snapshot.data ?? [];
-            AppLogger.info("ChallengeList: Received ${allChallenges.length} challenges from stream");
-            
-            if (allChallenges.isEmpty && snapshot.connectionState != ConnectionState.waiting) {
-              AppLogger.warning("ChallengeList: No challenges found and not waiting for data");
               return SliverFillRemaining(
                 child: Center(
                   child: Text(
-                    'No challenges available yet.',
-                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant), // KORRIGIERT
+                    'Error: ${snapshot.error}',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
                   ),
                 ),
               );
             }
 
+            // 3. Daten-Zustand prüfen (inklusive, ob die Liste leer ist)
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return SliverFillRemaining(
+                child: Center(
+                  child: Text(
+                    'No challenges available yet.',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              );
+            }
 
-            List<ChallengeEntity> challengesToShow = [];
+            // 4. Erfolgsfall: Wir wissen, dass snapshot.data nicht null ist.
+            final allChallenges = snapshot.data!;
+
+            // --- Die Filterlogik beginnt hier und hat sicheren Zugriff ---
             final ongoingTaskIds = userProfileProvider.userProfile?.ongoingTasks ?? [];
             final completedTaskIds = userProfileProvider.userProfile?.completedTasks ?? [];
-            
-            AppLogger.debug("ChallengeList: User has ${ongoingTaskIds.length} ongoing tasks and ${completedTaskIds.length} completed tasks");
-            AppLogger.debug("ChallengeList: Selected tab: $_selectedTab, Category filters: $_selectedCategoryIndices");
+            List<ChallengeEntity> challengesToShow;
 
             if (_selectedTab == 0) { // Discover
               challengesToShow = allChallenges.where((challenge) =>
-              !ongoingTaskIds.contains(challenge.id) &&
-                  !completedTaskIds.contains(challenge.id)).toList();
-              AppLogger.info("ChallengeList: Discover tab - Filtered to ${challengesToShow.length} challenges");
+              !ongoingTaskIds.contains(challenge.id) && !completedTaskIds.contains(challenge.id)
+              ).toList();
             } else if (_selectedTab == 1) { // Ongoing
-              challengesToShow = allChallenges.where((challenge) =>
-                  ongoingTaskIds.contains(challenge.id)).toList();
-              AppLogger.info("ChallengeList: Ongoing tab - Filtered to ${challengesToShow.length} challenges");
-            } else if (_selectedTab == 2) { // Completed
-              challengesToShow = allChallenges.where((challenge) =>
-                  completedTaskIds.contains(challenge.id)).toList();
-              AppLogger.info("ChallengeList: Completed tab - Filtered to ${challengesToShow.length} challenges");
+              challengesToShow = allChallenges.where((challenge) => ongoingTaskIds.contains(challenge.id)).toList();
+            } else { // Completed
+              challengesToShow = allChallenges.where((challenge) => completedTaskIds.contains(challenge.id)).toList();
             }
 
             if (_selectedCategoryIndices.isNotEmpty) {
-              List<String> selectedSdgKeys = _selectedCategoryIndices.map((index) => _categoryKeys[index]).toList();
-              int beforeCategoryFilter = challengesToShow.length;
+              final selectedSdgKeys = _selectedCategoryIndices.map((index) => _categoryKeys[index]).toList();
               challengesToShow = challengesToShow.where((challenge) =>
-                  challenge.categories.any((catKey) => selectedSdgKeys.contains(catKey))).toList();
-              AppLogger.debug("ChallengeList: Category filter applied - $beforeCategoryFilter -> ${challengesToShow.length} challenges");
+                  challenge.categories.any((catKey) => selectedSdgKeys.contains(catKey))
+              ).toList();
             }
 
-            AppLogger.info("ChallengeList: Final display - Showing ${challengesToShow.length} challenges");
-            if (challengesToShow.isNotEmpty) {
-              AppLogger.debug("ChallengeList: Challenge titles to display: ${challengesToShow.map((c) => c.title).join(', ')}");
+            if (challengesToShow.isEmpty) {
+              return SliverFillRemaining(
+                child: Center(
+                  child: Text(
+                    'No challenges in this category.',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              );
             }
-            
+
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                       (context, index) {
                     final challenge = challengesToShow[index];
-                    return ChallengeCardWidget(challenge: challenge, sdgTheme: sdgTheme);
+                    return ChallengeCardWidget(challenge: challenge);
                   },
                   childCount: challengesToShow.length,
                 ),
@@ -250,7 +245,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
   }
 }
 
-// Hilfsklasse für SliverPersistentHeader (unverändert)
+// ... (_SliverAppBarDelegate bleibt unverändert) ...
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({ required this.minHeight, required this.maxHeight, required this.child });
   final double minHeight;

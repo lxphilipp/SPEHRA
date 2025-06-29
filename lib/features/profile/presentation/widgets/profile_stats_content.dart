@@ -3,14 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 // Core Imports
-import '/core/theme/app_colors.dart'; // Für Fallback-Farben
-import '/core/theme/sdg_color_theme.dart'; // Für SDG-Farben in der Legende (optional)
+import '/core/theme/sdg_color_theme.dart';
 
 // Feature Imports
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../../domain/entities/user_profile_entity.dart';
-
 
 class ProfileStatsContent extends StatelessWidget {
   const ProfileStatsContent({super.key});
@@ -18,12 +16,11 @@ class ProfileStatsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final authProvider = Provider.of<AuthenticationProvider>(context);
-    final profileProvider = Provider.of<UserProfileProvider>(context);
+    final authProvider = context.watch<AuthenticationProvider>();
+    final profileProvider = context.watch<UserProfileProvider>();
 
     final UserProfileEntity? userProfile = profileProvider.userProfile;
-    final SdgColorTheme? sdgTheme = Theme.of(context).extension<SdgColorTheme>();
-
+    final SdgColorTheme? sdgTheme = theme.extension<SdgColorTheme>();
 
     if (profileProvider.isLoadingProfile && userProfile == null) {
       return const Center(child: CircularProgressIndicator());
@@ -40,47 +37,50 @@ class ProfileStatsContent extends StatelessWidget {
     }
 
     if (!authProvider.isLoggedIn || userProfile == null) {
-      return const Center(
+      return Center(
         child: Text(
           'Please log in to view your profile.',
-          style: TextStyle(color: AppColors.primaryText), // Besser: theme.colorScheme.onBackground
+          style: theme.textTheme.bodyLarge, // OPTIMIERT
         ),
       );
     }
 
-    String? profilePicUrl = userProfile.profileImageUrl;
+    final String? profilePicUrl = userProfile.profileImageUrl;
 
     return ListView(
-      padding: const EdgeInsets.only(top: 0),
+      padding: EdgeInsets.zero,
       children: [
-        // User profile header
+        // --- User profile header ---
         SizedBox(
           height: MediaQuery.of(context).size.height / 3.5,
           child: Stack(
             fit: StackFit.expand,
             children: [
               if (profilePicUrl != null && profilePicUrl.isNotEmpty)
-                Image.network(profilePicUrl, fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Image.asset('assets/images/start.png', fit: BoxFit.cover),
+                Image.network(
+                  profilePicUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Image.asset('assets/images/start.png', fit: BoxFit.cover),
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
-                    return Center(child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                          : null,
-                    ));
+                    return const Center(child: CircularProgressIndicator());
                   },
                 )
               else
                 Image.asset('assets/images/start.png', fit: BoxFit.cover),
-              // Gradient Overlays
+              // OPTIMIERT: Gradient verwendet Theme-Farbe
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.bottomCenter, end: Alignment.center,
-                      colors: [ AppColors.primaryBackground.withOpacity(0.8), AppColors.primaryBackground.withOpacity(0.0)],
-                      stops: const [0.0, 0.7], // Gradient etwas höher ziehen
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.center,
+                      colors: [
+                        theme.scaffoldBackgroundColor,
+                        theme.scaffoldBackgroundColor.withOpacity(0.0)
+                      ],
+                      stops: const [0.0, 0.9],
                     ),
                   ),
                 ),
@@ -89,49 +89,52 @@ class ProfileStatsContent extends StatelessWidget {
           ),
         ),
 
-        // User's basic information
+        // --- User's basic information ---
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                userProfile.name, // Titel ist der Name des Users
-                style: theme.textTheme.headlineMedium?.copyWith(color: AppColors.primaryText, fontWeight: FontWeight.bold),
+                userProfile.name,
+                // OPTIMIERT: Verwendet Text-Stil aus dem Theme
+                style: theme.textTheme.headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16), // Mehr Abstand
+              const SizedBox(height: 16),
               _buildProfileInfoRow(context, Icons.email_outlined, userProfile.email ?? authProvider.currentUserEmail ?? 'N/A'),
               _buildProfileInfoRow(context, Icons.cake_outlined, '${userProfile.age} years old'),
               _buildProfileInfoRow(context, Icons.school_outlined, userProfile.studyField),
               _buildProfileInfoRow(context, Icons.account_balance_outlined, userProfile.school),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildStatChip(context, "Points", userProfile.points.toString(), Icons.star_border_purple500_outlined, theme.colorScheme.primary),
-                  _buildStatChip(context, "Level", userProfile.level.toString(), Icons.military_tech_outlined, theme.colorScheme.secondary),
+                  // OPTIMIERT: Die _buildStatChip-Methode verwendet jetzt Theme-Farben
+                  _buildStatChip(context, "Points", userProfile.points.toString(), Icons.star, theme.colorScheme.primary),
+                  const SizedBox(width: 12),
+                  _buildStatChip(context, "Level", userProfile.level.toString(), Icons.shield, theme.colorScheme.secondary),
                 ],
               )
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
 
-        // Statistics section title
+        // --- Statistics section ---
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Text(
-            "Your SDG Engagement", // Aussagekräftigerer Titel
-            style: theme.textTheme.titleLarge?.copyWith(color: AppColors.primaryText),
+            "Your SDG Engagement",
+            style: theme.textTheme.titleLarge, // OPTIMIERT
           ),
         ),
         const SizedBox(height: 10),
 
-        // PieChart
+        // --- PieChart ---
         StreamBuilder<List<PieChartSectionData>?>(
           stream: profileProvider.pieChartDataStream,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && (!snapshot.hasData || snapshot.data == null)) {
+            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
               return const SizedBox(height: 250, child: Center(child: CircularProgressIndicator()));
             }
             if (snapshot.hasError) {
@@ -139,14 +142,16 @@ class ProfileStatsContent extends StatelessWidget {
             }
             final pieData = snapshot.data;
             if (pieData == null || pieData.isEmpty) {
-              return const SizedBox(
-                height: 150, // Höhe geben, damit der Text Platz hat
+              return SizedBox(
+                height: 150,
                 child: Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Text("No completed challenges to show stats for yet.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.primaryText)), // Besser: theme.colorScheme.onSurfaceVariant
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(
+                      "No completed challenges to show stats for yet.",
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant), // OPTIMIERT
+                    ),
                   ),
                 ),
               );
@@ -159,13 +164,8 @@ class ProfileStatsContent extends StatelessWidget {
                   PieChartData(
                     sections: pieData,
                     sectionsSpace: 2,
-                    centerSpaceRadius: 60, // Größerer Innenkreis
+                    centerSpaceRadius: 60,
                     borderData: FlBorderData(show: false),
-                    pieTouchData: PieTouchData(
-                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                        // Optional: Interaktion bei Touch
-                      },
-                    ),
                   ),
                 ),
               ),
@@ -174,58 +174,59 @@ class ProfileStatsContent extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // SDG Color Legend (optional, wenn das PieChart nicht selbsterklärend genug ist)
+        // --- SDG Color Legend ---
         if (sdgTheme != null)
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Wrap(
-              spacing: 6.0, // Weniger Abstand
-              runSpacing: 6.0,
+              spacing: 8.0,
+              runSpacing: 8.0,
               alignment: WrapAlignment.center,
               children: List.generate(17, (index) {
                 final goalKey = 'goal${index + 1}';
                 final color = sdgTheme.colorForSdgKey(goalKey);
-                // Zeige nur Chips für Farben, die im PieChart vorkommen könnten
-                // oder zeige alle als Legende. Fürs Erste alle:
-                return Tooltip( // Tooltip für den vollen Namen
-                  message: "SDG ${index+1}", // TODO: Hier den echten Titel des SDGs anzeigen
+                return Tooltip(
+                  message: "SDG ${index + 1}",
                   child: Chip(
                     avatar: CircleAvatar(backgroundColor: color, radius: 6),
-                    label: Text(goalKey.replaceFirst('goal', ''), style: TextStyle(fontSize: 9, color: theme.colorScheme.onSurfaceVariant)),
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    label: Text(goalKey.replaceFirst('goal', ''), style: theme.textTheme.labelSmall),
+                    // OPTIMIERT: Verwendet eine semantische Container-Farbe
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 );
               }),
             ),
           ),
-        const SizedBox(height: 30), // Platz am Ende
+        const SizedBox(height: 30),
       ],
     );
   }
 
+  // OPTIMIERT: Diese Methode ist jetzt sauber und themenbasiert
   Widget _buildProfileInfoRow(BuildContext context, IconData icon, String text) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         children: [
           Icon(icon, color: theme.colorScheme.primary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.primaryText))),
+          const SizedBox(width: 16),
+          Expanded(child: Text(text, style: theme.textTheme.bodyLarge)),
         ],
       ),
     );
   }
 
+  // OPTIMIERT: Diese Methode ist jetzt sauber und themenbasiert
   Widget _buildStatChip(BuildContext context, String label, String value, IconData icon, Color color) {
     final theme = Theme.of(context);
     return Chip(
       avatar: Icon(icon, color: color, size: 18),
-      label: Text('$label: $value', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSecondaryContainer)),
-      backgroundColor: color.withOpacity(0.2), // Leichter Hintergrund für den Chip
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      label: Text('$label: $value', style: theme.textTheme.labelMedium),
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 }

@@ -4,7 +4,7 @@ import '../../../../core/utils/app_logger.dart';
 
 class ImagePreviewWidget extends StatelessWidget {
   final File imageFile;
-  final VoidCallback onCancel; // Callback, wenn der User die Vorschau schließt
+  final VoidCallback onCancel;
 
   const ImagePreviewWidget({
     super.key,
@@ -14,13 +14,16 @@ class ImagePreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context); // Theme am Anfang holen
     AppLogger.debug("ImagePreviewWidget: Displaying image preview.");
+
     return Container(
       padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 4.0), // Etwas Abstand
+      margin: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 4.0),
       height: 120,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1), // Leichter Hintergrund
+        // OPTIMIERT: Verwendet eine semantische Farbe aus dem Theme
+        color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
@@ -31,33 +34,43 @@ class ImagePreviewWidget extends StatelessWidget {
             child: Image.file(
               imageFile,
               height: 100,
-              width: 100, // Quadratische Vorschau
+              width: 100,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 AppLogger.error("ImagePreviewWidget: Error loading preview image file.", error, stackTrace);
+                // OPTIMIERT: Der Fehlerzustand verwendet jetzt Theme-Farben
                 return Container(
-                  height: 100, width: 100,
-                  color: Colors.grey[700],
-                  child: const Center(child: Icon(Icons.broken_image, color: Colors.white54)),
+                  height: 100,
+                  width: 100,
+                  color: theme.colorScheme.surfaceVariant,
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 );
               },
             ),
           ),
           Positioned(
-            top: 4,
-            right: MediaQuery.of(context).size.width * 0.5 - 50 - 18, // Versuch der Zentrierung relativ zum Bild
-            child: Material( // Material für den InkWell-Effekt
-              color: Colors.transparent,
+            top: 0,
+            right: 0,
+            child: Material(
+              color: Colors.transparent, // Transparent ist hier in Ordnung
               child: InkWell(
-                onTap: (){
-                  AppLogger.debug("ImagePreviewWidget: Cancel button tapped.");
-                  onCancel();
-                },
+                onTap: onCancel,
                 borderRadius: BorderRadius.circular(14),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 14,
-                  backgroundColor: Colors.black54,
-                  child: Icon(Icons.close, color: Colors.white, size: 18),
+                  // OPTIMIERT: Verwendet eine dunkle, halbtransparente Farbe aus dem Theme
+                  backgroundColor: theme.colorScheme.scrim.withOpacity(0.7),
+                  child: Icon(
+                    Icons.close,
+                    // OPTIMIERT: Die Icon-Farbe ist jetzt an die Hintergrundfarbe gekoppelt
+                    color: theme.colorScheme.onSecondaryContainer,
+                    size: 18,
+                  ),
                 ),
               ),
             ),

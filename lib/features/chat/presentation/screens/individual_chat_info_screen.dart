@@ -5,26 +5,20 @@ import 'package:iconsax/iconsax.dart';
 // Provider & Entities
 import '../providers/individual_chat_provider.dart';
 import '../../domain/entities/chat_user_entity.dart';
-// import '../../../profile/presentation/screens/user_profile_screen.dart'; // Optional für Profilansicht
 
 class IndividualChatInfoScreen extends StatelessWidget {
   const IndividualChatInfoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Wir verwenden den bestehenden Provider vom Chat-Screen
     final provider = context.watch<IndividualChatProvider>();
     final theme = Theme.of(context);
-
-    // Der ChatPartner sollte immer vorhanden sein, wenn wir hier sind.
     final ChatUserEntity partner = provider.chatPartner;
 
     return Scaffold(
-      backgroundColor: const Color(0xff040324),
+      // OPTIMIERT: AppBar und Hintergrund werden vom Theme gesteuert
       appBar: AppBar(
-        title: Text(partner.name, style: const TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xff040324),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(partner.name),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -34,29 +28,38 @@ class IndividualChatInfoScreen extends StatelessWidget {
               const SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                backgroundColor: Colors.grey.shade800,
-                backgroundImage: partner.imageUrl != null ? NetworkImage(partner.imageUrl!) : null,
+                // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
+                backgroundColor: theme.colorScheme.surfaceVariant,
+                backgroundImage: (partner.imageUrl != null && partner.imageUrl!.isNotEmpty)
+                    ? NetworkImage(partner.imageUrl!)
+                    : null,
                 child: partner.imageUrl == null
-                    ? Text(partner.name.isNotEmpty ? partner.name.substring(0, 1).toUpperCase() : '?', style: const TextStyle(fontSize: 40, color: Colors.white))
+                    ? Text(
+                  partner.name.isNotEmpty ? partner.name.substring(0, 1).toUpperCase() : '?',
+                  style: theme.textTheme.displaySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                )
                     : null,
               ),
               const SizedBox(height: 16),
               Text(
                 partner.name,
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                // OPTIMIERT: Text-Stil aus dem Theme
+                style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 30),
-              const Divider(color: Colors.white24),
+              const Divider(), // OPTIMIERT: Farbe kommt vom Theme
 
               // --- Aktionen ---
               ListTile(
-                leading: const Icon(Iconsax.message_remove, color: Colors.orangeAccent),
-                title: const Text("Clear Chat History", style: TextStyle(color: Colors.orangeAccent)),
+                // OPTIMIERT: Farbe für "warnende" Aktionen (z.B. tertiary color)
+                leading: Icon(Iconsax.message_remove, color: theme.colorScheme.tertiary),
+                title: Text("Clear Chat History", style: TextStyle(color: theme.colorScheme.tertiary)),
                 onTap: () => _showClearHistoryDialog(context, provider),
               ),
               ListTile(
-                leading: const Icon(Iconsax.trash, color: Colors.redAccent),
-                title: const Text("Delete Chat", style: TextStyle(color: Colors.redAccent)),
+                // OPTIMIERT: Fehlerfarbe für "destruktive" Aktionen
+                leading: Icon(Iconsax.trash, color: theme.colorScheme.error),
+                title: Text("Delete Chat", style: TextStyle(color: theme.colorScheme.error)),
                 onTap: () => _showDeleteChatDialog(context, provider),
               ),
             ],
@@ -68,6 +71,7 @@ class IndividualChatInfoScreen extends StatelessWidget {
 
   // Dialog für "Clear History"
   void _showClearHistoryDialog(BuildContext context, IndividualChatProvider provider) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -76,14 +80,15 @@ class IndividualChatInfoScreen extends StatelessWidget {
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
           TextButton(
-            child: const Text("Clear", style: TextStyle(color: Colors.red)),
+            // OPTIMIERT: Verwendet Fehlerfarbe aus dem Theme
+            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+            child: const Text("Clear"),
             onPressed: () async {
-              Navigator.of(ctx).pop(); // Dialog schließen
+              Navigator.of(ctx).pop();
               await provider.clearHistory();
-              if(context.mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Chat history cleared."), duration: Duration(seconds: 2))
-                );
+                    const SnackBar(content: Text("Chat history cleared."), duration: Duration(seconds: 2)));
               }
             },
           ),
@@ -94,6 +99,7 @@ class IndividualChatInfoScreen extends StatelessWidget {
 
   // Dialog für "Delete Chat"
   void _showDeleteChatDialog(BuildContext context, IndividualChatProvider provider) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -102,13 +108,13 @@ class IndividualChatInfoScreen extends StatelessWidget {
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
           TextButton(
-            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            // OPTIMIERT: Verwendet Fehlerfarbe aus dem Theme
+            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+            child: const Text("Delete"),
             onPressed: () async {
-              Navigator.of(ctx).pop(); // Dialog schließen
-              await provider.hideChat(); // Ruft die Methode zum Verstecken auf
-
-              if(context.mounted) {
-                // Navigiere aus dem Info-Screen und dem Chat-Screen zurück zur Chat-Liste
+              Navigator.of(ctx).pop();
+              await provider.hideChat();
+              if (context.mounted) {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               }
             },

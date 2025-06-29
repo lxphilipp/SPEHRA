@@ -5,32 +5,27 @@ import 'package:flutter_sdg/features/chat/domain/usecases/remove_member_from_gro
 import 'package:flutter_sdg/features/chat/domain/usecases/update_group_chat_details_usecase.dart';
 import 'package:provider/provider.dart';
 
-// Domain Entities (werden indirekt über den Provider genutzt)
-// import '../../domain/entities/group_chat_entity.dart';
-
-// UseCases (werden für die Provider-Erstellung im `create` benötigt)
+// UseCases
 import '../../domain/usecases/watch_group_chat_by_id_usecase.dart';
 import '../../domain/usecases/get_group_messages_stream_usecase.dart';
 import '../../domain/usecases/send_message_usecase.dart';
 import '../../domain/usecases/upload_chat_image_usecase.dart';
 import '../../domain/usecases/get_chat_users_stream_by_ids_usecase.dart';
-// import '../../domain/usecases/update_group_chat_details_usecase.dart'; // Für spätere Bearbeitungsfunktionen
 
 // Provider
 import '../providers/group_chat_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
-// Widgets
+// Widgets & Screens
 import '../widgets/group_chat_content_widget.dart';
+import 'group_settings_screen.dart';
 
 // Core
 import '../../../../core/utils/app_logger.dart';
-import 'group_settings_screen.dart';
-// import 'group_settings_screen.dart'; // Beispiel für späteren Navigationsziel
 
 class GroupChatScreen extends StatelessWidget {
   final String groupId;
-  final String initialGroupName; // Für die AppBar, während Details laden
+  final String initialGroupName;
 
   const GroupChatScreen({
     super.key,
@@ -56,38 +51,28 @@ class GroupChatScreen extends StatelessWidget {
         addMembersToGroupUseCase: context.read<AddMembersToGroupUseCase>(),
         removeMemberFromGroupUseCase: context.read<RemoveMemberFromGroupUseCase>(),
         deleteGroupUseCase: context.read<DeleteGroupUseCase>(),
-
       ),
       child: Consumer<GroupChatProvider>(
         builder: (context, provider, _) {
-          final String appBarTitle = provider.groupDetails?.name ?? initialGroupName;
-          final bool canDisplayContent = provider.groupDetails != null || provider.isLoadingInitialData;
-          final bool displayErrorState = !provider.isLoadingInitialData && provider.groupDetails == null && provider.error != null;
-
-          AppLogger.debug("GroupChatScreen Consumer: AppBar Title: $appBarTitle, CanDisplay: $canDisplayContent, ErrorState: $displayErrorState, ProviderError: ${provider.error}");
+          final appBarTitle = provider.groupDetails?.name ?? initialGroupName;
+          final canDisplayContent = provider.groupDetails != null || provider.isLoadingInitialData;
+          final displayErrorState = !provider.isLoadingInitialData && provider.groupDetails == null && provider.error != null;
 
           return Scaffold(
-            backgroundColor: const Color(0xff040324), // Dein Chat-Hintergrund
+            // OPTIMIERT: Hintergrundfarbe aus dem Theme
+            backgroundColor: theme.colorScheme.background,
             appBar: AppBar(
+              // OPTIMIERT: Alle Stile (Farbe, Text, Icons) werden vom AppBarTheme geerbt
               title: Text(
                 appBarTitle,
-                style: theme.appBarTheme.titleTextStyle?.copyWith(color: Colors.white) ??
-                    const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
                 overflow: TextOverflow.ellipsis,
               ),
-              backgroundColor: const Color(0xff040324), // Dein AppBar-Hintergrund
-              iconTheme: theme.appBarTheme.iconTheme?.copyWith(color: Colors.white) ??
-                  const IconThemeData(color: Colors.white),
-              elevation: 0,
               actions: [
                 if (canDisplayContent && !displayErrorState && provider.groupDetails != null)
                   IconButton(
                     icon: const Icon(Icons.info_outline_rounded),
                     tooltip: "Gruppeninformationen",
                     onPressed: () {
-                      AppLogger.info("Group Info Tapped for groupId: ${provider.groupId}, name: ${provider.groupDetails!.name}");
-
-                      // Wir übergeben den Provider nicht direkt, der Screen holt ihn sich aus dem Kontext.
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider.value(
                           value: provider,
@@ -105,11 +90,15 @@ class GroupChatScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(provider.error ?? "Gruppe konnte nicht geladen werden.",
-                        textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent, fontSize: 16)),
-                    const SizedBox(height: 10),
+                    Text(
+                      provider.error ?? "Gruppe konnte nicht geladen werden.",
+                      textAlign: TextAlign.center,
+                      // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+                      style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+                    ),
+                    const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => provider.forceReloadData(), // Methode im Provider aufrufen
+                      onPressed: () => provider.forceReloadData(),
                       child: const Text("Erneut versuchen"),
                     )
                   ],

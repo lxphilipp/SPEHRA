@@ -7,9 +7,6 @@ import '../providers/group_chat_provider.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import 'user_search_screen.dart'; // Für die Mitgliedersuche
 
-// Core
-import '../../../../core/utils/app_logger.dart';
-
 class GroupSettingsScreen extends StatelessWidget {
   const GroupSettingsScreen({super.key});
 
@@ -29,11 +26,9 @@ class GroupSettingsScreen extends StatelessWidget {
     final bool amIAdmin = provider.amIAdmin;
 
     return Scaffold(
-      backgroundColor: const Color(0xff040324),
+      // OPTIMIERT: AppBar und Hintergrundfarbe werden vom Theme gesteuert
       appBar: AppBar(
-        title: const Text("Group Info", style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xff040324),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Group Info"),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -47,48 +42,54 @@ class GroupSettingsScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundColor: Colors.grey.shade800,
-                      backgroundImage: group.imageUrl != null ? NetworkImage(group.imageUrl!) : null,
+                      // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
+                      backgroundColor: theme.colorScheme.surfaceVariant,
+                      backgroundImage: (group.imageUrl != null && group.imageUrl!.isNotEmpty)
+                          ? NetworkImage(group.imageUrl!)
+                          : null,
                       child: group.imageUrl == null
-                          ? const Icon(Iconsax.people, size: 40, color: Colors.white70)
+                          ? Icon(Iconsax.people, size: 40, color: theme.colorScheme.onSurfaceVariant)
                           : null,
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        // OPTIMIERT: Text-Stil aus dem Theme
                         Text(
                           group.name,
-                          style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                          style: theme.textTheme.headlineSmall,
                         ),
                         if (amIAdmin)
                           IconButton(
-                            icon: const Icon(Iconsax.edit, color: Colors.white70, size: 20),
+                            icon: Icon(Iconsax.edit, color: theme.colorScheme.onSurfaceVariant, size: 20),
                             onPressed: () => _showEditNameDialog(context, provider, group.name),
                           ),
                       ],
                     ),
                     Text(
                       "${group.memberIds.length} members",
-                      style: const TextStyle(color: Colors.white54, fontSize: 16),
+                      style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              const Divider(color: Colors.white24),
+              const Divider(), // OPTIMIERT: Farbe kommt vom Theme
               const SizedBox(height: 16),
 
               // --- Mitgliederliste ---
               Text(
                 "Members",
-                style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+                style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
-              if(amIAdmin)
+              if (amIAdmin)
                 ListTile(
-                  leading: const Icon(Iconsax.user_add, color: Colors.green),
-                  title: const Text("Add Members", style: TextStyle(color: Colors.green)),
+                  // OPTIMIERT: Farben aus dem ColorScheme
+                  leading: Icon(Iconsax.user_add, color: theme.colorScheme.primary),
+                  title: Text("Add Members", style: TextStyle(color: theme.colorScheme.primary)),
                   onTap: () => _navigateAndAddMembers(context, provider),
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -101,36 +102,37 @@ class GroupSettingsScreen extends StatelessWidget {
                 itemBuilder: (ctx, index) {
                   final memberId = group.memberIds[index];
                   final memberDetails = provider.getMemberDetail(memberId);
-                  final bool isMemberAdmin = group.adminIds.contains(memberId);
+                  final isMemberAdmin = group.adminIds.contains(memberId);
 
                   return Card(
-                    color: Colors.grey.shade900.withOpacity(0.5),
+                    // OPTIMIERT: Farbe kommt vom CardTheme
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: (memberDetails?.imageUrl != null)
-                            ? NetworkImage(memberDetails!.imageUrl!)
+                        backgroundImage: (memberDetails?.imageUrl != null && memberDetails!.imageUrl!.isNotEmpty)
+                            ? NetworkImage(memberDetails.imageUrl!)
                             : null,
-                        child: (memberDetails?.imageUrl == null)
-                            ? Text(memberDetails?.name.substring(0, 1).toUpperCase() ?? "?")
+                        child: (memberDetails?.imageUrl == null || memberDetails!.imageUrl!.isEmpty)
+                            ? Text(memberDetails!.name.isNotEmpty ? memberDetails.name.substring(0, 1).toUpperCase() : "?")
                             : null,
                       ),
-                      title: Text(memberDetails?.name ?? "Loading...", style: const TextStyle(color: Colors.white)),
-                      trailing: isMemberAdmin ? const Text("Admin", style: TextStyle(color: Colors.cyan, fontSize: 12)) : null,
+                      title: Text(memberDetails.name),
+                      trailing: isMemberAdmin ? Text("Admin", style: TextStyle(color: theme.colorScheme.secondary, fontSize: 12)) : null,
                       onLongPress: (amIAdmin && memberId != provider.currentUserId)
-                          ? () => _showRemoveMemberDialog(context, provider, memberDetails!)
+                          ? () => _showRemoveMemberDialog(context, provider, memberDetails)
                           : null,
                     ),
                   );
                 },
               ),
               const SizedBox(height: 24),
-              const Divider(color: Colors.white24),
+              const Divider(),
 
               // --- Aktionen ---
               ListTile(
-                leading: const Icon(Iconsax.logout, color: Colors.redAccent),
-                title: const Text("Leave Group", style: TextStyle(color: Colors.redAccent)),
+                // OPTIMIERT: Fehlerfarben aus dem ColorScheme
+                leading: Icon(Iconsax.logout, color: theme.colorScheme.error),
+                title: Text("Leave Group", style: TextStyle(color: theme.colorScheme.error)),
                 onTap: () => _showLeaveOrDeleteDialog(context, provider),
                 contentPadding: EdgeInsets.zero,
               ),
@@ -152,7 +154,7 @@ class GroupSettingsScreen extends StatelessWidget {
         content: TextField(controller: controller, autofocus: true),
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
-          TextButton(
+          FilledButton(
             child: const Text("Save"),
             onPressed: () {
               provider.updateGroupName(controller.text);
@@ -165,6 +167,7 @@ class GroupSettingsScreen extends StatelessWidget {
   }
 
   void _showRemoveMemberDialog(BuildContext context, GroupChatProvider provider, ChatUserEntity member) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -173,7 +176,8 @@ class GroupSettingsScreen extends StatelessWidget {
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
           TextButton(
-            child: const Text("Remove", style: TextStyle(color: Colors.red)),
+            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+            child: const Text("Remove"),
             onPressed: () {
               provider.removeMember(member.id);
               Navigator.of(ctx).pop();
@@ -186,15 +190,13 @@ class GroupSettingsScreen extends StatelessWidget {
 
   void _showLeaveOrDeleteDialog(BuildContext context, GroupChatProvider provider) {
     if (provider.groupDetails == null) return;
+    final theme = Theme.of(context);
 
     final bool isLastAdminButNotLastMember =
         provider.groupDetails!.adminIds.length == 1 &&
             provider.groupDetails!.adminIds.first == provider.currentUserId &&
             provider.groupDetails!.memberIds.length > 1;
-
     final bool isLastMember = provider.groupDetails!.memberIds.length == 1;
-
-    // Titel und Inhalt basierend auf dem Fall bestimmen
     String title = "Leave Group";
     String content = "Are you sure you want to leave this group?";
     if (isLastAdminButNotLastMember) {
@@ -212,10 +214,8 @@ class GroupSettingsScreen extends StatelessWidget {
         content: Text(content),
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
-
           if (isLastAdminButNotLastMember)
-          // Button, um Admin zuzuweisen
-            TextButton(
+            FilledButton(
               child: const Text("Assign Admin"),
               onPressed: () {
                 Navigator.of(ctx).pop();
@@ -223,22 +223,21 @@ class GroupSettingsScreen extends StatelessWidget {
               },
             )
           else
-          // Button zum Verlassen oder Löschen
             TextButton(
-              child: Text(isLastMember ? "Delete" : "Leave", style: const TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+              child: Text(isLastMember ? "Delete" : "Leave"),
               onPressed: () async {
-                Navigator.of(ctx).pop(); // Dialog schließen
-
+                Navigator.of(ctx).pop();
                 await provider.leaveOrDeleteGroup();
-
                 if (!context.mounted) return;
-
                 if (provider.error == null) {
-                  // Bei Erfolg immer zur Hauptseite zurück
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error: ${provider.error}"), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text("Error: ${provider.error}"),
+                      backgroundColor: theme.colorScheme.error,
+                    ),
                   );
                 }
               },
@@ -253,8 +252,8 @@ class GroupSettingsScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => UserSearchScreen(
           multiSelectionEnabled: true,
-          initialSelectedUserIds: [], // Start mit leerer Auswahl für neue Mitglieder
-          excludeUserIds: provider.groupDetails!.memberIds, // Wichtig!
+          initialSelectedUserIds: [],
+          excludeUserIds: provider.groupDetails!.memberIds,
         ),
       ),
     );

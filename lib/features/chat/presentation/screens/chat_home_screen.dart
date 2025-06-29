@@ -1,29 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/features/chat/domain/usecases/hide_chat_usecase.dart';
-import 'package:flutter_sdg/features/chat/domain/usecases/set_chat_cleared_timestamp_usecase.dart';
-import 'package:flutter_sdg/features/chat/domain/usecases/watch_chat_room_by_id_usecase.dart';
 import 'package:provider/provider.dart';
 
-// Provider
-import '../providers/chat_room_list_provider.dart'; // Für startNewChat
-// Widgets
-import '../widgets/chat_list_content_widget.dart';
+// Domain & Entities
 import '../../domain/entities/chat_user_entity.dart';
-import '../../../../core/utils/app_logger.dart';
-
-import 'user_search_screen.dart';
-import 'individual_chat_screen.dart';
-import '../providers/individual_chat_provider.dart';
 import '../../domain/usecases/get_messages_stream_usecase.dart';
-import '../../domain/usecases/send_message_usecase.dart';
+import '../../domain/usecases/hide_chat_usecase.dart';
 import '../../domain/usecases/mark_message_as_read_usecase.dart';
+import '../../domain/usecases/send_message_usecase.dart';
+import '../../domain/usecases/set_chat_cleared_timestamp_usecase.dart';
 import '../../domain/usecases/upload_chat_image_usecase.dart';
+import '../../domain/usecases/watch_chat_room_by_id_usecase.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+
+// Providers
+import '../providers/chat_room_list_provider.dart';
+import '../providers/individual_chat_provider.dart';
+
+// Screens & Widgets
+import '../widgets/chat_list_content_widget.dart';
+import 'individual_chat_screen.dart';
+import 'user_search_screen.dart';
+
+// Core
+import '../../../../core/utils/app_logger.dart';
 
 class ChatHomeScreen extends StatelessWidget {
   const ChatHomeScreen({super.key});
 
-  // Zentrale Navigationsmethode zum IndividualChatScreen
   void _navigateToChat(BuildContext context, String roomId, ChatUserEntity chatPartner) {
     AppLogger.info("ChatHomeScreen: Navigating to chat room $roomId with partner ${chatPartner.name}");
     Navigator.of(context).push(
@@ -31,15 +34,15 @@ class ChatHomeScreen extends StatelessWidget {
         builder: (pageContext) => ChangeNotifierProvider<IndividualChatProvider>(
           create: (providerContext) => IndividualChatProvider(
             roomId: roomId,
-            chatPartner: chatPartner,                  // Wird an den Provider übergeben
+            chatPartner: chatPartner,
             getMessagesStreamUseCase: providerContext.read<GetMessagesStreamUseCase>(),
             sendMessageUseCase: providerContext.read<SendMessageUseCase>(),
             markMessageAsReadUseCase: providerContext.read<MarkMessageAsReadUseCase>(),
             uploadChatImageUseCase: providerContext.read<UploadChatImageUseCase>(),
-            authProvider: providerContext.read<AuthenticationProvider>(),
             watchChatRoomUseCase: providerContext.read<WatchChatRoomByIdUseCase>(),
             hideChatUseCase: providerContext.read<HideChatUseCase>(),
             setChatClearedTimestampUseCase: providerContext.read<SetChatClearedTimestampUseCase>(),
+            authProvider: providerContext.read<AuthenticationProvider>(),
           ),
           child: IndividualChatScreen(
             roomId: roomId,
@@ -50,7 +53,6 @@ class ChatHomeScreen extends StatelessWidget {
     );
   }
 
-  // ... (Rest der _startNewChatFlow und build Methoden wie zuvor) ...
   void _startNewChatFlow(BuildContext context) async {
     AppLogger.debug("ChatHomeScreen: _startNewChatFlow initiated. Navigating to UserSearchScreen.");
 
@@ -60,18 +62,17 @@ class ChatHomeScreen extends StatelessWidget {
       ),
     );
 
-    if (selectedPartner == null) {
-      AppLogger.debug("ChatHomeScreen: No partner selected from UserSearchScreen.");
+    if (selectedPartner == null || !context.mounted) {
+      AppLogger.debug("ChatHomeScreen: No partner selected or context is no longer mounted.");
       return;
     }
-    if (!context.mounted) return;
 
-    AppLogger.debug("ChatHomeScreen: Partner selected: ${selectedPartner.name} (ID: ${selectedPartner.id}). Attempting to start chat.");
     final chatRoomListProvider = context.read<ChatRoomListProvider>();
+    final theme = Theme.of(context); // Holen des Themes für die Snackbar-Farbe
 
     final String? roomId = await chatRoomListProvider.startNewChat(
-        selectedPartner.id,
-        initialTextMessage: "Hallo ${selectedPartner.name}!"
+      selectedPartner.id,
+      initialTextMessage: "Hallo ${selectedPartner.name}!",
     );
 
     if (!context.mounted) return;
@@ -79,15 +80,15 @@ class ChatHomeScreen extends StatelessWidget {
     if (roomId != null) {
       AppLogger.info("ChatHomeScreen: New chat room created/found: $roomId. Navigating.");
       _navigateToChat(context, roomId, selectedPartner);
-    } else if (chatRoomListProvider.error != null) {
-      AppLogger.error("ChatHomeScreen: Error starting new chat: ${chatRoomListProvider.error}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Fehler beim Starten des Chats: ${chatRoomListProvider.error}"), backgroundColor: Colors.red),
-      );
     } else {
-      AppLogger.warning("ChatHomeScreen: startNewChat returned null roomId without a provider error.");
+      final errorMsg = chatRoomListProvider.error ?? "Could not start chat. Unknown error.";
+      AppLogger.error("ChatHomeScreen: Error starting new chat: $errorMsg");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Chat konnte nicht gestartet werden. Unbekannter Fehler."), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(errorMsg),
+          // OPTIMIERT: Verwendet die Fehlerfarbe aus dem zentralen Theme
+          backgroundColor: theme.colorScheme.error,
+        ),
       );
     }
   }
@@ -100,5 +101,4 @@ class ChatHomeScreen extends StatelessWidget {
       },
     );
   }
-
 }

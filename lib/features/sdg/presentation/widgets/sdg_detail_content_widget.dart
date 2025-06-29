@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import '/core/widgets/link_text.dart';
 import '../providers/sdg_detail_provider.dart';
 import '../../domain/entities/sdg_detail_entity.dart';
-// Für Theme-Zugriff
-import '/core/theme/app_colors.dart'; // Für Fallback-Farben
+// Der Import von app_colors.dart wird nicht mehr benötigt!
 
 class SdgDetailContentWidget extends StatefulWidget {
   final String sdgId;
@@ -39,7 +38,6 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Verwende Consumer, um auf Änderungen im Provider zu reagieren und die UI neu zu bauen
     return Consumer<SdgDetailProvider>(
       builder: (context, provider, child) {
         final SdgDetailEntity? sdg = provider.currentSdgDetail;
@@ -53,16 +51,25 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text('Error: ${provider.error}',
-                  style: TextStyle(color: theme.colorScheme.error), textAlign: TextAlign.center),
+              child: Text(
+                'Error: ${provider.error}',
+                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }
 
         if (sdg == null || sdg.id != widget.sdgId) {
-          // Dieser Fall tritt ein, wenn noch keine Daten geladen wurden oder die ID nicht übereinstimmt
-          // und kein Fehler/Ladezustand aktiv ist.
-          return const Center(child: Text('Select an SDG to see details.', style: TextStyle(color: AppColors.primaryText)));
+          // OPTIMIERT: Verwendet jetzt einen Text-Stil aus dem Theme.
+          return Center(
+            child: Text(
+              'Select an SDG to see details.',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant, // Eine subtile Farbe für Hinweise
+              ),
+            ),
+          );
         }
 
         // Ab hier wissen wir, dass 'sdg' nicht null ist und zur widget.sdgId passt.
@@ -73,14 +80,14 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
             children: [
               Text(
                 sdg.title,
-                style: theme.textTheme.headlineMedium?.copyWith(color: theme.colorScheme.onSurface),
+                style: theme.textTheme.headlineMedium, // Stil direkt vom Theme
               ),
               const SizedBox(height: 16),
               if (sdg.imageAssetPath.isNotEmpty)
                 Center(
                   child: Image.asset(
                     sdg.imageAssetPath,
-                    height: 200, // Höhe anpassen nach Bedarf
+                    height: 200,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) =>
                         Icon(Icons.broken_image, size: 100, color: theme.colorScheme.onSurfaceVariant),
@@ -88,41 +95,41 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
                 ),
               const SizedBox(height: 24),
               Text(
-                "Key Points:", // Oder "Description:"
-                style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurface),
+                "Key Points:",
+                style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               ...sdg.descriptionPoints.map((point) => Padding(
                 padding: const EdgeInsets.only(left: 8.0, bottom: 6.0),
                 child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("• ", style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
-                      Expanded(child: Text(point, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface))),
-                    ]),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("• ", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Expanded(child: Text(point, style: theme.textTheme.bodyMedium)),
+                  ],
+                ),
               )),
               const SizedBox(height: 24),
               if (sdg.mainTextContent != null && sdg.mainTextContent!.isNotEmpty) ...[
                 Text(
                   "Further Information:",
-                  style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurface),
+                  style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   sdg.mainTextContent!,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface),
+                  style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
               ],
               if (sdg.externalLinks.isNotEmpty) ...[
                 Text(
                   "Learn More:",
-                  style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurface),
+                  style: theme.textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 ...sdg.externalLinks.map((link) => Padding(
                   padding: const EdgeInsets.only(bottom: 4.0),
-                  // Annahme: LinkTextWidget ist in core/widgets und gestyled
                   child: LinkTextWidget(url: link),
                 )),
               ]

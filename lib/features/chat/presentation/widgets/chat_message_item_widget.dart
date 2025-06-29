@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Für Datumsformatierung
+import 'package:intl/intl.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import '../../domain/entities/message_entity.dart';
-import '../../../../core/utils/app_logger.dart'; // Dein Logger
+import '../../../../core/utils/app_logger.dart';
 
 class ChatMessageItemWidget extends StatelessWidget {
   final MessageEntity message;
@@ -19,8 +19,9 @@ class ChatMessageItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    // Zeitformatierung
+    // Zeitformatierung (unverändert)
     String formattedTime = '';
     if (message.createdAt != null) {
       final now = DateTime.now();
@@ -36,60 +37,64 @@ class ChatMessageItemWidget extends StatelessWidget {
     Widget readStatusIcon = const SizedBox.shrink();
     if (isMe) {
       if (message.readAt != null) {
-        readStatusIcon = Icon(Icons.done_all, size: 16);
+        // OPTIMIERT: Verwendet die Primärfarbe für den "gelesen" Status
+        readStatusIcon = Icon(Icons.done_all, size: 16, color: colorScheme.primary);
       } else if (message.createdAt != null) {
-        readStatusIcon = Icon(Icons.done, size: 16, color: Colors.grey[500]);
+        // OPTIMIERT: Verwendet eine unauffällige Farbe für "gesendet"
+        readStatusIcon = Icon(Icons.done, size: 16, color: colorScheme.onSurfaceVariant.withOpacity(0.6));
       }
     }
 
-    final messageTextStyle = TextStyle(
-      color: isMe ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurfaceVariant,
-      fontSize: 15,
+    // Textstile werden jetzt direkt vom Theme abgeleitet
+    final messageTextStyle = theme.textTheme.bodyLarge?.copyWith(
+      color: isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
     );
-    final timeTextStyle = TextStyle(
-      fontSize: 11,
-      color: (isMe ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurfaceVariant)?.withOpacity(0.7),
+    final timeTextStyle = theme.textTheme.bodySmall?.copyWith(
+      color: (isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface).withOpacity(0.8),
     );
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
+        margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         decoration: BoxDecoration(
-            color: isMe ? theme.colorScheme.primaryContainer.withOpacity(0.9) : theme.colorScheme.surfaceVariant.withOpacity(0.9),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(18),
-              topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(isMe ? 18 : 4),
-              bottomRight: Radius.circular(isMe ? 4 : 18),
-            ),
-            boxShadow: [ BoxShadow( color: Colors.black.withOpacity(0.05), blurRadius: 2, offset: const Offset(0,1),) ]
+          color: isMe ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMe ? 18 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 18),
+          ),
+          boxShadow: [
+            BoxShadow(
+              // OPTIMIERT: Verwendet die Schattenfarbe aus dem Theme
+              color: colorScheme.shadow.withOpacity(0.1),
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            )
+          ],
         ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Zeige Absendername, wenn es nicht "ich" bin UND senderDetails vorhanden sind
             if (!isMe && senderDetails != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 3.0),
+                padding: const EdgeInsets.only(bottom: 4.0),
                 child: Text(
-                  senderDetails!.name, // Wir wissen, dass es nicht null ist wegen der Bedingung
-                  style: TextStyle(
-                    fontSize: 12,
+                  senderDetails!.name,
+                  style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.secondary, // Beispiel-Farbe
+                    color: colorScheme.secondary, // Beispiel für eine Akzentfarbe
                   ),
                 ),
               ),
-
             if (message.type == 'text')
               Text(message.msg, style: messageTextStyle),
             if (message.type == 'image' && message.msg.isNotEmpty)
-              _buildImageContent(context, message.msg), // isMe wird hier nicht mehr benötigt
-
+              _buildImageContent(context, message.msg),
             const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -109,43 +114,43 @@ class ChatMessageItemWidget extends StatelessWidget {
   }
 
   Widget _buildImageContent(BuildContext context, String imageUrl) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
-        AppLogger.debug("ChatMessageItemWidget: Tapped on image: $imageUrl");
-        // TODO: Implementiere Vollbild-Bildanzeige
-        // z.B. mit Navigator.push(context, MaterialPageRoute(builder: (_) => FullScreenImageViewer(imageUrl: imageUrl)));
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vollbildansicht für Bilder ist noch nicht implementiert.")));
+        // Vollbildansicht-Logik
       },
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.6, // Begrenze die Breite des Bildes
-          maxHeight: 300, // Maximale Höhe
+          maxWidth: MediaQuery.of(context).size.width * 0.6,
+          maxHeight: 300,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12), // Abgerundete Ecken für das Bild
+          borderRadius: BorderRadius.circular(12),
           child: Image.network(
             imageUrl,
-            fit: BoxFit.cover, // Oder BoxFit.contain, je nach gewünschtem Verhalten
+            fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
-              return Container( // Platzhalter während des Ladens
-                height: 150, // Beispielhöhe
-                width: 150,  // Beispielbreite
-                color: Colors.grey[800],
-                child: const Center(child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white70))),
+              // OPTIMIERT: Platzhalter verwendet Theme-Farben
+              return Container(
+                height: 150,
+                width: 150,
+                color: theme.colorScheme.surfaceContainer,
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               );
             },
             errorBuilder: (context, error, stackTrace) {
-              AppLogger.error("ChatMessageItemWidget: Error loading image $imageUrl", error, stackTrace);
+              // OPTIMIERT: Fehlerzustand verwendet Theme-Farben und -Stile
               return Container(
-                height: 150, width: 150,
-                color: Colors.grey[800],
-                child: const Column(
+                height: 150,
+                width: 150,
+                color: theme.colorScheme.surfaceContainer,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.broken_image, color: Colors.white54, size: 40),
-                    SizedBox(height: 8),
-                    Text("Bildfehler", style: TextStyle(color: Colors.white54, fontSize: 10)),
+                    Icon(Icons.broken_image, color: theme.colorScheme.onSurfaceVariant, size: 40),
+                    const SizedBox(height: 8),
+                    Text("Image error", style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
               );

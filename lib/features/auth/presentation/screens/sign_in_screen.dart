@@ -9,9 +9,6 @@ class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const AuthPageLayout(
-      // Für den SignInScreen wollen wir typischerweise:
-      // - Keinen Text-Titel (damit das Logo aus dem Layout verwendet wird)
-      // - Keinen expliziten Back-Button
       body: SignInForm(),
     );
   }

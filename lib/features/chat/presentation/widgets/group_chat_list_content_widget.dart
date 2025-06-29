@@ -20,7 +20,7 @@ class GroupChatListContentWidget extends StatelessWidget {
     AppLogger.info("GroupChatListContentWidget: Navigating to group chat $groupId ($groupName)");
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => GroupChatScreen( // Der Screen, den wir als nächstes erstellen/refactorn
+        builder: (_) => GroupChatScreen(
           groupId: groupId,
           initialGroupName: groupName,
         ),
@@ -30,12 +30,13 @@ class GroupChatListContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // context.watch hier, da sich das Widget bei Änderungen im Provider neu bauen soll
+    final theme = Theme.of(context); // Theme am Anfang holen
     final provider = context.watch<GroupChatListProvider>();
     AppLogger.debug("GroupChatListContentWidget: Building. Group count: ${provider.groupChats.length}, isLoading: ${provider.isLoading}");
 
     if (provider.isLoading && provider.groupChats.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      // OPTIMIERT: Der Indikator erbt seine Farbe jetzt automatisch vom Theme.
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (provider.error != null) {
@@ -45,7 +46,12 @@ class GroupChatListContentWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Fehler: ${provider.error}', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+              Text(
+                'Fehler: ${provider.error}',
+                textAlign: TextAlign.center,
+                // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+              ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
@@ -61,29 +67,21 @@ class GroupChatListContentWidget extends StatelessWidget {
     }
 
     if (provider.groupChats.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Keine Gruppenchats vorhanden.\nErstelle eine neue Gruppe oder trete einer bei!',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70, fontSize: 16),
+          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
+          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
     }
 
-    // Sortieren der Gruppen nach der letzten Nachricht, falls gewünscht und nicht schon im Stream sortiert
-    // List<GroupChatEntity> sortedGroups = List.from(provider.groupChats);
-    // sortedGroups.sort((a, b) {
-    //   if (a.lastMessageTime == null && b.lastMessageTime == null) return 0;
-    //   if (a.lastMessageTime == null) return 1; // nulls ans Ende
-    //   if (b.lastMessageTime == null) return -1;
-    //   return b.lastMessageTime!.compareTo(a.lastMessageTime!); // Neueste zuerst
-    // });
-
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0), // Padding für die Liste
-      itemCount: provider.groupChats.length, // Verwende die potenziell sortierte Liste
+      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+      itemCount: provider.groupChats.length,
       itemBuilder: (context, index) {
-        final group = provider.groupChats[index]; // Verwende die potenziell sortierte Liste
+        final group = provider.groupChats[index];
         return GroupChatListItemWidget(
           group: group,
           onTap: () => _navigateToGroupChat(context, group.id, group.name),

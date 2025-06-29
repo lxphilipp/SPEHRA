@@ -3,10 +3,6 @@ import 'package:provider/provider.dart';
 
 // Core imports
 import '../../../../core/utils/app_logger.dart';
-
-// Home Provider & Entities
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/sdg_color_theme.dart';
 import '../../../../core/widgets/background_image.dart';
 import '../../../../core/widgets/expandable_text_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -23,9 +19,9 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthenticationProvider>(context);
-    final homeProvider = Provider.of<HomeProvider>(context);
-    final sdgTheme = Theme.of(context).extension<SdgColorTheme>();
+    final theme = Theme.of(context); // Theme am Anfang holen
+    final authProvider = context.watch<AuthenticationProvider>();
+    final homeProvider = context.watch<HomeProvider>();
 
     return SingleChildScrollView(
       child: Column(
@@ -37,55 +33,45 @@ class HomeContent extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                const BackgroundImage(), // Aus Core importiert
-                Positioned(
-                  top: 0, left: 0, right: 0,
+                const BackgroundImage(),
+                // OPTIMIERT: Gradient verwendet jetzt die Hintergrundfarbe aus dem Theme
+                Positioned.fill(
                   child: Container(
-                    height: MediaQuery.of(context).size.height / 2,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.bottomCenter, // Startet unten
-                        end: Alignment.topCenter,      // Geht nach oben
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
                         colors: [
-                          // Startet unten mit einer deckenderen Farbe
-                          AppColors.primaryBackground.withOpacity(0.9), // Dein dunkles Blau, fast deckend
-                          AppColors.primaryBackground.withOpacity(0.7),
-                          AppColors.primaryBackground.withOpacity(0.0), // Wird nach oben hin transparent
+                          theme.scaffoldBackgroundColor.withOpacity(0.9),
+                          theme.scaffoldBackgroundColor.withOpacity(0.7),
+                          theme.scaffoldBackgroundColor.withOpacity(0.0),
                         ],
-                        stops: const [0.0, 0.5, 1.0], // Kontrolliert die Übergänge
+                        stops: const [0.0, 0.5, 1.0],
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  bottom: 0, left: 0, right: 0,
-                  child: Container(
-                    height: MediaQuery.of(context).size.height / 2,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                      begin: Alignment.topCenter, // Startet oben
-                      end: Alignment.bottomCenter,   // Geht nach unten
-                      colors: [
-                        AppColors.primaryBackground.withOpacity(0.6), // Oben etwas dunkler
-                        AppColors.primaryBackground.withOpacity(0.0), // Wird nach unten transparent
-                      ],
-                      stops: const [0.0, 1.0], // Einfacher Übergang
-                    ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 40, bottom: 20, left: 20, right: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Welcome, \n${authProvider.currentUser?.name ?? "User"}',
-                            style: const TextStyle(fontFamily: 'OswaldRegular', color: Colors.white, fontSize: 30),
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 40, bottom: 20, left: 20, right: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // OPTIMIERT: Verwendet einen Text-Stil aus dem Theme
+                        Text(
+                          'Welcome, \n${authProvider.currentUser?.name ?? "User"}',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontFamily: 'OswaldRegular',
+                            color: theme.colorScheme.onBackground,
                           ),
-                          const SizedBox(height: 10),
-                          const ExpandableTextWidget(), // Aus Core importiert
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 10),
+                        const ExpandableTextWidget(),
+                      ],
                     ),
                   ),
                 ),
@@ -97,14 +83,31 @@ class HomeContent extends StatelessWidget {
           if (homeProvider.isLoadingSdgItems)
             const Padding(padding: EdgeInsets.all(16.0), child: Center(child: CircularProgressIndicator()))
           else if (homeProvider.sdgItemsError != null)
-            Padding(padding: const EdgeInsets.all(16.0), child: Center(child: Text(homeProvider.sdgItemsError!, style: const TextStyle(color: Colors.red))))
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              // OPTIMIERT: Verwendet Fehlerfarbe und Text-Stil aus dem Theme
+              child: Center(
+                child: Text(
+                  homeProvider.sdgItemsError!,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                ),
+              ),
+            )
           else if (homeProvider.sdgNavItems.isNotEmpty)
               _buildSdgNavigationListView(context, homeProvider.sdgNavItems)
             else
-              const Padding(padding: EdgeInsets.all(16.0), child: Center(child: Text("No SDG items to display.", style: TextStyle(color: Colors.white70)))),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                // OPTIMIERT: Verwendet eine semantische Farbe für den Hinweis
+                child: Center(
+                  child: Text(
+                    "No SDG items to display.",
+                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ),
 
-
-          // --- "To do" Challenges Preview ---
+          // --- Challenge Previews ---
           _buildChallengePreviewList(
             context,
             title: "To do",
@@ -112,16 +115,9 @@ class HomeContent extends StatelessWidget {
             error: homeProvider.ongoingPreviewsError,
             challenges: homeProvider.ongoingChallengePreviews,
             navigateToFullList: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ChallengeListScreen(initialTabIndex: 1),
-                ),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeListScreen(initialTabIndex: 1)));
             },
           ),
-
-          // --- "Completed" Challenges Preview ---
           _buildChallengePreviewList(
             context,
             title: "Completed",
@@ -129,12 +125,7 @@ class HomeContent extends StatelessWidget {
             error: homeProvider.completedPreviewsError,
             challenges: homeProvider.completedChallengePreviews,
             navigateToFullList: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ChallengeListScreen(initialTabIndex: 2),
-                ),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeListScreen(initialTabIndex: 2)));
             },
           ),
         ],
@@ -142,48 +133,37 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // Baut die horizontale Liste der SDG Icons
   void _navigateToSdgDetail(BuildContext context, String sdgId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SdgDetailScreen(sdgId: sdgId)),
-    );
-    AppLogger.debug("Navigating to SDG detail for: $sdgId");
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SdgDetailScreen(sdgId: sdgId)));
   }
 
-  // --- ANGEPASSTE METHODE ---
   Widget _buildSdgNavigationListView(BuildContext context, List<SdgListItemEntity> navItems) {
-    if (navItems.isEmpty) {
-      return const SizedBox.shrink(); // Nichts anzeigen, wenn keine Items vorhanden sind
-    }
-
-    // Aufteilung in zwei Reihen, falls gewünscht.
-    // Du kannst dies auch anpassen, um z.B. nur eine scrollbare Reihe zu haben.
-    final int itemsPerRow = (navItems.length / 2).ceil().clamp(1, 9); // Max 9 pro Reihe
+    // ... (Diese Methode bleibt unverändert, sie verwendet bereits themenkonforme Fallbacks)
+    final theme = Theme.of(context);
+    final int itemsPerRow = (navItems.length / 2).ceil().clamp(1, 9);
     final List<SdgListItemEntity> row1Items = navItems.take(itemsPerRow).toList();
     final List<SdgListItemEntity> row2Items = navItems.skip(itemsPerRow).toList();
 
     Widget buildRow(List<SdgListItemEntity> items) {
       if (items.isEmpty) return const SizedBox.shrink();
       return SizedBox(
-        height: 60, // Höhe der Reihe
+        height: 60,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: items.length,
           itemBuilder: (context, index) {
-            final item = items[index]; // item ist jetzt SdgListItemEntity
+            final item = items[index];
             return Padding(
               padding: const EdgeInsets.all(5.0),
               child: SizedBox(
-                width: 45, // Breite des Icons
+                width: 45,
                 child: GestureDetector(
-                  // Verwende die ID von SdgListItemEntity für die Navigation
-                  onTap: () => _navigateToSdgDetail(context, item.id), // Annahme: item.id ist "goal1" etc.
+                  onTap: () => _navigateToSdgDetail(context, item.id),
                   child: Image.asset(
-                    item.listImageAssetPath, // Pfad aus SdgListItemEntity
+                    item.listImageAssetPath,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) { // Fallback für fehlende Bilder
-                      return const Icon(Icons.broken_image, color: Colors.grey, size: 30);
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.broken_image, color: theme.colorScheme.onSurfaceVariant, size: 30);
                     },
                   ),
                 ),
@@ -193,24 +173,11 @@ class HomeContent extends StatelessWidget {
         ),
       );
     }
-
-    return Column(
-      children: [
-        buildRow(row1Items),
-        if (row2Items.isNotEmpty) buildRow(row2Items), // Zweite Reihe nur, wenn nötig
-      ],
-    );
+    return Column(children: [buildRow(row1Items), if (row2Items.isNotEmpty) buildRow(row2Items)]);
   }
 
-  // Baut eine Sektion für Challenge-Vorschauen (Ongoing oder Completed)
-  Widget _buildChallengePreviewList(
-      BuildContext context, {
-        required String title,
-        required bool isLoading,         // Vom HomeProvider
-        required String? error,          // Vom HomeProvider
-        required List<ChallengeEntity> challenges, // Vom HomeProvider
-        required VoidCallback navigateToFullList,
-      }) {
+  Widget _buildChallengePreviewList(BuildContext context, {required String title, required bool isLoading, required String? error, required List<ChallengeEntity> challenges, required VoidCallback navigateToFullList}) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -219,21 +186,15 @@ class HomeContent extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(title, style: theme.textTheme.titleLarge),
               GestureDetector(
                 onTap: navigateToFullList,
                 child: Text(
                   "See all",
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.colorScheme.primary,
                     decoration: TextDecoration.underline,
-                    decorationColor: Theme.of(context).colorScheme.primary
+                    decorationColor: theme.colorScheme.primary,
                   ),
                 ),
               ),
@@ -248,65 +209,20 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // Hilfsmethode für den Inhalt der Challenge-Liste (Laden, Fehler, Daten)
-  Widget _buildChallengeContentItself(
-      BuildContext context,
-      bool isLoading,
-      String? error,
-      List<ChallengeEntity> challenges,
-      ) {
+  Widget _buildChallengeContentItself(BuildContext context, bool isLoading, String? error, List<ChallengeEntity> challenges) {
+    final theme = Theme.of(context);
     if (isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0),
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // Passende Farbe
-          ),
-        ),
-      );
+      return const Center(child: Padding(padding: EdgeInsets.symmetric(vertical: 20.0), child: CircularProgressIndicator()));
     }
-
     if (error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            error,
-            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 14),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
+      return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text(error, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error))));
     }
-
     if (challenges.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'No challenges in this section yet.',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 14),
-          ),
-        ),
-      );
+      return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text('No challenges in this section yet.', style: TextStyle(color: theme.colorScheme.onSurfaceVariant))));
     }
-
-    // Baue die Liste der Challenge-Karten
     return Column(
       children: challenges.map((challenge) {
-        return ChallengePreviewCardWidget(
-          challenge: challenge,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChallengeDetailsScreen(
-                  challengeId: challenge.id,
-                ),
-              ),
-            );
-          },
-        );
+        return ChallengePreviewCardWidget(challenge: challenge, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChallengeDetailsScreen(challengeId: challenge.id))));
       }).toList(),
     );
   }

@@ -1,11 +1,10 @@
-// lib/features/auth/presentation/layouts/auth_page_layout.dart
 import 'package:flutter/material.dart';
 
 class AuthPageLayout extends StatelessWidget {
   final Widget body;
-  final String? appBarTitleText; // Optional: Text für den AppBar-Titel
-  final bool showBackButton;    // Steuert, ob der Back-Button angezeigt wird (Standard: false)
-  final Widget? appBarLeading; // Optional: Ein benutzerdefiniertes Leading-Widget für die AppBar
+  final String? appBarTitleText;
+  final bool showBackButton;
+  final Widget? appBarLeading;
 
   const AuthPageLayout({
     super.key,
@@ -17,13 +16,17 @@ class AuthPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Holen des Themes für den Zugriff auf Farben und Stile
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xff040324), // Deine Standard-Hintergrundfarbe
+      // OPTIMIERT: Die Hintergrundfarbe kommt jetzt aus dem ColorScheme
+      backgroundColor: theme.colorScheme.background,
       appBar: _buildAppBar(context),
-      body: SafeArea( // SafeArea ist oft gut für den Body-Inhalt
-        child: Center( // Zentriert den Body oft gut, je nach Design
-          child: SingleChildScrollView( // Ermöglicht Scrollen, wenn Inhalt zu groß
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0), // Etwas Padding
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
             child: body,
           ),
         ),
@@ -32,45 +35,39 @@ class AuthPageLayout extends StatelessWidget {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
     Widget? titleWidget;
-    Widget? leadingWidget = appBarLeading; // Benutze das übergebene Leading-Widget
+    Widget? leadingWidget = appBarLeading;
 
     if (appBarTitleText != null && appBarTitleText!.isNotEmpty) {
-      // Wenn ein Titeltext gegeben ist, verwende ihn
-      titleWidget = Text(
-        appBarTitleText!,
-        style: const TextStyle(color: Colors.white, fontFamily: 'OswaldLight', fontSize: 20), // Beispiel-Styling
-      );
+      // OPTIMIERT: Der Text-Stil wird vollständig vom AppBarTheme übernommen
+      titleWidget = Text(appBarTitleText!);
     } else {
-      // Standard: Logo als Titel, wenn kein appBarTitleText gegeben ist
-      // (Kann auch als Fallback dienen, wenn appBarTitleText leer ist)
-      double logoHeight = AppBar().preferredSize.height - 20.0; // Etwas kleinerer Rand
+      double logoHeight = AppBar().preferredSize.height - 20.0;
       titleWidget = SizedBox(
         height: logoHeight,
-        // width: MediaQuery.of(context).size.width, // Nimmt nicht mehr die volle Breite, wenn zentriert
         child: Image.asset(
-          'assets/logo/sphera_logo.png', // Stelle sicher, dass der Pfad stimmt!
+          'assets/logo/sphera_logo.png',
           height: logoHeight,
           fit: BoxFit.contain,
+          // Optional: Logo-Farbe anpassen, falls es ein einfarbiges Logo ist
+          // color: theme.colorScheme.onSurface,
         ),
       );
     }
 
     if (leadingWidget == null && showBackButton && Navigator.canPop(context)) {
-      // Wenn kein benutzerdefiniertes Leading da ist, aber showBackButton true ist UND man zurück navigieren kann
+      // OPTIMIERT: Die Farbe des BackButtons wird automatisch vom AppBarTheme gesteuert
       leadingWidget = BackButton(
-        color: Colors.white,
         onPressed: () => Navigator.maybePop(context),
       );
     }
 
     return AppBar(
-      leading: leadingWidget, // Verwende das bestimmte Leading-Widget
-      automaticallyImplyLeading: leadingWidget != null || showBackButton, // True wenn Leading da ist oder BackButton explizit an sein soll
+      leading: leadingWidget,
+      automaticallyImplyLeading: leadingWidget != null || showBackButton,
       title: titleWidget,
-      backgroundColor: const Color(0xff040324), // Deine AppBar-Hintergrundfarbe
-      elevation: 0, // Keine Schatten
-      centerTitle: true, // Zentriere den Titel (Logo oder Text)
+      centerTitle: true,
     );
   }
 }

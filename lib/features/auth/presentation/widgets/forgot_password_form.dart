@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// Wichtig: Importiere deinen MYAuthProvider
-import '../providers/auth_provider.dart'; // Stelle sicher, dass der Pfad stimmt!
+import '../providers/auth_provider.dart';
 
 class ForgotPasswordForm extends StatefulWidget {
   const ForgotPasswordForm({super.key});
@@ -14,18 +13,30 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
   final TextEditingController emailController = TextEditingController();
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    super.dispose();
+  }
+
+  void _showSnackbar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    final theme = Theme.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        // OPTIMIERT: Farben aus dem ColorScheme verwenden
+        backgroundColor: isError ? theme.colorScheme.error : theme.colorScheme.primary,
+      ),
+    );
+  }
+
   Future<void> _submitResetPasswordRequest() async {
     if (_isLoading) return;
     final String email = emailController.text.trim();
 
     if (email.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your email address.'),
-          backgroundColor: Colors.orangeAccent,
-        ),
-      );
+      _showSnackbar('Please enter your email address.', isError: true);
       return;
     }
 
@@ -39,33 +50,19 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
       return;
     }
 
-    if (!mounted) return;
     if (wasSuccessful) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Password reset email sent. Please check your inbox (and spam folder).',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
+      _showSnackbar('Password reset email sent. Please check your inbox (and spam folder).');
     } else {
-      // authProvider wurde schon geholt: final authProvider = Provider.of<MYAuthProvider>(context, listen: false);
-      final errorMsg = authProvider.errorMessage ?? 'Could not send password reset email. Please check the address and try again.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMsg, style: const TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red,
-        ),
-      );
+      final errorMsg = authProvider.errorMessage ?? 'Could not send password reset email.';
+      _showSnackbar(errorMsg, isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Dieses Widget gibt jetzt nur den Inhalt des Formulars zurück.
-    // Das SingleChildScrollView und Padding sind hier, da der Screen kein generelles Layout anwendet.
+    // Holen des Themes für einfachen Zugriff auf Stile und Farben
+    final theme = Theme.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -73,27 +70,45 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Enter your email address below and we will send you a link to reset your password.',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            // OPTIMIERT: Text-Stil aus dem Theme beziehen
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onBackground,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
           TextField(
             controller: emailController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration( /* ... deine Dekoration ... */ ),
+            style: TextStyle(color: theme.colorScheme.onSurface),
+            // OPTIMIERT: Die Dekoration kann zentral im Theme definiert werden
+            // oder hier, aber mit Theme-Farben.
+            decoration: InputDecoration(
+              labelText: 'Email',
+              // Eine zentralisierte InputDecoration im AppTheme wäre noch besser!
+            ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _submitResetPasswordRequest(),
           ),
           const SizedBox(height: 30),
           ElevatedButton(
-            style: ElevatedButton.styleFrom( /* ... dein Style ... */ ),
+            // OPTIMIERT: Der Stil wird jetzt vollständig vom ElevatedButtonTheme in
+            // deiner app_theme.dart gesteuert.
             onPressed: _isLoading ? null : _submitResetPasswordRequest,
             child: _isLoading
-                ? const SizedBox( /* ... Ladekreis ... */ )
-                : const Text('Send Reset Email', style: TextStyle(color: Colors.white)),
+                ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                // Die Farbe des Ladekreises wird vom Button geerbt
+                color: theme.colorScheme.onPrimary,
+              ),
+            )
+            // Die Textfarbe wird ebenfalls vom Button-Theme geerbt
+                : const Text('Send Reset Email'),
           ),
         ],
       ),

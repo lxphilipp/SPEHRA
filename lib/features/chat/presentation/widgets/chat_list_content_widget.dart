@@ -11,7 +11,6 @@ import '../../domain/entities/chat_user_entity.dart';
 // Core
 import '../../../../core/utils/app_logger.dart';
 
-// --- Haupt-Widget für den Inhalt der Chat-Liste ---
 class ChatListContentWidget extends StatelessWidget {
   final void Function(String roomId, ChatUserEntity chatPartner) onChatRoomTap;
 
@@ -22,22 +21,18 @@ class ChatListContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // context.watch() sorgt dafür, dass das Widget bei jeder Änderung im Provider neu gebaut wird.
+    final theme = Theme.of(context); // Theme am Anfang holen
     final provider = context.watch<ChatRoomListProvider>();
     final currentUserId = context.watch<AuthenticationProvider>().currentUserId;
-
-    // Wir holen auch die Map mit den Partner-Details vom Provider.
     final partnerDetailsMap = provider.partnerDetailsMap;
 
     // --- Ladezustand ---
     if (provider.isLoading && provider.chatRooms.isEmpty) {
-      AppLogger.debug("ChatListContentWidget: Showing initial loading indicator.");
       return const Center(child: CircularProgressIndicator());
     }
 
     // --- Fehlerzustand ---
     if (provider.error != null) {
-      AppLogger.error("ChatListContentWidget: Displaying error: ${provider.error}");
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -47,14 +42,12 @@ class ChatListContentWidget extends StatelessWidget {
               Text(
                 'Fehler: ${provider.error}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70),
+                // OPTIMIERT: Fehlertext-Stil aus dem Theme
+                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  AppLogger.info("ChatListContentWidget: 'Erneut versuchen' tapped.");
-                  context.read<ChatRoomListProvider>().forceReloadChatRooms();
-                },
+                onPressed: () => context.read<ChatRoomListProvider>().forceReloadChatRooms(),
                 child: const Text("Erneut versuchen"),
               )
             ],
@@ -65,38 +58,30 @@ class ChatListContentWidget extends StatelessWidget {
 
     // --- Leerer Zustand ---
     if (provider.chatRooms.isEmpty) {
-      AppLogger.debug("ChatListContentWidget: No chat rooms to display.");
-      return const Center(
+      return Center(
         child: Text(
           'Noch keine Chats vorhanden.\nStarte einen neuen Chat!',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white70, fontSize: 16),
+          // OPTIMIERT: Text-Stil aus dem Theme
+          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
     }
 
     // --- Erfolgszustand: Liste anzeigen ---
-    AppLogger.debug("ChatListContentWidget: Displaying ${provider.chatRooms.length} chat rooms.");
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       itemCount: provider.chatRooms.length,
       itemBuilder: (context, index) {
         final room = provider.chatRooms[index];
-
-        // Finde die ID des Partners in diesem Raum.
-        final partnerId = room.members.firstWhere(
-              (id) => id != currentUserId,
-          orElse: () => '',
-        );
-
-        // Hole die bereits geladenen Partner-Details direkt aus der Map.
+        final partnerId = room.members.firstWhere((id) => id != currentUserId, orElse: () => '');
         final partnerDetails = partnerDetailsMap[partnerId];
 
         return ChatRoomListItemWidget(
-          key: ValueKey(room.id), // Wichtig für effiziente Updates der Liste
+          key: ValueKey(room.id),
           room: room,
-          chatPartner: partnerDetails, // Übergib die (möglicherweise noch null) Details
-          onTap: (loadedPartner) { // Callback erhält die vollen Partner-Details
+          chatPartner: partnerDetails,
+          onTap: (loadedPartner) {
             onChatRoomTap(room.id, loadedPartner);
           },
         );
@@ -105,11 +90,9 @@ class ChatListContentWidget extends StatelessWidget {
   }
 }
 
-// --- Widget für einen einzelnen Chatraum-Eintrag ---
-// Dieses Widget ist jetzt viel einfacher und enthält keine eigene Lade-Logik mehr.
 class ChatRoomListItemWidget extends StatelessWidget {
   final ChatRoomEntity room;
-  final ChatUserEntity? chatPartner; // Wird von oben übergeben, kann null sein
+  final ChatUserEntity? chatPartner;
   final void Function(ChatUserEntity) onTap;
 
   const ChatRoomListItemWidget({
@@ -121,54 +104,62 @@ class ChatRoomListItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String title;
-    Widget leading;
-    final bool isPartnerLoaded = chatPartner != null;
+    final theme = Theme.of(context);
+    final isPartnerLoaded = chatPartner != null;
+
+    final Widget leading;
+    final String title;
 
     if (isPartnerLoaded) {
       title = chatPartner!.name;
-      if (chatPartner!.imageUrl != null && chatPartner!.imageUrl!.isNotEmpty) {
-        leading = CircleAvatar(backgroundImage: NetworkImage(chatPartner!.imageUrl!));
-      } else {
-        leading = CircleAvatar(
-          backgroundColor: Colors.grey[700],
-          child: Text(title.isNotEmpty ? title[0].toUpperCase() : "?", style: const TextStyle(color: Colors.white)),
-        );
-      }
+      leading = CircleAvatar(
+        backgroundImage: (chatPartner!.imageUrl != null && chatPartner!.imageUrl!.isNotEmpty)
+            ? NetworkImage(chatPartner!.imageUrl!)
+            : null,
+        // OPTIMIERT: Hintergrundfarbe aus dem Theme
+        backgroundColor: theme.colorScheme.surfaceVariant,
+        child: (chatPartner!.imageUrl == null || chatPartner!.imageUrl!.isEmpty)
+            ? Text(title.isNotEmpty ? title[0].toUpperCase() : "?")
+            : null,
+      );
     } else {
-      // Fallback-UI, während die Partner-Details noch im Provider laden
       title = 'Lade...';
-      leading = const CircleAvatar(
-        backgroundColor: Colors.white24,
-        child: SizedBox(
+      leading = CircleAvatar(
+        backgroundColor: theme.colorScheme.surfaceVariant,
+        child: const SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       );
     }
 
-    String subtitle = room.lastMessage ?? 'Tippe, um zu chatten';
+    final subtitle = room.lastMessage ?? 'Tippe, um zu chatten';
 
+    // OPTIMIERT: Das ListTile ist jetzt in einer thematisierten Card verpackt
     return Card(
-      color: Colors.grey[850]?.withOpacity(0.8),
-      elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         leading: leading,
-        title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
+        title: Text(
+          title,
+          style: theme.textTheme.titleMedium, // OPTIMIERT: Stil aus Theme
+        ),
         subtitle: Text(
           subtitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Colors.white70),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant, // OPTIMIERT
+          ),
         ),
         trailing: room.lastMessageTime != null
             ? Text(
           DateFormat('HH:mm').format(room.lastMessageTime!),
-          style: const TextStyle(color: Colors.white54, fontSize: 12),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant, // OPTIMIERT
+          ),
         )
             : null,
         onTap: () {

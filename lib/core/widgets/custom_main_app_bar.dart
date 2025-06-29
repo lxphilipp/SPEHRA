@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/features/home/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
-
-import '../theme/app_colors.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/profile/domain/entities/user_profile_entity.dart';
 import '../../features/profile/presentation/providers/user_profile_provider.dart';
 
@@ -44,28 +40,6 @@ class CustomMainAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-
-// Private Hilfs-Widgets, direkt aus deinem alten Layout übernommen
-class _AppBarLogo extends StatelessWidget {
-  const _AppBarLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    double logoHeight = kToolbarHeight - 20.0;
-    return InkWell(
-      onTap: () {
-        // Diese Logik ist vielleicht nicht mehr nötig, da der Home-Screen
-        // immer im IndexedStack geladen bleibt. Ein Tap hier könnte
-        // einfach zum Home-Tab wechseln, was aber über die NavigationBar passiert.
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
-        child: Image.asset('assets/logo/Logo-Bild.png', height: logoHeight),
-      ),
-    );
-  }
-}
-
 class _AppBarUserStats extends StatelessWidget {
   const _AppBarUserStats();
 
@@ -96,7 +70,10 @@ class _AppBarUserStats extends StatelessWidget {
           SizedBox(height: kToolbarHeight - 36.0, child: Image.asset(imagePath)),
           Text(
             'Pts: ${userProfile.points} | Lvl: ${userProfile.level}',
-            style: theme.textTheme.labelSmall?.copyWith(fontSize: 10, color: AppColors.primaryText),
+            style: theme.textTheme.labelSmall?.copyWith(
+              fontSize: 10,
+              color: theme.colorScheme.onSurface
+            ),
           ),
         ],
       );

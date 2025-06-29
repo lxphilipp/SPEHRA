@@ -1,38 +1,35 @@
 import 'package:flutter/material.dart';
 import '/core/theme/sdg_color_theme.dart';
-import '/core/theme/app_colors.dart'; // Für Fallback-Farben
 // Importiere die passende Entity (ChallengeEntity oder ChallengePreviewEntity)
-import '../../domain/entities/challenge_entity.dart'; // Oder ChallengePreviewEntity
+import '../../domain/entities/challenge_entity.dart';
 import '../screens/challenge_details_screen.dart'; // Für Navigation
 
 class ChallengeCardWidget extends StatelessWidget {
-  // Nimmt entweder ChallengeEntity oder ChallengePreviewEntity entgegen
-  final ChallengeEntity challenge; // Oder ChallengePreviewEntity
-  final SdgColorTheme? sdgTheme;
+  final ChallengeEntity challenge;
 
   const ChallengeCardWidget({
     super.key,
     required this.challenge,
-    this.sdgTheme, // Kann vom aufrufenden Widget übergeben werden
+    // Der sdgTheme Parameter wurde entfernt.
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Hole SdgColorTheme, falls nicht übergeben
-    final SdgColorTheme? effectiveSdgTheme = sdgTheme ?? Theme.of(context).extension<SdgColorTheme>();
+    // Hole das SdgColorTheme direkt und nur aus dem Kontext.
+    final sdgTheme = theme.extension<SdgColorTheme>();
 
-    Color circleColor = AppColors.defaultGoalColor; // Fallback
-    if (effectiveSdgTheme != null && challenge.categories.isNotEmpty) {
-      // Nimmt die erste Kategorie für die Farbe des Kreises
-      circleColor = effectiveSdgTheme.colorForSdgKey(challenge.categories.first);
+    // OPTIMIERT: Bestimme die Farbe für den Kreis.
+    // Der Fallback ist jetzt eine semantische Farbe aus dem ColorScheme.
+    Color circleColor = theme.colorScheme.secondaryContainer; // Guter, neutraler Fallback
+    if (sdgTheme != null && challenge.categories.isNotEmpty) {
+      circleColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: theme.cardTheme.color ?? AppColors.cardBackground,
-      shape: theme.cardTheme.shape,
-      elevation: theme.cardTheme.elevation,
+      // OPTIMIERT: Kein Fallback mehr nötig. Das Card-Theme ist im AppTheme definiert.
+      // Die Farbe kommt jetzt zuverlässig von `theme.cardTheme.color`.
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -40,12 +37,14 @@ class ChallengeCardWidget extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => ChallengeDetailsScreen(
                 challengeId: challenge.id,
-                // initialTitle: challenge.title, // Optional für schnelleres Anzeigen
               ),
             ),
           );
         },
-        borderRadius: BorderRadius.circular(10), // Für den InkWell-Effekt
+        // Der Radius wird idealerweise auch vom CardTheme übernommen.
+        borderRadius: (theme.cardTheme.shape as RoundedRectangleBorder?)
+            ?.borderRadius
+            .resolve(Directionality.of(context)),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: ListTile(
@@ -59,30 +58,34 @@ class ChallengeCardWidget extends StatelessWidget {
             ),
             title: Text(
               challenge.title,
-              style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurface),
+              style: theme.textTheme.titleMedium, // Farbe kommt vom Theme
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
               challenge.difficulty,
               style: theme.textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: theme.colorScheme.onSurfaceVariant),
+                fontStyle: FontStyle.italic,
+                color: theme.colorScheme.onSurfaceVariant, // Perfekt für unauffälligen Text
+              ),
             ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Image.asset(
-                  'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png', // Dein Punkte-Icon
+                  'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png',
                   width: 20,
                   height: 20,
+                  // Die Farbe wird korrekt vom IconTheme der AppBar oder global geerbt.
                   color: theme.iconTheme.color,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${challenge.points} Pts',
-                  style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),

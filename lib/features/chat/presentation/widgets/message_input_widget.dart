@@ -6,7 +6,7 @@ class MessageInputWidget extends StatelessWidget {
   final bool isSending;
   final VoidCallback onSendPressed;
   final VoidCallback onPickImagePressed;
-  final FocusNode? focusNode; // Optional, für besseres Fokusmanagement
+  final FocusNode? focusNode;
 
   const MessageInputWidget({
     super.key,
@@ -25,14 +25,16 @@ class MessageInputWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: theme.bottomAppBarTheme.color ?? const Color(0xff0a0930),
+        // OPTIMIERT: Verwendet eine semantische Container-Farbe aus dem Theme.
+        color: theme.colorScheme.surfaceContainer,
       ),
       child: SafeArea(
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end, // Für mehrzeilige Eingabe
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             IconButton(
-              icon: Icon(Icons.photo_camera_outlined, color: theme.iconTheme.color ?? Colors.grey[400]),
+              // OPTIMIERT: Die Farbe wird jetzt vom IconTheme geerbt. Kein Fallback nötig.
+              icon: const Icon(Icons.photo_camera_outlined),
               onPressed: isSending ? null : onPickImagePressed,
               tooltip: "Select Image",
             ),
@@ -40,34 +42,36 @@ class MessageInputWidget extends StatelessWidget {
               child: TextField(
                 focusNode: focusNode,
                 controller: controller,
-                style: TextStyle(color: theme.textTheme.bodyLarge?.color ?? Colors.white),
+                // OPTIMIERT: Der Text-Stil wird vom globalen Theme geerbt.
                 decoration: InputDecoration(
                   hintText: "Write Messages...",
-                  hintStyle: TextStyle(color: (theme.textTheme.bodyLarge?.color ?? Colors.white).withOpacity(0.5)),
+                  // OPTIMIERT: Der hintStyle erbt ebenfalls vom globalen Theme.
                   border: InputBorder.none,
                   filled: false,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 10.0), // Padding anpassen
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 10.0),
                 ),
                 minLines: 1,
                 maxLines: 5,
                 textInputAction: TextInputAction.send,
-                onSubmitted: isSending ? null : (_) => onSendPressed(), // Senden bei Enter
+                onSubmitted: isSending ? null : (_) => onSendPressed(),
                 keyboardType: TextInputType.multiline,
                 textCapitalization: TextCapitalization.sentences,
-                onTapOutside: (_) { // Tastatur schließen bei Klick außerhalb
-                  AppLogger.debug("MessageInputWidget: Tap outside detected.");
-                  if(focusNode?.hasFocus ?? false) { // Nur wenn Fokus vorhanden
-                    focusNode?.unfocus();
-                  } else {
-                    FocusScope.of(context).unfocus();
+                onTapOutside: (_) {
+                  final currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus && currentFocus.hasFocus) {
+                    FocusManager.instance.primaryFocus?.unfocus();
                   }
                 },
               ),
             ),
             isSending
                 ? const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
-              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5)),
+              padding: EdgeInsets.all(12.0),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
             )
                 : IconButton(
               icon: Icon(Icons.send, color: theme.colorScheme.primary),
