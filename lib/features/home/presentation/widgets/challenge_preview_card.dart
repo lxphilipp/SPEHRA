@@ -22,7 +22,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
       circleColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
-    // Wir verwenden eine Card als äußeren Container für den Schatten und die abgerundeten Ecken.
     return Card(
       margin: const EdgeInsets.only(bottom: 12.0),
       child: ListTile(

@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/repositories/user_profile_repository.dart';
+import '../../domain/utils/level_utils.dart';
 import '../datasources/profile_remote_datasource.dart';
 import '../datasources/profile_stats_datasource.dart';
 import '../models/user_profile_model.dart';
@@ -176,17 +177,12 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     if (userId.isEmpty || challengeId.isEmpty) return false;
 
     try {
-      // Rufe die Transaktionsmethode der Datasource auf und übergebe die Logik
-      // als anonyme Funktion oder separate private Methode.
       return await remoteDataSource.runUserProfileTransaction<bool>(
         userId: userId,
         updateFunction: (transaction, userDocRef) async {
-          // Lese das Dokument INNERHALB der Transaktion
           DocumentSnapshot userSnapshot = await transaction.get(userDocRef);
 
           if (!userSnapshot.exists || userSnapshot.data() == null) {
-            AppLogger.warning("UserProfileRepoImpl (Transaction): User $userId not found");
-            // Wichtig: Wirf eine Exception, um die Transaktion fehlschlagen zu lassen
             throw Exception("User document not found for transaction.");
           }
 
@@ -203,17 +199,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
           }
           int newTotalPoints = currentPoints + pointsEarned;
 
-          // Level-Berechnungslogik
-          List<int> levelThresholds = [0, 2000, 3000, 4000, 100000];
-          List<int> levels = [1, 2, 3, 4, 5];
-          int newUserLevel = 1;
-          for (int i = 0; i < levelThresholds.length; i++) {
-            if (newTotalPoints >= levelThresholds[i]) {
-              newUserLevel = levels[i];
-            } else {
-              break;
-            }
-          }
+          int newUserLevel = LevelUtils.calculateLevel(newTotalPoints);
 
           final Map<String, dynamic> dataToUpdate = {
             'ongoingTasks': ongoingTasks,
@@ -229,7 +215,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       );
     } catch (e) {
       AppLogger.error("UserProfileRepoImpl: markTaskAsCompleted transaction error", e);
-      return false; // Fehler von runUserProfileTransaction oder der updateFunction
+      return false;
     }
   }
 }
