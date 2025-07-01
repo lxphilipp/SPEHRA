@@ -1,5 +1,3 @@
-// lib/core/layouts/responsive_main_navigation.dart
-
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -57,7 +55,6 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isMobile = constraints.maxWidth < 600;
-        const int profileIndex = 4;
 
         if (isMobile) {
           return Scaffold(
@@ -72,55 +69,19 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
             ),
           );
         } else {
+          // Desktop/Tablet Ansicht
           return Scaffold(
             body: Row(
               children: [
                 NavigationRail(
-                  selectedIndex: _selectedIndex < 4 ? _selectedIndex : null,
+                  selectedIndex: _selectedIndex,
                   onDestinationSelected: _onDestinationSelected,
                   labelType: constraints.maxWidth < 840
                       ? NavigationRailLabelType.none
                       : NavigationRailLabelType.all,
                   leading: _buildRailHeader(),
-                  destinations: const [
-                    NavigationRailDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: Text('Home')),
-                    NavigationRailDestination(icon: Icon(Iconsax.cup), selectedIcon: Icon(Iconsax.cup5), label: Text('Challenges')),
-                    NavigationRailDestination(icon: Icon(Iconsax.message), selectedIcon: Icon(Iconsax.message5), label: Text('Chat')),
-                    NavigationRailDestination(icon: Icon(Iconsax.global), selectedIcon: Icon(Iconsax.global5), label: Text('News')),
-                  ],
-                  trailing: Expanded(
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child:  Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          // NEU: Das Profil-Widget und sein Label in einer Column anordnen
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min, // Wichtig, damit die Column kompakt bleibt
-                            children: [
-                              _ProfileNavWidget(
-                                onTap: () => _onDestinationSelected(profileIndex),
-                                isMobile: false,
-                                isSelected: _selectedIndex == profileIndex,
-                              ),
-                              // Das Label nur anzeigen, wenn die Rail breit genug ist
-                              if (constraints.maxWidth >= 840)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0), // Abstand zwischen Icon und Text
-                                  child: Text(
-                                    'Profile',
-                                    // Style, der sich an den Auswahlstatus anpasst
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: _selectedIndex == profileIndex
-                                          ? Theme.of(context).colorScheme.primary // Farbe für ausgewählt
-                                          : Theme.of(context).colorScheme.onSurface, // Farbe für nicht ausgewählt
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      )
-                  ),
+                  // HIER IST DIE ÄNDERUNG: Aufruf der neuen Methode
+                  destinations: _buildDesktopDestinations(),
                 ),
                 Expanded(
                   child: IndexedStack(
@@ -136,25 +97,31 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     );
   }
 
+  /// Baut die Navigationsziele für die mobile Ansicht (NavigationBar).
   List<NavigationDestination> _buildMobileDestinations() {
     return [
       const NavigationDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: 'Home'),
       const NavigationDestination(icon: Icon(Iconsax.cup), selectedIcon: Icon(Iconsax.cup5), label: 'Challenges'),
       const NavigationDestination(icon: Icon(Iconsax.message), selectedIcon: Icon(Iconsax.message5), label: 'Chat'),
       const NavigationDestination(icon: Icon(Iconsax.global), selectedIcon: Icon(Iconsax.global5), label: 'News'),
-      NavigationDestination(
-        label: 'Profile',
-        icon: _ProfileNavWidget(
-          onTap: () => _onDestinationSelected(4),
-          isMobile: true,
-          isSelected: _selectedIndex == 4,
-        ),
-      ),
+      const NavigationDestination(icon: Icon(Iconsax.user_octagon), selectedIcon: Icon(Iconsax.user_octagon1), label: 'Profile')
+    ];
+  }
+
+  /// NEU: Baut die Navigationsziele für die Desktop-Ansicht (NavigationRail).
+  List<NavigationRailDestination> _buildDesktopDestinations() {
+    return const [
+      NavigationRailDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: Text('Home')),
+      NavigationRailDestination(icon: Icon(Iconsax.cup), selectedIcon: Icon(Iconsax.cup5), label: Text('Challenges')),
+      NavigationRailDestination(icon: Icon(Iconsax.message), selectedIcon: Icon(Iconsax.message5), label: Text('Chat')),
+      NavigationRailDestination(icon: Icon(Iconsax.global), selectedIcon: Icon(Iconsax.global5), label: Text('News')),
+      NavigationRailDestination(icon: Icon(Iconsax.user_octagon), selectedIcon: Icon(Iconsax.user_octagon1), label: Text('Profile')),
     ];
   }
 }
 
-// Das _ProfileNavWidget bleibt unverändert
+// Dieses Widget wird in diesem Layout nicht mehr verwendet,
+// kann aber für andere Zwecke im Projekt verbleiben.
 class _ProfileNavWidget extends StatelessWidget {
   final VoidCallback onTap;
   final bool isMobile;
@@ -180,7 +147,7 @@ class _ProfileNavWidget extends StatelessWidget {
         }
 
         final levelData = LevelUtils.calculateLevelData(userProfile.points);
-        final size = isMobile ? 28.0 : 40.0;
+        final size = 50.0;
 
         return InkWell(
           onTap: onTap,
