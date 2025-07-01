@@ -1,30 +1,17 @@
 // lib/features/profile/presentation/widgets/circular_profile_progress_widget.dart
 
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart'; // Importieren
 import 'package:flutter/material.dart';
 
 /// Eine Hilfsklasse, die dynamisch Farbverläufe für jedes Level generiert.
 class LevelColor {
-  /// Erzeugt einen einzigartigen Farbverlauf basierend auf der Level-Nummer.
-  ///
-  /// Diese Funktion nutzt das HSL-Farbmodell, um sicherzustellen, dass jedes Level
-  /// einen visuell ansprechenden und einzigartigen Farbverlauf erhält, ohne dass
-  /// wir Farben manuell definieren müssen.
   static List<Color> getGradientForLevel(int level) {
-    // Der "Hue" (Farbton) wird basierend auf dem Level berechnet.
-    // Die Multiplikation mit einer Primzahl (hier 41) sorgt für eine schöne
-    // und nicht-repetitive Verteilung der Farben über den Farbkreis (360 Grad).
     final double hue = (level * 41) % 360.0;
-
-    // Wir halten Sättigung und Helligkeit konstant, um einen konsistenten Stil zu gewährleisten.
-    const double saturation = 0.85; // Kräftige Sättigung
-    const double lightness = 0.6;   // Angenehme Helligkeit
-
-    // Erzeugen der Start- und Endfarben für den Verlauf.
+    const double saturation = 0.85;
+    const double lightness = 0.6;
     final Color startColor = HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
-    // Die Endfarbe hat einen leicht verschobenen Farbton für einen sanften Übergang.
     final Color endColor = HSLColor.fromAHSL(1.0, (hue + 35) % 360.0, saturation, lightness).toColor();
-
     return [startColor, endColor];
   }
 }
@@ -75,14 +62,12 @@ class _GradientCircularPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
-    // Hintergrundkreis
     final backgroundPaint = Paint()
       ..color = backgroundColor
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, radius, backgroundPaint);
 
-    // Vordergrundkreis mit Farbverlauf
     final foregroundPaint = Paint()
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
@@ -90,7 +75,7 @@ class _GradientCircularPainter extends CustomPainter {
       ..shader = SweepGradient(
         colors: gradientColors,
         startAngle: -pi / 2,
-        endAngle: (pi * 2), // Der Verlauf deckt immer den ganzen Kreis ab
+        endAngle: (pi * 2),
         transform: const GradientRotation(-pi / 2),
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
@@ -109,26 +94,28 @@ class _GradientCircularPainter extends CustomPainter {
   }
 }
 
-
+// HIER IST DIE FINALE VERSION DES WIDGETS
 class CircularProfileProgressWidget extends StatelessWidget {
   final String? imageUrl;
   final int level;
   final double progress;
   final double size;
+  final String? userName; // Parameter für den Namen
 
   const CircularProfileProgressWidget({
     super.key,
-    required this.imageUrl,
+    this.imageUrl,
     required this.level,
     required this.progress,
     this.size = 40.0,
+    this.userName, // userName im Konstruktor
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Hole den dynamisch generierten Farbverlauf für das aktuelle Level.
     final gradientColors = LevelColor.getGradientForLevel(level);
+    final String initial = userName != null && userName!.isNotEmpty ? userName![0].toUpperCase() : '';
 
     return SizedBox(
       width: size,
@@ -136,30 +123,44 @@ class CircularProfileProgressWidget extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. Der äußere Fortschrittsring mit dem neuen dynamischen Farbverlauf
+          // 1. Der äußere Fortschrittsring mit dem dynamischen Farbverlauf
           CircularGradientProgressIndicator(
             progress: progress,
             strokeWidth: 3.5,
             gradientColors: gradientColors,
             backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           ),
-          // 2. Das Profilbild in der Mitte
+
+          // 2. Das Profilbild in der Mitte, jetzt mit CachedNetworkImage
           Padding(
             padding: const EdgeInsets.all(3.0),
             child: CircleAvatar(
               backgroundColor: theme.scaffoldBackgroundColor,
-              backgroundImage: (imageUrl != null && imageUrl!.isNotEmpty)
-                  ? NetworkImage(imageUrl!)
-                  : null,
-              child: (imageUrl == null || imageUrl!.isEmpty)
-                  ? Icon(
-                Icons.person,
-                size: size * 0.5,
-                color: theme.colorScheme.onSurfaceVariant,
-              )
-                  : null,
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl ?? '',
+                  fit: BoxFit.cover,
+                  width: size,
+                  height: size,
+                  placeholder: (context, url) => CircleAvatar(
+                    backgroundColor: theme.colorScheme.surfaceVariant,
+                  ),
+                  errorWidget: (context, url, error) => CircleAvatar(
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Text(
+                      initial,
+                      style: TextStyle(
+                        fontSize: size * 0.4,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
+
           // 3. Das Level-Badge unten rechts
           Positioned(
             right: 0,
@@ -167,7 +168,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradientColors), // Badge nutzt denselben Verlauf
+                gradient: LinearGradient(colors: gradientColors),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: theme.scaffoldBackgroundColor,
@@ -177,14 +178,13 @@ class CircularProfileProgressWidget extends StatelessWidget {
               child: Text(
                 level.toString(),
                 style: TextStyle(
-                  // Eine Farbe, die auf den meisten Verläufen gut lesbar ist.
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: size * 0.28,
+                    fontSize: size * 0.3,
                     shadows: [
                       Shadow(
                         color: Colors.black.withOpacity(0.5),
-                        blurRadius: 1,
+                        blurRadius: 3,
                       )
                     ]
                 ),

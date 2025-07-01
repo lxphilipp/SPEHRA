@@ -108,7 +108,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     ];
   }
 
-  /// NEU: Baut die Navigationsziele für die Desktop-Ansicht (NavigationRail).
+  /// Baut die Navigationsziele für die Desktop-Ansicht (NavigationRail).
   List<NavigationRailDestination> _buildDesktopDestinations() {
     return const [
       NavigationRailDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: Text('Home')),
@@ -120,8 +120,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
   }
 }
 
-// Dieses Widget wird in diesem Layout nicht mehr verwendet,
-// kann aber für andere Zwecke im Projekt verbleiben.
+
 class _ProfileNavWidget extends StatelessWidget {
   final VoidCallback onTap;
   final bool isMobile;

@@ -1,4 +1,6 @@
+// lib/features/home/presentation/widgets/challenge_preview_card.dart
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import '/features/challenges/domain/entities/challenge_entity.dart';
 import '/core/theme/sdg_color_theme.dart';
 
@@ -17,61 +19,90 @@ class ChallengePreviewCardWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
 
-    Color circleColor = theme.colorScheme.secondaryContainer;
+    // Bestimmt die Hauptfarbe basierend auf der SDG-Kategorie
+    Color categoryColor = theme.colorScheme.secondaryContainer;
     if (challenge.categories.isNotEmpty && sdgTheme != null) {
-      circleColor = sdgTheme.colorForSdgKey(challenge.categories.first);
+      categoryColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
     return Card(
+      // 1. Deutlich abgerundete Ecken
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      // 2. Eigene Hintergrundfarbe, um sich vom Seitenhintergrund abzuheben
+      color: theme.colorScheme.surfaceContainerHighest,
+      elevation: 0, // Flaches, modernes Design ohne Schatten
       margin: const EdgeInsets.only(bottom: 12.0),
-      child: ListTile(
+      clipBehavior: Clip.antiAlias, // Stellt sicher, dass der InkWell die Ecken respektiert
+      child: InkWell(
         onTap: onTap,
-        leading: Container(
-          width: 35, // Größe beibehalten
-          height: 35,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: circleColor,
-          ),
-        ),
-        title: Text(
-          challenge.title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          challenge.difficulty,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: Image.asset(
-                'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png',
-                color: theme.iconTheme.color,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          // 3. Flexibleres Layout statt ListTile
+          child: Row(
+            children: [
+              // Linke Seite: SDG-Icon
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: categoryColor.withOpacity(0.15), // Weicher Hintergrund für das Icon
+                ),
+                child: Center(
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: categoryColor,
+                    ),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              challenge.points.toString(),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.bold,
+              const SizedBox(width: 16),
+              // Mitte: Titel und Schwierigkeit
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      challenge.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      challenge.difficulty,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              // Rechte Seite: Punkte
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Iconsax.star, color: Colors.amber, size: 20),
+                  const SizedBox(height: 2),
+                  Text(
+                    challenge.points.toString(),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       ),
     );
   }

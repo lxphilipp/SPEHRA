@@ -111,6 +111,8 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
 
     final bool isCompletedByUser = userProfileProvider.userProfile?.completedTasks.contains(challenge.id) ?? false;
     final bool isOngoingByUser = userProfileProvider.userProfile?.ongoingTasks.contains(challenge.id) ?? false;
+    final bool isActionLoading = challengeProvider.isUpdatingUserChallengeStatus;
+
 
     return SingleChildScrollView(
       child: Column(
@@ -222,47 +224,64 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Column(
                 children: [
-                  // ... (Fehlermeldung bleibt gleich) ...
+                  if (challengeProvider.userChallengeStatusError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: Text(
+                        challengeProvider.userChallengeStatusError!,
+                        style: TextStyle(color: theme.colorScheme.error),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   Row(
                     children: [
-                      // OPTIMIERT: Verwende direkt thematisierte Buttons
+                      // Accept / Ongoing / Completed Button
                       Expanded(
                         child: ElevatedButton(
-                          // Stil wird vom Theme geerbt, nur deaktiviert/aktiviert
-                          onPressed: (isOngoingByUser || isCompletedByUser)
+                          onPressed: isActionLoading || isOngoingByUser || isCompletedByUser
                               ? null
-                              : () { /* accept challenge logic */ },
-                          child: Text(isOngoingByUser
-                              ? 'Is Ongoing'
+                              : () => challengeProvider.acceptChallenge(challenge.id),
+                          child: isActionLoading
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Text(isOngoingByUser
+                              ? 'Ongoing'
                               : (isCompletedByUser ? 'Completed!' : 'Accept Challenge')),
                         ),
                       ),
                       const SizedBox(width: 16),
+                      // Complete Button
                       Expanded(
-                        child: FilledButton( // Neuer Material 3 Button für die Hauptaktion
+                        child: FilledButton(
                           style: FilledButton.styleFrom(
-                            // Optional: Überschreibe die Farbe, wenn sie nicht die primäre sein soll
                             backgroundColor: theme.colorScheme.secondary,
                             foregroundColor: theme.colorScheme.onSecondary,
                           ),
-                          onPressed: isCompletedByUser ? null : () { /* complete challenge logic */ },
-                          child: Text(isCompletedByUser ? 'Done!' : 'Mark as Completed'),
+                          onPressed: isActionLoading || isCompletedByUser
+                              ? null
+                              : () => challengeProvider.completeChallenge(challenge.id),
+                          child: isActionLoading && !isOngoingByUser
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Text(isCompletedByUser ? 'Done!' : 'Mark as Completed'),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
+                  // Remove from Ongoing Button
                   if (isOngoingByUser && !isCompletedByUser)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        // Spezieller Stil für eine "gefährliche" Aktion
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.errorContainer,
                           foregroundColor: theme.colorScheme.onErrorContainer,
                         ),
-                        onPressed: () { /* remove from ongoing logic */ },
-                        child: const Text('Remove from Ongoing'),
+                        onPressed: isActionLoading
+                            ? null
+                            : () => challengeProvider.removeChallengeFromOngoing(challenge.id),
+                        child: isActionLoading
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text('Remove from Ongoing'),
                       ),
                     ),
                 ],
