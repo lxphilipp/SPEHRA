@@ -297,7 +297,7 @@ Future<void> main() async {
         ChangeNotifierProxyProvider2<AuthenticationProvider, GroupChatListProvider, CreateGroupProvider>(
             create: (context) => CreateGroupProvider(
             ),
-            update: (context, auth, groupList, previous) => previous!..updateDependencies(auth, groupList) // TODO: Add `updateDependencies` to CreateGroupProvider
+            update: (context, auth, groupList, previous) => previous!..updateDependencies(auth, groupList)
         ),
 
       ],

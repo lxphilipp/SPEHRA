@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
-// Core & Feature Imports
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../challenges/domain/entities/challenge_entity.dart';
 import '../../../challenges/presentation/screens/challenge_details_screen.dart';
@@ -13,12 +12,11 @@ import '../../../profile/domain/entities/user_profile_entity.dart';
 import '../../../profile/domain/utils/level_utils.dart';
 import '../../../profile/presentation/providers/user_profile_provider.dart';
 import '../../../profile/presentation/widgets/circular_profile_progress_widget.dart';
-import '../../../sdg/domain/entities/sdg_list_item_entity.dart';
 import '../../../sdg/presentation/screens/sdg_detail_screen.dart';
 import '../../../sdg/presentation/screens/sdg_list_screen.dart';
 import '../providers/home_provider.dart';
 import 'home_dashboard_cards.dart';
-import 'challenge_preview_card.dart'; // Wichtig für die neue Listenansicht
+import 'challenge_preview_card.dart';
 
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
@@ -160,36 +158,35 @@ class HomeContent extends StatelessWidget {
     );
   }
 
+  // HIER IST DIE ANPASSUNG mit CarouselView
   Widget _buildSdgCarousel(BuildContext context, HomeProvider homeProvider) {
-    if (homeProvider.isLoadingSdgItems) return const SizedBox(height: 160, child: Center(child: CircularProgressIndicator()));
-    if (homeProvider.sdgNavItems.isEmpty) return const SizedBox(height: 160, child: Center(child: Text("Keine Ziele gefunden.")));
+    final theme = Theme.of(context);
+    if (homeProvider.isLoadingSdgItems) return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+    if (homeProvider.sdgNavItems.isEmpty) return const SizedBox(height: 180, child: Center(child: Text("Keine Ziele gefunden.")));
 
     return SizedBox(
-      height: 160,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: homeProvider.sdgNavItems.length,
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        itemBuilder: (context, index) {
-          final item = homeProvider.sdgNavItems[index];
-          return SizedBox(
-            width: 140,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: DashboardCard(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SdgDetailScreen(sdgId: item.id))),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(item.listImageAssetPath, height: 60, width: 60),
-                    const SizedBox(height: 12),
-                    Text(item.title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium)
-                  ],
-                ),
+      height: 180,
+      child: CarouselView.weighted(
+        itemSnapping: true,
+        shrinkExtent: 500.0,
+        flexWeights: const [5, 3],
+        // Mappt die SDG-Daten auf unsere DashboardCard-Widgets
+        children: homeProvider.sdgNavItems.map((item) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0),
+            child: DashboardCard(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SdgDetailScreen(sdgId: item.id))),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(item.listImageAssetPath, height: 70, width: 70),
+                  const SizedBox(height: 12),
+                  Text(item.title, textAlign: TextAlign.center, style: theme.textTheme.titleMedium)
+                ],
               ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }

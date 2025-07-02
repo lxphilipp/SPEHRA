@@ -19,36 +19,31 @@ class ChallengePreviewCardWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
 
-    // Bestimmt die Hauptfarbe basierend auf der SDG-Kategorie
     Color categoryColor = theme.colorScheme.secondaryContainer;
     if (challenge.categories.isNotEmpty && sdgTheme != null) {
       categoryColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
     return Card(
-      // 1. Deutlich abgerundete Ecken
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
       ),
-      // 2. Eigene Hintergrundfarbe, um sich vom Seitenhintergrund abzuheben
       color: theme.colorScheme.surfaceContainerHighest,
-      elevation: 0, // Flaches, modernes Design ohne Schatten
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12.0),
-      clipBehavior: Clip.antiAlias, // Stellt sicher, dass der InkWell die Ecken respektiert
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          // 3. Flexibleres Layout statt ListTile
           child: Row(
             children: [
-              // Linke Seite: SDG-Icon
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: categoryColor.withOpacity(0.15), // Weicher Hintergrund für das Icon
+                  color: categoryColor.withOpacity(0.15),
                 ),
                 child: Center(
                   child: Container(
@@ -62,7 +57,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // Mitte: Titel und Schwierigkeit
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,19 +80,26 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // Rechte Seite: Punkte
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Iconsax.star, color: Colors.amber, size: 20),
-                  const SizedBox(height: 2),
-                  Text(
-                    challenge.points.toString(),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold
+
+              SizedBox(
+                width: 40,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Iconsax.star, color: Colors.amber, size: 20),
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown, // Verhindert, dass der Text größer als die Schriftart wird
+                      child: Text(
+                        challenge.points.toString(),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold
+                        ),
+                        maxLines: 1, // Wichtig für FittedBox
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
