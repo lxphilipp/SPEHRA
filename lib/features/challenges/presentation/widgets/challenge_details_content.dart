@@ -37,8 +37,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     });
   }
 
-  // OPTIMIERT: Diese Methode wird vereinfacht oder kann ganz entfernt werden.
-  // Wir verwenden jetzt direkt die thematisierten Buttons im Build-Kontext.
   Widget _buildActionButton({
     required String label,
     required VoidCallback? onPressed,

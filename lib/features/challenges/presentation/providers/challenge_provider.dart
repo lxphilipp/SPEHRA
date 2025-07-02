@@ -98,9 +98,6 @@ class ChallengeProvider with ChangeNotifier {
   void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
     _authProvider = auth;
     _userProfileProvider = profile;
-    // No specific logic is needed here on every update unless a feature
-    // in this provider directly depends on the user's ID changing.
-    // The internal references are now fresh for other methods to use.
   }
 
   // --- Public Methods for UI Interaction ---
@@ -136,7 +133,6 @@ class ChallengeProvider with ChangeNotifier {
 
     _isCreatingChallenge = false;
     if (newChallengeId != null) {
-      // The allChallengesStream will update automatically.
       notifyListeners();
       return true;
     } else {
@@ -166,11 +162,6 @@ class ChallengeProvider with ChangeNotifier {
       _userChallengeStatusError = "Could not accept challenge.";
     }
 
-    // REMOVED: `await _userProfileProvider.fetchUserProfileManually();`
-    // The UserProfileProvider should reactively listen to its own data source.
-    // When this use case succeeds, it changes data in the backend, which the
-    // UserProfileProvider's stream will automatically pick up. This decouples the providers.
-
     notifyListeners();
     return success;
   }
@@ -197,7 +188,6 @@ class ChallengeProvider with ChangeNotifier {
       _userChallengeStatusError = "Could not mark challenge as completed.";
     }
 
-    // The reactive UserProfileProvider will handle its own state update.
     notifyListeners();
     return success;
   }

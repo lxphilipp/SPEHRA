@@ -89,13 +89,13 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     const Icon(Iconsax.star, color: Colors.amber, size: 20),
                     const SizedBox(height: 2),
                     FittedBox(
-                      fit: BoxFit.scaleDown, // Verhindert, dass der Text größer als die Schriftart wird
+                      fit: BoxFit.scaleDown,
                       child: Text(
                         challenge.points.toString(),
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold
                         ),
-                        maxLines: 1, // Wichtig für FittedBox
+                        maxLines: 1,
                       ),
                     ),
                   ],

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// Importiere dein Haupt-Layout, wenn du eines hast, das hier passt
-// z.B. import 'package:dein_projekt_name/features/home/presentation/layouts/responsive_main_navigation.dart';
 import '../widgets/create_challenge_form.dart'; // Das neue Formular-Widget
 
 class CreateChallengeScreen extends StatelessWidget {
@@ -8,12 +6,7 @@ class CreateChallengeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dein altes CreateOwnChallengesScreen hat HomePageLayout verwendet.
-    // return HomePageLayout(
-    //   body: CreateChallengeForm(),
-    // );
 
-    // Für ein einfaches Scaffold:
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(

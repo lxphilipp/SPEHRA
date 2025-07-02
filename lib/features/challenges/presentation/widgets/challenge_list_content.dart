@@ -156,7 +156,6 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
             ),
           ),
         ),
-        // KORRIGIERTER StreamBuilder
         StreamBuilder<List<ChallengeEntity>>(
           // Wir erwarten jetzt eine non-nullable Liste, der Stream im Provider wurde angepasst
           stream: challengeProvider.allChallengesStream,
@@ -245,7 +244,6 @@ class _ChallengeListContentState extends State<ChallengeListContent> {
   }
 }
 
-// ... (_SliverAppBarDelegate bleibt unverändert) ...
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({ required this.minHeight, required this.maxHeight, required this.child });
   final double minHeight;

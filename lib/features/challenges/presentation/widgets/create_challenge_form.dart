@@ -19,11 +19,8 @@ class _CreateChallengeFormState extends State<CreateChallengeForm> {
   final _taskController = TextEditingController();
   final _pointsController = TextEditingController();
 
-  String _selectedDifficulty = "Easy"; // Default-Wert wie in deinem alten Code
+  String _selectedDifficulty = "Easy";
   final List<String> _difficultyOptions = ["Easy", "Normal", "Advanced", "Experienced"]; // Deine Optionen
-
-  // Für SDG-Kategorieauswahl (ähnlich wie im alten Code)
-  // TODO: categoryNames und imagePaths global oder über einen SDG-Provider bereitstellen
   final List<String> _categoryKeys = List.generate(17, (i) => 'goal${i + 1}');
   final List<String> _categoryImagePaths = List.generate(17, (i) => 'assets/icons/17_SDG_Icons/${i + 1}.png');
   final List<String> _selectedCategories = []; // Hält die ausgewählten SDG-Keys

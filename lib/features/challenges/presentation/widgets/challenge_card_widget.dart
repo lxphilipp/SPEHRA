@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '/core/theme/sdg_color_theme.dart';
-// Importiere die passende Entity (ChallengeEntity oder ChallengePreviewEntity)
 import '../../domain/entities/challenge_entity.dart';
 import '../screens/challenge_details_screen.dart'; // Für Navigation
 
@@ -10,26 +9,20 @@ class ChallengeCardWidget extends StatelessWidget {
   const ChallengeCardWidget({
     super.key,
     required this.challenge,
-    // Der sdgTheme Parameter wurde entfernt.
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Hole das SdgColorTheme direkt und nur aus dem Kontext.
     final sdgTheme = theme.extension<SdgColorTheme>();
 
-    // OPTIMIERT: Bestimme die Farbe für den Kreis.
-    // Der Fallback ist jetzt eine semantische Farbe aus dem ColorScheme.
-    Color circleColor = theme.colorScheme.secondaryContainer; // Guter, neutraler Fallback
+    Color circleColor = theme.colorScheme.secondaryContainer;
     if (sdgTheme != null && challenge.categories.isNotEmpty) {
       circleColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      // OPTIMIERT: Kein Fallback mehr nötig. Das Card-Theme ist im AppTheme definiert.
-      // Die Farbe kommt jetzt zuverlässig von `theme.cardTheme.color`.
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -58,7 +51,7 @@ class ChallengeCardWidget extends StatelessWidget {
             ),
             title: Text(
               challenge.title,
-              style: theme.textTheme.titleMedium, // Farbe kommt vom Theme
+              style: theme.textTheme.titleMedium,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -66,7 +59,7 @@ class ChallengeCardWidget extends StatelessWidget {
               challenge.difficulty,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
-                color: theme.colorScheme.onSurfaceVariant, // Perfekt für unauffälligen Text
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             trailing: Column(
@@ -77,7 +70,6 @@ class ChallengeCardWidget extends StatelessWidget {
                   'assets/icons/allgemeineIcons/SDG-App-Iconset_Zeichenflaeche 1.png',
                   width: 20,
                   height: 20,
-                  // Die Farbe wird korrekt vom IconTheme der AppBar oder global geerbt.
                   color: theme.iconTheme.color,
                 ),
                 const SizedBox(height: 4),
