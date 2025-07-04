@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/core/utils/app_logger.dart';
-import '/core/widgets/expandable_text_widget.dart';
+import 'package:iconsax/iconsax.dart';
+
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
+import '../../domain/entities/challenge_filter_state.dart';
 import 'challenge_card_widget.dart';
+import 'challenge_filter_content.dart';
 
 class ChallengeListContent extends StatefulWidget {
   final int? initialTabIndex;
@@ -16,247 +18,253 @@ class ChallengeListContent extends StatefulWidget {
   State<ChallengeListContent> createState() => _ChallengeListContentState();
 }
 
-class _ChallengeListContentState extends State<ChallengeListContent> {
-  int _selectedTab = 0;
-  final List<int> _selectedCategoryIndices = [];
-
-  final List<String> _categoryKeys = List.generate(17, (i) => 'goal${i + 1}');
-  final List<String> _categoryImagePaths = List.generate(17, (i) => 'assets/icons/17_SDG_Icons/${i + 1}.png');
+class _ChallengeListContentState extends State<ChallengeListContent> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _selectedTab = widget.initialTabIndex ?? 0;
-  }
-
-  Widget _buildCategoryFilterIcon(int index, String imagePath, ThemeData theme) {
-    bool isSelected = _selectedCategoryIndices.contains(index);
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _selectedCategoryIndices.remove(index);
-          } else {
-            _selectedCategoryIndices.add(index);
-          }
-        });
-      },
-      child: Container(
-        width: 50,
-        height: 50,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Image.asset(imagePath, fit: BoxFit.contain),
-        ),
-      ),
+    _tabController = TabController(
+      initialIndex: widget.initialTabIndex ?? 0,
+      length: 3,
+      vsync: this,
     );
+    _tabController.addListener(() {
+      if (mounted && !_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
   }
 
-  Widget _buildTabOption(BuildContext context, String title, int index, ThemeData theme) {
-    bool isSelected = _selectedTab == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTab = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-              width: 3,
+  @override
+  void dispose() {
+    _tabController.removeListener(() {});
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _showAdaptiveFilterDialog(ChallengeProvider provider) async {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    ChallengeFilterState? newFilterState;
+
+    if (isMobile) {
+      newFilterState = await Navigator.of(context).push<ChallengeFilterState>(
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (context) => _FilterScreen(initialState: provider.filterState),
+        ),
+      );
+    } else {
+      ChallengeFilterState dialogFilterState = provider.filterState;
+      newFilterState = await showDialog<ChallengeFilterState>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Challenges filtern"),
+          content: SizedBox(
+            width: 400,
+            child: ChallengeFilterContent(
+              initialState: provider.filterState,
+              onStateChanged: (newState) => dialogFilterState = newState,
             ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, const ChallengeFilterState()), child: const Text("Zurücksetzen")),
+            TextButton(onPressed: () => Navigator.pop(context, dialogFilterState), child: const Text("Anwenden")),
+          ],
         ),
-        child: Text(
-          title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
+      );
+    }
+
+    if (newFilterState != null) {
+      provider.updateFilter(newFilterState);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final challengeProvider = context.read<ChallengeProvider>();
     final authProvider = context.read<AuthenticationProvider>();
-    final userProfileProvider = context.watch<UserProfileProvider>();
-    final challengeProvider = context.watch<ChallengeProvider>();
 
-    if (!authProvider.isLoggedIn || userProfileProvider.userProfile == null) {
-      return const Center(child: CircularProgressIndicator());
+    if (!authProvider.isLoggedIn) {
+      return const Center(child: Text("Bitte einloggen, um Challenges zu sehen."));
     }
 
-    final List<Widget> sdgFilterIcons = List.generate(
-      _categoryImagePaths.length,
-          (index) => _buildCategoryFilterIcon(index, _categoryImagePaths[index], theme),
-    );
-
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverAppBar(
-          title: Text('Challenges', style: theme.appBarTheme.titleTextStyle),
-          pinned: true,
-          elevation: 0,
-          expandedHeight: MediaQuery.of(context).size.height / 3,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(color: theme.scaffoldBackgroundColor),
-            titlePadding: const EdgeInsets.only(left: 20, bottom: 60),
-            title: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Explore Challenges', style: theme.textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                const SizedBox(width: 250, child: ExpandableTextWidget()),
-              ],
-            ),
-          ),
-        ),
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: _SliverAppBarDelegate(
-            minHeight: 70.0,
-            maxHeight: 70.0,
-            child: Container(
-              color: theme.scaffoldBackgroundColor,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                children: sdgFilterIcons,
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Challenges",
+                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
-          ),
-        ),
-        SliverPersistentHeader(
-          pinned: true,
-          delegate: _SliverAppBarDelegate(
-            minHeight: 50.0,
-            maxHeight: 50.0,
-            child: Container(
-              color: theme.scaffoldBackgroundColor,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Row(
                 children: [
-                  Expanded(child: _buildTabOption(context, "Discover", 0, theme)),
-                  Expanded(child: _buildTabOption(context, "Ongoing", 1, theme)),
-                  Expanded(child: _buildTabOption(context, "Completed", 2, theme)),
+                  IconButton(
+                    icon: const Icon(Iconsax.filter),
+                    tooltip: "Filtern",
+                    onPressed: () => _showAdaptiveFilterDialog(challengeProvider),
+                  ),
+                  // Der PopupMenuButton, der die existierende Provider-Logik nutzt
+                  PopupMenuButton<String>(
+                    icon: const Icon(Iconsax.sort),
+                    tooltip: "Sortieren nach...",
+                    onSelected: (String value) {
+                      // Hier passiert die "Übersetzung" im UI-Layer
+                      final parts = value.split('_');
+                      final criteria = parts[0];
+                      final direction = parts[1];
+
+                      challengeProvider.setSortCriteria(criteria);
+
+                      // Wir stellen sicher, dass die Richtung auch stimmt,
+                      // falls sie durch den Klick nicht schon korrekt gesetzt wurde.
+                      bool shouldBeAscending = direction == 'asc';
+                      if (challengeProvider.isSortAscending != shouldBeAscending) {
+                        challengeProvider.toggleSortDirection();
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'createdAt_desc',
+                        child: Text('Neueste zuerst'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'createdAt_asc',
+                        child: Text('Älteste zuerst'),
+                      ),
+                      const PopupMenuDivider(),
+                      const PopupMenuItem<String>(
+                        value: 'points_desc',
+                        child: Text('Meiste Punkte'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'points_asc',
+                        child: Text('Wenigste Punkte'),
+                      ),
+                      const PopupMenuDivider(),
+                      const PopupMenuItem<String>(
+                        value: 'difficulty_asc',
+                        child: Text('Einfachste zuerst'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'difficulty_desc',
+                        child: Text('Schwerste zuerst'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ),
+            ],
           ),
         ),
-        StreamBuilder<List<ChallengeEntity>>(
-          // Wir erwarten jetzt eine non-nullable Liste, der Stream im Provider wurde angepasst
-          stream: challengeProvider.allChallengesStream,
-          builder: (context, snapshot) {
-            // 1. Ladezustand explizit prüfen
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
-            }
 
-            // 2. Fehlerzustand explizit prüfen
-            if (snapshot.hasError) {
-              return SliverFillRemaining(
-                child: Center(
-                  child: Text(
-                    'Error: ${snapshot.error}',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
-                  ),
-                ),
+        TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: "Discover"),
+            Tab(text: "Ongoing"),
+            Tab(text: "Completed"),
+          ],
+        ),
+
+        Expanded(
+          child: Consumer<ChallengeProvider>(
+            builder: (context, provider, child) {
+              final userProfileProvider = context.watch<UserProfileProvider>();
+              if (userProfileProvider.userProfile == null) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final allFiltered = provider.filteredChallenges;
+              final ongoingTaskIds = userProfileProvider.userProfile!.ongoingTasks;
+              final completedTaskIds = userProfileProvider.userProfile!.completedTasks;
+
+              final List<ChallengeEntity> discoverChallenges = allFiltered.where((c) => !ongoingTaskIds.contains(c.id) && !completedTaskIds.contains(c.id)).toList();
+              final List<ChallengeEntity> ongoingChallenges = allFiltered.where((c) => ongoingTaskIds.contains(c.id)).toList();
+              final List<ChallengeEntity> completedChallenges = allFiltered.where((c) => completedTaskIds.contains(c.id)).toList();
+
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildListView(discoverChallenges, "Keine neuen Challenges gefunden."),
+                  _buildListView(ongoingChallenges, "Du hast keine laufenden Challenges."),
+                  _buildListView(completedChallenges, "Du hast noch keine Challenges abgeschlossen."),
+                ],
               );
-            }
-
-            // 3. Daten-Zustand prüfen (inklusive, ob die Liste leer ist)
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return SliverFillRemaining(
-                child: Center(
-                  child: Text(
-                    'No challenges available yet.',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              );
-            }
-
-            // 4. Erfolgsfall: Wir wissen, dass snapshot.data nicht null ist.
-            final allChallenges = snapshot.data!;
-
-            // --- Die Filterlogik beginnt hier und hat sicheren Zugriff ---
-            final ongoingTaskIds = userProfileProvider.userProfile?.ongoingTasks ?? [];
-            final completedTaskIds = userProfileProvider.userProfile?.completedTasks ?? [];
-            List<ChallengeEntity> challengesToShow;
-
-            if (_selectedTab == 0) { // Discover
-              challengesToShow = allChallenges.where((challenge) =>
-              !ongoingTaskIds.contains(challenge.id) && !completedTaskIds.contains(challenge.id)
-              ).toList();
-            } else if (_selectedTab == 1) { // Ongoing
-              challengesToShow = allChallenges.where((challenge) => ongoingTaskIds.contains(challenge.id)).toList();
-            } else { // Completed
-              challengesToShow = allChallenges.where((challenge) => completedTaskIds.contains(challenge.id)).toList();
-            }
-
-            if (_selectedCategoryIndices.isNotEmpty) {
-              final selectedSdgKeys = _selectedCategoryIndices.map((index) => _categoryKeys[index]).toList();
-              challengesToShow = challengesToShow.where((challenge) =>
-                  challenge.categories.any((catKey) => selectedSdgKeys.contains(catKey))
-              ).toList();
-            }
-
-            if (challengesToShow.isEmpty) {
-              return SliverFillRemaining(
-                child: Center(
-                  child: Text(
-                    'No challenges in this category.',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              );
-            }
-
-            return SliverPadding(
-              padding: const EdgeInsets.all(16.0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    final challenge = challengesToShow[index];
-                    return ChallengeCardWidget(challenge: challenge);
-                  },
-                  childCount: challengesToShow.length,
-                ),
-              ),
-            );
-          },
+            },
+          ),
         ),
       ],
     );
   }
+
+  Widget _buildListView(List<ChallengeEntity> challenges, String emptyMessage) {
+    if (challenges.isEmpty) {
+      return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(emptyMessage, textAlign: TextAlign.center),
+          ));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: challenges.length,
+      itemBuilder: (context, index) {
+        final challenge = challenges[index];
+        return ChallengeCardWidget(challenge: challenge);
+      },
+    );
+  }
 }
 
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate({ required this.minHeight, required this.maxHeight, required this.child });
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
+// _FilterScreen bleibt unverändert
+class _FilterScreen extends StatefulWidget {
+  final ChallengeFilterState initialState;
+  const _FilterScreen({required this.initialState});
+
   @override
-  double get minExtent => minHeight;
+  State<_FilterScreen> createState() => __FilterScreenState();
+}
+
+class __FilterScreenState extends State<_FilterScreen> {
+  late ChallengeFilterState _currentFilterState;
+
   @override
-  double get maxExtent => maxHeight;
+  void initState() {
+    super.initState();
+    _currentFilterState = widget.initialState;
+  }
+
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) =>
-      SizedBox.expand(child: child);
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) =>
-      maxHeight != oldDelegate.maxHeight || minHeight != oldDelegate.minHeight || child != oldDelegate.child;
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Filter & Sort'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(_currentFilterState);
+            },
+            child: const Text('Anwenden'),
+          ),
+        ],
+      ),
+      body: ChallengeFilterContent(
+        initialState: _currentFilterState,
+        onStateChanged: (newState) {
+          setState(() {
+            _currentFilterState = newState;
+          });
+        },
+      ),
+    );
+  }
 }

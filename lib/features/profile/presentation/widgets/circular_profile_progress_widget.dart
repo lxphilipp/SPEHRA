@@ -94,7 +94,6 @@ class _GradientCircularPainter extends CustomPainter {
   }
 }
 
-// HIER IST DIE FINALE VERSION DES WIDGETS
 class CircularProfileProgressWidget extends StatelessWidget {
   final String? imageUrl;
   final int level;
