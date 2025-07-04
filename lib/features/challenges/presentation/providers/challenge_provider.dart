@@ -1,15 +1,13 @@
-// lib/features/challenges/presentation/providers/challenge_provider.dart
+import 'dart:async';
+import 'package:flutter/cupertino.dart';
 
-
-import 'package:flutter/material.dart';
-
-// Core & Dependencies
 import '/core/utils/app_logger.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
+import 'package:collection/collection.dart';
 
-// Domain & Entities
 import '../../domain/entities/challenge_entity.dart';
+import '../../domain/entities/challenge_filter_state.dart';
 import '../../domain/usecases/get_all_challenges_stream_usecase.dart';
 import '../../domain/usecases/get_challenge_by_id_usecase.dart';
 import '../../domain/usecases/create_challenge_usecase.dart';
@@ -22,9 +20,8 @@ import '../../domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 /// This provider handles:
 /// - Providing a stream of all available challenges.
 /// - Fetching details for a single selected challenge.
+/// - Managing the filter and sort state for the challenge list.
 /// - Managing state for creating and interacting with challenges (accept, complete, etc.).
-/// It is designed to be updated by a `ChangeNotifierProxyProvider2` that watches
-/// `AuthenticationProvider` and `UserProfileProvider`.
 class ChallengeProvider with ChangeNotifier {
   // --- UseCases ---
   final GetAllChallengesStreamUseCase _getAllChallengesStreamUseCase;
@@ -35,12 +32,18 @@ class ChallengeProvider with ChangeNotifier {
   final RemoveChallengeFromOngoingUseCase _removeChallengeFromOngoingUseCase;
 
   // --- Internal Provider References ---
-  // These will be kept up-to-date by the `updateDependencies` method.
   late AuthenticationProvider _authProvider;
   late UserProfileProvider _userProfileProvider;
 
   // --- State ---
-  Stream<List<ChallengeEntity>> _allChallengesStream = Stream.empty();
+  List<ChallengeEntity> _allChallenges = [];
+  StreamSubscription? _allChallengesSubscription;
+
+  // Filter- und Sortier-Zustand
+  ChallengeFilterState _filterState = const ChallengeFilterState();
+  String _sortCriteria = 'createdAt';
+  bool _isSortAscending = false;
+
   ChallengeEntity? _selectedChallenge;
   bool _isLoadingSelectedChallenge = false;
   String? _selectedChallengeError;
@@ -51,7 +54,6 @@ class ChallengeProvider with ChangeNotifier {
   bool _isUpdatingUserChallengeStatus = false;
   String? _userChallengeStatusError;
 
-  /// The constructor is now simple and only requires its own UseCases.
   ChallengeProvider({
     required GetAllChallengesStreamUseCase getAllChallengesStreamUseCase,
     required GetChallengeByIdUseCase getChallengeByIdUseCase,
@@ -68,18 +70,8 @@ class ChallengeProvider with ChangeNotifier {
     _initializeStreams();
   }
 
-  /// Initialize streams that don't depend on user login state.
-  void _initializeStreams() {
-    AppLogger.info("ChallengeProvider: Initializing all-challenges stream once.");
-    // The stream is created once and converted to a broadcast stream
-    // to allow multiple listeners throughout the app's lifecycle.
-    _allChallengesStream = _getAllChallengesStreamUseCase()
-        .map((challenges) => challenges ?? [])
-        .asBroadcastStream();
-  }
-
-  // --- Getters for the UI ---
-  Stream<List<ChallengeEntity>> get allChallengesStream => _allChallengesStream;
+  // --- Getters für die UI ---
+  ChallengeFilterState get filterState => _filterState;
 
   ChallengeEntity? get selectedChallenge => _selectedChallenge;
   bool get isLoadingSelectedChallenge => _isLoadingSelectedChallenge;
@@ -91,16 +83,104 @@ class ChallengeProvider with ChangeNotifier {
   bool get isUpdatingUserChallengeStatus => _isUpdatingUserChallengeStatus;
   String? get userChallengeStatusError => _userChallengeStatusError;
 
-  // --- Dependency Update Method ---
+  String get sortCriteria => _sortCriteria;
+  bool get isSortAscending => _isSortAscending;
 
-  /// The gateway for receiving updates from other providers.
-  /// Called by `ChangeNotifierProxyProvider2`.
+  /// Wendet die aktuellen Filter- und Sortiereinstellungen auf die Challenge-Liste an.
+  /// Die UI sollte immer diesen Getter verwenden, um die anzuzeigenden Daten zu erhalten.
+  List<ChallengeEntity> get filteredChallenges {
+    List<ChallengeEntity> filtered = List.from(_allChallenges);
+
+    // 1. Filtern nach Textsuche
+    if (_filterState.searchText.isNotEmpty) {
+      filtered = filtered.where((c) => c.title.toLowerCase().contains(_filterState.searchText.toLowerCase())).toList();
+    }
+
+    // 2. Filtern nach Schwierigkeit
+    if (_filterState.selectedDifficulties.isNotEmpty) {
+      filtered = filtered.where((c) => _filterState.selectedDifficulties.contains(c.difficulty)).toList();
+    }
+
+    // 3. Filtern nach Datum
+    if (_filterState.dateRange != null) {
+      filtered = filtered.where((c) {
+        if (c.createdAt == null) return false;
+        final isAfterStart = c.createdAt!.isAfter(_filterState.dateRange!.start.subtract(const Duration(days: 1)));
+        final isBeforeEnd = c.createdAt!.isBefore(_filterState.dateRange!.end.add(const Duration(days: 1)));
+        return isAfterStart && isBeforeEnd;
+      }).toList();
+    }
+
+     if (_filterState.selectedSdgKeys.isNotEmpty) {
+       filtered = filtered.where((c) =>
+           c.categories.any((catKey) => _filterState.selectedSdgKeys.contains(catKey))
+       ).toList();
+     }
+
+    // 5. Sortieren
+    filtered.sort((a, b) {
+      int comparison;
+      switch (_sortCriteria) {
+        case 'points':
+          comparison = a.points.compareTo(b.points);
+          break;
+        case 'difficulty':
+          const order = {'Easy': 1, 'Normal': 2, 'Advanced': 3, 'Experienced': 4};
+          comparison = (order[a.difficulty] ?? 5).compareTo(order[b.difficulty] ?? 5);
+          break;
+        case 'createdAt':
+        default:
+          comparison = (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0));
+          break;
+      }
+      return _isSortAscending ? comparison : -comparison;
+    });
+
+    return filtered;
+  }
+
+  void setSortCriteria(String newCriteria) {
+    // Wenn das gleiche Kriterium erneut gewählt wird, kehre die Richtung um.
+    if (_sortCriteria == newCriteria) {
+      _isSortAscending = !_isSortAscending;
+    } else {
+      _sortCriteria = newCriteria;
+      // Setze auf eine sinnvolle Standardrichtung für das neue Kriterium
+      _isSortAscending = (newCriteria == 'difficulty'); // z.B. Schwierigkeit aufsteigend, Rest absteigend
+    }
+    notifyListeners();
+  }
+
+  void toggleSortDirection() {
+    _isSortAscending = !_isSortAscending;
+    notifyListeners();
+  }
+
+  // --- Methoden zur Zustandsänderung ---
+
+  /// Aktualisiert den Filterzustand und benachrichtigt die UI.
+  void updateFilter(ChallengeFilterState newFilter) {
+    _filterState = newFilter;
+    notifyListeners();
+  }
+
+  void _initializeStreams() {
+    AppLogger.info("ChallengeProvider: Initializing all-challenges stream.");
+    _allChallengesSubscription?.cancel();
+    _allChallengesSubscription = _getAllChallengesStreamUseCase()
+        .map((challenges) => challenges ?? [])
+        .listen((challenges) {
+      if (!const ListEquality().equals(_allChallenges, challenges)) {
+        _allChallenges = challenges;
+        notifyListeners();
+      }
+    });
+  }
+
   void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
     _authProvider = auth;
     _userProfileProvider = profile;
   }
-
-  // --- Public Methods for UI Interaction ---
 
   Future<void> fetchChallengeDetails(String challengeId) async {
     _isLoadingSelectedChallenge = true;
@@ -142,7 +222,6 @@ class ChallengeProvider with ChangeNotifier {
     }
   }
 
-  // --- Methods for User Interactions ---
   Future<bool> acceptChallenge(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
@@ -211,8 +290,13 @@ class ChallengeProvider with ChangeNotifier {
       _userChallengeStatusError = "Could not remove challenge from 'Ongoing'.";
     }
 
-    // The reactive UserProfileProvider will handle its own state update.
     notifyListeners();
     return success;
+  }
+
+  @override
+  void dispose() {
+    _allChallengesSubscription?.cancel();
+    super.dispose();
   }
 }
