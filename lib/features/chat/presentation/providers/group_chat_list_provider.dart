@@ -1,10 +1,10 @@
 // lib/features/chat/presentation/providers/group_chat_list_provider.dart
 
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 
 // Domain & Entities
-import 'package:flutter/cupertino.dart';
-
 import '../../domain/entities/group_chat_entity.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/usecases/get_group_chats_stream_usecase.dart';
@@ -16,13 +16,6 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 // Core
 import '../../../../core/utils/app_logger.dart';
 
-/// Manages the state for the list of group chats.
-///
-/// This provider is responsible for:
-/// - Subscribing to the user's group chats based on their auth state.
-/// - Providing methods to create new group chats.
-/// It is designed to be updated by a `ChangeNotifierProxyProvider` that watches
-/// the `AuthenticationProvider`.
 class GroupChatListProvider with ChangeNotifier {
   // --- UseCases ---
   final GetGroupChatsStreamUseCase _getGroupChatsStreamUseCase;
@@ -32,15 +25,14 @@ class GroupChatListProvider with ChangeNotifier {
   List<GroupChatEntity> _groupChats = [];
   bool _isLoading = false;
   String? _error;
-
-  /// The provider's "memory" of the current user's ID.
-  /// It's the single source of truth WITHIN this provider.
   String? _currentUserId;
+
+  String _sortCriteria = 'lastMessageTime';
+  bool _isSortAscending = false; // false = descending (neueste zuerst)
 
   // --- Stream Subscriptions ---
   StreamSubscription<List<GroupChatEntity>>? _groupChatsSubscription;
 
-  /// The constructor is simple and only requires its own UseCases.
   GroupChatListProvider({
     required GetGroupChatsStreamUseCase getGroupChatsStreamUseCase,
     required CreateGroupChatUseCase createGroupChatUseCase,
@@ -50,24 +42,49 @@ class GroupChatListProvider with ChangeNotifier {
   }
 
   // --- Getters for the UI ---
-  List<GroupChatEntity> get groupChats => _groupChats;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // --- Dependency Update Method ---
+  // --- NEU: Getter für sortierte Gruppenchats ---
+  List<GroupChatEntity> get sortedGroupChats {
+    List<GroupChatEntity> sorted = List.from(_groupChats);
+    sorted.sort((a, b) {
+      int comparison;
+      switch (_sortCriteria) {
+        case 'lastMessageTime':
+        default:
+          final aTime = a.lastMessageTime ?? DateTime(1970);
+          final bTime = b.lastMessageTime ?? DateTime(1970);
+          comparison = aTime.compareTo(bTime);
+          break;
+      }
+      return _isSortAscending ? comparison : -comparison;
+    });
+    return sorted;
+  }
 
-  /// The gateway for receiving updates from the `AuthenticationProvider`.
-  /// This method is called by the `ChangeNotifierProxyProvider`.
+  // --- Veralteter Getter, wird durch sortedGroupChats ersetzt ---
+  List<GroupChatEntity> get groupChats => _groupChats;
+
+
+  // --- NEU: Methode zum Ändern der Sortierung ---
+  void setSortCriteria(String newCriteria) {
+    if (_sortCriteria == newCriteria) {
+      _isSortAscending = !_isSortAscending;
+    } else {
+      _sortCriteria = newCriteria;
+      _isSortAscending = false; // Neueste zuerst als Standard
+    }
+    notifyListeners();
+  }
+
   void updateDependencies(AuthenticationProvider authProvider) {
     final newUserId = authProvider.currentUserId;
 
-    // 1. Compare the new user ID with the provider's internal "memory".
     if (newUserId != _currentUserId) {
-      // 2. Update the internal memory.
       _currentUserId = newUserId;
       AppLogger.debug("GroupChatListProvider: Auth dependency updated. New User ID: $newUserId");
 
-      // 3. React to the change based on the new internal state.
       if (_currentUserId != null) {
         _subscribeToGroupChats(_currentUserId!);
       } else {
@@ -76,9 +93,6 @@ class GroupChatListProvider with ChangeNotifier {
     }
   }
 
-  // --- Private Methods for State Management ---
-
-  /// Subscribes to the group chats stream for the given user.
   void _subscribeToGroupChats(String userId) {
     _isLoading = true;
     _error = null;
@@ -87,7 +101,9 @@ class GroupChatListProvider with ChangeNotifier {
     _groupChatsSubscription?.cancel();
     _groupChatsSubscription = _getGroupChatsStreamUseCase(currentUserId: userId).listen(
           (groups) {
-        _groupChats = groups;
+        if (!const ListEquality().equals(_groupChats, groups)) {
+          _groupChats = groups;
+        }
         _isLoading = false;
         _error = null;
         AppLogger.info("GroupChatListProvider: Received ${groups.length} group chats.");
@@ -103,7 +119,6 @@ class GroupChatListProvider with ChangeNotifier {
     );
   }
 
-  /// Resets all data, for example on logout.
   void _resetState() {
     AppLogger.debug("GroupChatListProvider: User logged out, resetting state.");
     _groupChats = [];
@@ -113,9 +128,6 @@ class GroupChatListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Public Methods for UI Interaction ---
-
-  /// Explicitly triggers a reload of the group chats.
   void forceReloadGroupChats() {
     final userId = _currentUserId;
     if (userId != null) {
@@ -124,8 +136,6 @@ class GroupChatListProvider with ChangeNotifier {
     }
   }
 
-  /// Creates a new group.
-  /// Returns the group ID or null on failure.
   Future<String?> createNewGroup({
     required String name,
     required List<String> memberIds,
@@ -133,7 +143,6 @@ class GroupChatListProvider with ChangeNotifier {
     String? imageUrl,
     String? initialTextMessage,
   }) async {
-    // Correctly uses the internal _currentUserId field.
     final userId = _currentUserId;
     if (userId == null || userId.isEmpty) {
       _error = "Not logged in, cannot create a group.";
@@ -141,7 +150,6 @@ class GroupChatListProvider with ChangeNotifier {
       return null;
     }
 
-    // Ensure the creator is also a member and admin
     if (!memberIds.contains(userId)) memberIds.add(userId);
     if (!adminIds.contains(userId)) adminIds.add(userId);
 
@@ -150,9 +158,9 @@ class GroupChatListProvider with ChangeNotifier {
     MessageEntity? initialMessage;
     if (initialTextMessage != null && initialTextMessage.isNotEmpty) {
       initialMessage = MessageEntity(
-        id: '', // Will be generated in the repo/data source
+        id: '',
         fromId: userId,
-        toId: '', // Will be the groupId in the repo/data source
+        toId: '',
         msg: initialTextMessage,
         type: 'text',
         createdAt: DateTime.now(),
@@ -175,10 +183,8 @@ class GroupChatListProvider with ChangeNotifier {
         AppLogger.warning("GroupChatListProvider: createNewGroup - groupId was null.");
       } else {
         AppLogger.info("GroupChatListProvider: Group $groupId created: $name.");
-        _error = null; // Success
+        _error = null;
       }
-      // The group list will be updated automatically by the stream.
-      // We only notify to update the error state if necessary.
       if (_error != null) notifyListeners();
       return groupId;
     } catch (e, stackTrace) {

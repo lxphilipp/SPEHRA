@@ -17,7 +17,6 @@ class GroupChatListScreen extends StatelessWidget {
     AppLogger.info("GroupChatListScreen: Navigating to CreateGroupScreen.");
     Navigator.of(context).push(
       MaterialPageRoute(
-        // Hier wird deine gut vorbereitete CreateGroupScreen aufgerufen!
         builder: (_) => const CreateGroupScreen(),
       ),
     );

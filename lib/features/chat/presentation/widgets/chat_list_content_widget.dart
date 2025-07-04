@@ -1,3 +1,5 @@
+// lib/features/chat/presentation/widgets/chat_list_content_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -21,13 +23,14 @@ class ChatListContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Theme am Anfang holen
+    final theme = Theme.of(context);
     final provider = context.watch<ChatRoomListProvider>();
     final currentUserId = context.watch<AuthenticationProvider>().currentUserId;
+    final chatRooms = provider.sortedChatRooms; // Verwendet die sortierte Liste
     final partnerDetailsMap = provider.partnerDetailsMap;
 
     // --- Ladezustand ---
-    if (provider.isLoading && provider.chatRooms.isEmpty) {
+    if (provider.isLoading && chatRooms.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -42,12 +45,13 @@ class ChatListContentWidget extends StatelessWidget {
               Text(
                 'Fehler: ${provider.error}',
                 textAlign: TextAlign.center,
-                // OPTIMIERT: Fehlertext-Stil aus dem Theme
-                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(color: theme.colorScheme.error),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () => context.read<ChatRoomListProvider>().forceReloadChatRooms(),
+                onPressed: () =>
+                    context.read<ChatRoomListProvider>().forceReloadChatRooms(),
                 child: const Text("Erneut versuchen"),
               )
             ],
@@ -57,13 +61,13 @@ class ChatListContentWidget extends StatelessWidget {
     }
 
     // --- Leerer Zustand ---
-    if (provider.chatRooms.isEmpty) {
+    if (chatRooms.isEmpty) {
       return Center(
         child: Text(
           'Noch keine Chats vorhanden.\nStarte einen neuen Chat!',
           textAlign: TextAlign.center,
-          // OPTIMIERT: Text-Stil aus dem Theme
-          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          style: theme.textTheme.bodyLarge
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -71,10 +75,11 @@ class ChatListContentWidget extends StatelessWidget {
     // --- Erfolgszustand: Liste anzeigen ---
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      itemCount: provider.chatRooms.length,
+      itemCount: chatRooms.length,
       itemBuilder: (context, index) {
-        final room = provider.chatRooms[index];
-        final partnerId = room.members.firstWhere((id) => id != currentUserId, orElse: () => '');
+        final room = chatRooms[index];
+        final partnerId =
+        room.members.firstWhere((id) => id != currentUserId, orElse: () => '');
         final partnerDetails = partnerDetailsMap[partnerId];
 
         return ChatRoomListItemWidget(
@@ -113,10 +118,10 @@ class ChatRoomListItemWidget extends StatelessWidget {
     if (isPartnerLoaded) {
       title = chatPartner!.name;
       leading = CircleAvatar(
-        backgroundImage: (chatPartner!.imageUrl != null && chatPartner!.imageUrl!.isNotEmpty)
+        backgroundImage: (chatPartner!.imageUrl != null &&
+            chatPartner!.imageUrl!.isNotEmpty)
             ? NetworkImage(chatPartner!.imageUrl!)
             : null,
-        // OPTIMIERT: Hintergrundfarbe aus dem Theme
         backgroundColor: theme.colorScheme.surfaceVariant,
         child: (chatPartner!.imageUrl == null || chatPartner!.imageUrl!.isEmpty)
             ? Text(title.isNotEmpty ? title[0].toUpperCase() : "?")
@@ -136,29 +141,29 @@ class ChatRoomListItemWidget extends StatelessWidget {
 
     final subtitle = room.lastMessage ?? 'Tippe, um zu chatten';
 
-    // OPTIMIERT: Das ListTile ist jetzt in einer thematisierten Card verpackt
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        contentPadding:
+        const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         leading: leading,
         title: Text(
           title,
-          style: theme.textTheme.titleMedium, // OPTIMIERT: Stil aus Theme
+          style: theme.textTheme.titleMedium,
         ),
         subtitle: Text(
           subtitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant, // OPTIMIERT
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
         trailing: room.lastMessageTime != null
             ? Text(
           DateFormat('HH:mm').format(room.lastMessageTime!),
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant, // OPTIMIERT
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         )
             : null,

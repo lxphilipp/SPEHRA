@@ -43,6 +43,10 @@ class ChatRoomListProvider with ChangeNotifier {
   /// It's the single source of truth WITHIN this provider.
   String? _currentUserId;
 
+  // --- NEU: Sortier-Zustand ---
+  String _sortCriteria = 'lastMessageTime';
+  bool _isSortAscending = false; // false = descending (neueste zuerst)
+
   // --- Stream Subscriptions ---
   StreamSubscription<List<ChatRoomEntity>>? _chatRoomsSubscription;
   StreamSubscription<List<ChatUserEntity>>? _partnerDetailsSubscription;
@@ -59,12 +63,40 @@ class ChatRoomListProvider with ChangeNotifier {
   }
 
   // --- Getters for the UI ---
-  List<ChatRoomEntity> get chatRooms => _chatRooms;
   Map<String, ChatUserEntity> get partnerDetailsMap => _partnerDetailsMap;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // --- Dependency Update Method ---
+  // --- NEU: Getter für sortierte Chats ---
+  List<ChatRoomEntity> get sortedChatRooms {
+    List<ChatRoomEntity> sorted = List.from(_chatRooms);
+    sorted.sort((a, b) {
+      int comparison;
+      switch (_sortCriteria) {
+        case 'lastMessageTime':
+        default:
+        // Behandle null-Werte, um sie ans Ende zu sortieren
+          final aTime = a.lastMessageTime ?? DateTime(1970);
+          final bTime = b.lastMessageTime ?? DateTime(1970);
+          comparison = aTime.compareTo(bTime);
+          break;
+      }
+      return _isSortAscending ? comparison : -comparison;
+    });
+    return sorted;
+  }
+
+  // --- NEU: Methode zum Ändern der Sortierung ---
+  void setSortCriteria(String newCriteria) {
+    if (_sortCriteria == newCriteria) {
+      _isSortAscending = !_isSortAscending;
+    } else {
+      _sortCriteria = newCriteria;
+      // Standardrichtung für neue Kriterien
+      _isSortAscending = false; // Neueste zuerst als Standard
+    }
+    notifyListeners();
+  }
 
   /// The gateway for receiving updates from the `AuthenticationProvider`.
   /// This method is called by the `ChangeNotifierProxyProvider`.
@@ -75,7 +107,8 @@ class ChatRoomListProvider with ChangeNotifier {
     if (newUserId != _currentUserId) {
       // 2. Update the internal memory.
       _currentUserId = newUserId;
-      AppLogger.debug("ChatRoomListProvider: Auth dependency updated. New User ID: $newUserId");
+      AppLogger.debug(
+          "ChatRoomListProvider: Auth dependency updated. New User ID: $newUserId");
 
       // 3. React to the change based on the new internal state.
       if (_currentUserId != null) {
@@ -90,31 +123,34 @@ class ChatRoomListProvider with ChangeNotifier {
 
   /// Subscribes to the chat rooms stream for the given user.
   void _subscribeToAllChatData(String userId) {
-    AppLogger.info("ChatRoomListProvider: Subscribing to all chat data for user $userId.");
+    AppLogger.info(
+        "ChatRoomListProvider: Subscribing to all chat data for user $userId.");
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     _chatRoomsSubscription?.cancel();
-    _chatRoomsSubscription = _getChatRoomsStreamUseCase(currentUserId: userId).listen(
-          (rooms) {
-        // Prevent unnecessary updates if the list is identical.
-        if (const ListEquality().equals(_chatRooms, rooms) && !_isLoading) {
-          return;
-        }
-        _chatRooms = rooms;
-        _isLoading = false;
+    _chatRoomsSubscription =
+        _getChatRoomsStreamUseCase(currentUserId: userId).listen(
+              (rooms) {
+            // Prevent unnecessary updates if the list is identical.
+            if (const ListEquality().equals(_chatRooms, rooms) && !_isLoading) {
+              return;
+            }
+            _chatRooms = rooms;
+            _isLoading = false;
 
-        // After loading the rooms, fetch the details of the partners.
-        _updatePartnerDetailsSubscription();
+            // After loading the rooms, fetch the details of the partners.
+            _updatePartnerDetailsSubscription();
 
-        notifyListeners();
-      },
-      onError: (e, stackTrace) {
-        AppLogger.error("ChatRoomListProvider: Error in chat rooms stream", e, stackTrace);
-        _setError("Could not load chats.");
-      },
-    );
+            notifyListeners();
+          },
+          onError: (e, stackTrace) {
+            AppLogger.error(
+                "ChatRoomListProvider: Error in chat rooms stream", e, stackTrace);
+            _setError("Could not load chats.");
+          },
+        );
   }
 
   /// Starts or updates the stream for the profile details of chat partners.
@@ -124,7 +160,8 @@ class ChatRoomListProvider with ChangeNotifier {
 
     // 1. Collect all unique partner IDs from the loaded chat rooms.
     final partnerIds = _chatRooms
-        .map((room) => room.members.firstWhere((id) => id != userId, orElse: () => ''))
+        .map((room) =>
+        room.members.firstWhere((id) => id != userId, orElse: () => ''))
         .where((id) => id.isNotEmpty)
         .toSet()
         .toList();
@@ -139,26 +176,29 @@ class ChatRoomListProvider with ChangeNotifier {
       return;
     }
 
-    AppLogger.debug("ChatRoomListProvider: Subscribing to details for partners: $partnerIds");
+    AppLogger.debug(
+        "ChatRoomListProvider: Subscribing to details for partners: $partnerIds");
 
     // 2. Subscribe to the stream for exactly these partner IDs.
     _partnerDetailsSubscription?.cancel();
-    _partnerDetailsSubscription = _getChatUsersStreamByIdsUseCase(userIds: partnerIds).listen(
-          (partners) {
-        final newMap = {for (var partner in partners) partner.id: partner};
+    _partnerDetailsSubscription =
+        _getChatUsersStreamByIdsUseCase(userIds: partnerIds).listen(
+              (partners) {
+            final newMap = {for (var partner in partners) partner.id: partner};
 
-        // Prevent unnecessary UI updates if the partner data hasn't changed.
-        if (const MapEquality().equals(_partnerDetailsMap, newMap)) return;
+            // Prevent unnecessary UI updates if the partner data hasn't changed.
+            if (const MapEquality().equals(_partnerDetailsMap, newMap)) return;
 
-        _partnerDetailsMap = newMap;
-        AppLogger.debug("ChatRoomListProvider: Received details for ${_partnerDetailsMap.length} partners.");
-        notifyListeners();
-      },
-      onError: (e, s) {
-        AppLogger.error("Error in partner details stream", e, s);
-        // Optionally set a non-blocking error for partner details.
-      },
-    );
+            _partnerDetailsMap = newMap;
+            AppLogger.debug(
+                "ChatRoomListProvider: Received details for ${_partnerDetailsMap.length} partners.");
+            notifyListeners();
+          },
+          onError: (e, s) {
+            AppLogger.error("Error in partner details stream", e, s);
+            // Optionally set a non-blocking error for partner details.
+          },
+        );
   }
 
   /// Resets all data, for example on logout.
@@ -185,7 +225,8 @@ class ChatRoomListProvider with ChangeNotifier {
   // --- Public Methods for UI Interaction ---
 
   /// Starts a new chat or retrieves an existing one.
-  Future<String?> startNewChat(String partnerUserId, {String? initialTextMessage}) async {
+  Future<String?> startNewChat(String partnerUserId,
+      {String? initialTextMessage}) async {
     // Correctly uses the internal _currentUserId field.
     final userId = _currentUserId;
 
@@ -215,7 +256,8 @@ class ChatRoomListProvider with ChangeNotifier {
       );
       return roomId;
     } catch (e, stackTrace) {
-      AppLogger.error("ChatRoomListProvider: Error starting new chat", e, stackTrace);
+      AppLogger.error(
+          "ChatRoomListProvider: Error starting new chat", e, stackTrace);
       _setError("Failed to start new chat.");
       return null;
     }
