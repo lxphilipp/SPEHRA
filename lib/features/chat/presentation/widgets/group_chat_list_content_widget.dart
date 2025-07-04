@@ -1,3 +1,5 @@
+// lib/features/chat/presentation/widgets/group_chat_list_content_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,8 +18,10 @@ import '../../../../core/utils/app_logger.dart';
 class GroupChatListContentWidget extends StatelessWidget {
   const GroupChatListContentWidget({super.key});
 
-  void _navigateToGroupChat(BuildContext context, String groupId, String groupName) {
-    AppLogger.info("GroupChatListContentWidget: Navigating to group chat $groupId ($groupName)");
+  void _navigateToGroupChat(
+      BuildContext context, String groupId, String groupName) {
+    AppLogger.info(
+        "GroupChatListContentWidget: Navigating to group chat $groupId ($groupName)");
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => GroupChatScreen(
@@ -30,12 +34,12 @@ class GroupChatListContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Theme am Anfang holen
+    final theme = Theme.of(context);
     final provider = context.watch<GroupChatListProvider>();
-    AppLogger.debug("GroupChatListContentWidget: Building. Group count: ${provider.groupChats.length}, isLoading: ${provider.isLoading}");
+    AppLogger.debug(
+        "GroupChatListContentWidget: Building. Group count: ${provider.sortedGroupChats.length}, isLoading: ${provider.isLoading}");
 
-    if (provider.isLoading && provider.groupChats.isEmpty) {
-      // OPTIMIERT: Der Indikator erbt seine Farbe jetzt automatisch vom Theme.
+    if (provider.isLoading && provider.sortedGroupChats.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -49,13 +53,14 @@ class GroupChatListContentWidget extends StatelessWidget {
               Text(
                 'Fehler: ${provider.error}',
                 textAlign: TextAlign.center,
-                // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
-                style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(color: theme.colorScheme.error),
               ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
-                  AppLogger.info("GroupChatListContentWidget: 'Erneut versuchen' tapped.");
+                  AppLogger.info(
+                      "GroupChatListContentWidget: 'Erneut versuchen' tapped.");
                   provider.forceReloadGroupChats();
                 },
                 child: const Text("Erneut versuchen"),
@@ -66,22 +71,25 @@ class GroupChatListContentWidget extends StatelessWidget {
       );
     }
 
-    if (provider.groupChats.isEmpty) {
+    if (provider.sortedGroupChats.isEmpty) {
       return Center(
         child: Text(
           'Keine Gruppenchats vorhanden.\nErstelle eine neue Gruppe oder trete einer bei!',
           textAlign: TextAlign.center,
-          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
-          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          style: theme.textTheme.bodyLarge
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
     }
 
+    // HIER die sortierte Liste verwenden
+    final groupChats = provider.sortedGroupChats;
+
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-      itemCount: provider.groupChats.length,
+      itemCount: groupChats.length,
       itemBuilder: (context, index) {
-        final group = provider.groupChats[index];
+        final group = groupChats[index];
         return GroupChatListItemWidget(
           group: group,
           onTap: () => _navigateToGroupChat(context, group.id, group.name),

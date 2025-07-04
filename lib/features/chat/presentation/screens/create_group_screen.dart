@@ -34,7 +34,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   void _openUserSearchForMembers(BuildContext context) async {
     final createGroupProvider = context.read<CreateGroupProvider>();
-    // ... (logic remains the same)
     final List<ChatUserEntity>? resultFromSearch =
     await Navigator.of(context).push<List<ChatUserEntity>>(
       MaterialPageRoute(
@@ -162,7 +161,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 ),
               )
             else
-            // OPTIMIERT: Die Chips erben ihr Aussehen jetzt vom ChipTheme
               SizedBox(
                 width: double.infinity,
                 child: Wrap(

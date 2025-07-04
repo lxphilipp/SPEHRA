@@ -196,7 +196,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
   @override
   Future<String> createOrGetChatRoom({
-    required String currentUserId, // NEU: Vom Repository übergeben
+    required String currentUserId,
     required String partnerUserId,
     MessageModel? initialMessage,
   }) async {
@@ -209,7 +209,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       if (!snapshot.exists) {
         final newChatRoom = ChatRoomModel(
-          id: roomId, // id wird hier vom Client gesetzt
+          id: roomId,
           members: memberIds,
           createdAt: DateTime.now(),
           lastMessage: initialMessage?.msg,
@@ -231,7 +231,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           );
         }
       } else if (initialMessage != null) {
-        // Raum existiert, aber es gibt eine initiale Nachricht
         final messageToSend = initialMessage.copyWith(
           id: initialMessage.id.isNotEmpty ? initialMessage.id : uuid.v4(),
           fromId: currentUserId,
@@ -246,7 +245,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
       return roomId;
     } catch (e) {
-      print("ChatDataSource Error in createOrGetChatRoom: $e");
       throw ChatDataSourceException("Fehler beim Erstellen/Abrufen des Chatraums mit $partnerUserId", cause: e);
     }
   }
