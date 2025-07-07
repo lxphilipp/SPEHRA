@@ -44,7 +44,7 @@ class GroupChatModel {
     } else if (json['created_at'] is int) {
       createdAt = DateTime.fromMillisecondsSinceEpoch(json['created_at']);
     } else if (!json.containsKey('created_at')) {
-      print("WARNUNG: 'created_at' fehlt in GroupChat ${docId}.");
+      print("WARNUNG: 'created_at' fehlt in GroupChat $docId.");
       createdAt = null;
     }
 

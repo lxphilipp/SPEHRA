@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import '../../domain/entities/message_entity.dart';
-import '../../../../core/utils/app_logger.dart';
 
 class ChatMessageItemWidget extends StatelessWidget {
   final MessageEntity message;
@@ -21,7 +20,6 @@ class ChatMessageItemWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Zeitformatierung (unverändert)
     String formattedTime = '';
     if (message.createdAt != null) {
       final now = DateTime.now();
@@ -33,19 +31,15 @@ class ChatMessageItemWidget extends StatelessWidget {
       }
     }
 
-    // Gelesen-Status
     Widget readStatusIcon = const SizedBox.shrink();
     if (isMe) {
       if (message.readAt != null) {
-        // OPTIMIERT: Verwendet die Primärfarbe für den "gelesen" Status
         readStatusIcon = Icon(Icons.done_all, size: 16, color: colorScheme.primary);
       } else if (message.createdAt != null) {
-        // OPTIMIERT: Verwendet eine unauffällige Farbe für "gesendet"
         readStatusIcon = Icon(Icons.done, size: 16, color: colorScheme.onSurfaceVariant.withOpacity(0.6));
       }
     }
 
-    // Textstile werden jetzt direkt vom Theme abgeleitet
     final messageTextStyle = theme.textTheme.bodyLarge?.copyWith(
       color: isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
     );
@@ -131,7 +125,6 @@ class ChatMessageItemWidget extends StatelessWidget {
             fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
-              // OPTIMIERT: Platzhalter verwendet Theme-Farben
               return Container(
                 height: 150,
                 width: 150,
@@ -140,7 +133,6 @@ class ChatMessageItemWidget extends StatelessWidget {
               );
             },
             errorBuilder: (context, error, stackTrace) {
-              // OPTIMIERT: Fehlerzustand verwendet Theme-Farben und -Stile
               return Container(
                 height: 150,
                 width: 150,

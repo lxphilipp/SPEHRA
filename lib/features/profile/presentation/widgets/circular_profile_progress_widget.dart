@@ -127,7 +127,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
             progress: progress,
             strokeWidth: 3.5,
             gradientColors: gradientColors,
-            backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+            backgroundColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
           ),
 
           // 2. Das Profilbild in der Mitte, jetzt mit CachedNetworkImage
@@ -142,7 +142,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
                   width: size,
                   height: size,
                   placeholder: (context, url) => CircleAvatar(
-                    backgroundColor: theme.colorScheme.surfaceVariant,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
                   ),
                   errorWidget: (context, url, error) => CircleAvatar(
                     backgroundColor: theme.colorScheme.primaryContainer,

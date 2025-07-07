@@ -162,7 +162,7 @@ class ChatDataSourceException implements Exception {
 
   @override
   String toString() {
-    return 'ChatDataSourceException: $message' + (cause != null ? '\nCause: $cause' : '');
+    return 'ChatDataSourceException: $message${cause != null ? '\nCause: $cause' : ''}';
   }
 }
 
@@ -286,7 +286,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     required String messageType,
   }) async {
     try {
-      // Dein ChatRoomModel.toJsonForUpdate() sollte nur lastMessage und lastMessageTime (als ServerTimestamp) setzen
       final Map<String, dynamic> updateData = {
         'last_message': lastMessage,
         'last_message_time': FieldValue.serverTimestamp(),
@@ -396,7 +395,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       if (groupChatModel.imageUrl != null) {
         dataToUpdate['image_url'] = groupChatModel.imageUrl;
       } else {
-        // Wenn imageUrl explizit gelöscht werden soll (im Model null ist, aber vorher ein Wert da war)
         dataToUpdate['image_url'] = null; // oder FieldValue.delete()
       }
       await _groupChatsCollection.doc(groupChatModel.id).update(dataToUpdate);
@@ -621,7 +619,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       // Beginne mit der Basis-Query
       Query query = _usersCollection
           .where('name', isGreaterThanOrEqualTo: namePrefix)
-          .where('name', isLessThanOrEqualTo: namePrefix + '\uf8ff')
+          .where('name', isLessThanOrEqualTo: '$namePrefix\uf8ff')
           .limit(10);
 
       // WICHTIG: Füge die "whereNotIn"-Bedingung hinzu, wenn es IDs zum Ausschließen gibt

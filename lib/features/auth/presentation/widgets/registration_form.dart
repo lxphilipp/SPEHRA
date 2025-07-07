@@ -97,7 +97,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             textAlign: TextAlign.center,
             // OPTIMIERT: Text-Stil aus dem Theme beziehen
             style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.onBackground,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 30),

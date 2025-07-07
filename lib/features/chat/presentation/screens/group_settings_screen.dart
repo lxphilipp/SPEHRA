@@ -43,7 +43,7 @@ class GroupSettingsScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 50,
                       // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
-                      backgroundColor: theme.colorScheme.surfaceVariant,
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
                       backgroundImage: (group.imageUrl != null && group.imageUrl!.isNotEmpty)
                           ? NetworkImage(group.imageUrl!)
                           : null,

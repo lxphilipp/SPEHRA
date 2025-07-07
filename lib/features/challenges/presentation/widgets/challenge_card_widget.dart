@@ -23,7 +23,7 @@ class ChallengeCardWidget extends StatelessWidget {
       circleColor = sdgTheme.colorForSdgKey(challenge.categories.first);
     }
 
-    Widget _buildMetaInfo(IconData icon, String text) {
+    Widget buildMetaInfo(IconData icon, String text) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -99,14 +99,14 @@ class ChallengeCardWidget extends StatelessWidget {
 
                         // Rechte Seite: Datum und Punkte nebeneinander
                         if (challenge.createdAt != null) ...[
-                          _buildMetaInfo(
+                          buildMetaInfo(
                             Iconsax.calendar_1,
                             DateFormat('dd.MM.yyyy').format(challenge.createdAt!),
                           ),
                           const SizedBox(width: 12), // Abstand zwischen Datum und Punkten
                         ],
 
-                        _buildMetaInfo(Iconsax.star, '${challenge.points} Pts'),
+                        buildMetaInfo(Iconsax.star, '${challenge.points} Pts'),
                       ],
                     ),
                   ],

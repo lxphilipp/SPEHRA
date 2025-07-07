@@ -74,7 +74,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
             'Enter your email address below and we will send you a link to reset your password.',
             // OPTIMIERT: Text-Stil aus dem Theme beziehen
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onBackground,
+              color: theme.colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),

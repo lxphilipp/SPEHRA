@@ -23,7 +23,7 @@ class GroupChatListItemWidget extends StatelessWidget {
     if (group.imageUrl != null && group.imageUrl!.isNotEmpty) {
       leadingAvatar = CircleAvatar(
         backgroundImage: NetworkImage(group.imageUrl!),
-        backgroundColor: theme.colorScheme.surfaceVariant,
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
         radius: 24,
       );
     } else {

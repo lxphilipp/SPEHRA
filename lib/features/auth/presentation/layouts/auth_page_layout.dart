@@ -21,7 +21,7 @@ class AuthPageLayout extends StatelessWidget {
 
     return Scaffold(
       // OPTIMIERT: Die Hintergrundfarbe kommt jetzt aus dem ColorScheme
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: _buildAppBar(context),
       body: SafeArea(
         child: Center(

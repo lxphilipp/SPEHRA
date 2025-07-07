@@ -60,7 +60,7 @@ class GroupChatScreen extends StatelessWidget {
 
           return Scaffold(
             // OPTIMIERT: Hintergrundfarbe aus dem Theme
-            backgroundColor: theme.colorScheme.background,
+            backgroundColor: theme.colorScheme.surface,
             appBar: AppBar(
               // OPTIMIERT: Alle Stile (Farbe, Text, Icons) werden vom AppBarTheme geerbt
               title: Text(
