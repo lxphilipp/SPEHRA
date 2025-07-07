@@ -29,7 +29,7 @@ class IndividualChatInfoScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 60,
                 // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
-                backgroundColor: theme.colorScheme.surfaceVariant,
+                backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 backgroundImage: (partner.imageUrl != null && partner.imageUrl!.isNotEmpty)
                     ? NetworkImage(partner.imageUrl!)
                     : null,

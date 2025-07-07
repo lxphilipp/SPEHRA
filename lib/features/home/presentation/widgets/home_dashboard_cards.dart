@@ -1,6 +1,5 @@
 // lib/features/home/presentation/widgets/home_dashboard_cards.dart
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 
 // Eine universelle Karte für unser neues Dashboard-Design
 class DashboardCard extends StatelessWidget {

@@ -123,8 +123,11 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
               selected: isSelected,
               onSelected: (selected) {
                 final newSet = Set<String>.from(_currentFilterState.selectedDifficulties);
-                if (selected) newSet.add(difficulty);
-                else newSet.remove(difficulty);
+                if (selected) {
+                  newSet.add(difficulty);
+                } else {
+                  newSet.remove(difficulty);
+                }
                 _updateState(_currentFilterState.copyWith(selectedDifficulties: newSet));
               },
             );

@@ -36,7 +36,7 @@ class UserSearchScreen extends StatefulWidget {
 class _UserSearchScreenState extends State<UserSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   late Set<String> _selectedUserIdsInSession;
-  Map<String, ChatUserEntity> _selectedUserDetailsMap = {};
+  final Map<String, ChatUserEntity> _selectedUserDetailsMap = {};
   bool _isLoadingInitialDetails = false;
 
   @override
@@ -125,7 +125,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
       // OPTIMIERT: AppBar und Hintergrund werden vom Theme gesteuert
       appBar: AppBar(
         // Eine etwas andere Farbe für die AppBar ist legitim, wenn sie aus dem Theme kommt
-        backgroundColor: theme.colorScheme.surfaceVariant,
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
         title: TextField(
           controller: _searchController,
           autofocus: true,

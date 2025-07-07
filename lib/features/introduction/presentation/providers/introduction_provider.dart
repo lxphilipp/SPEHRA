@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../home/presentation/screens/home_screen.dart';
 import '../../domain/entities/intro_page_entity.dart';
 import '../../domain/usecases/get_intro_pages_usecase.dart';
-import '../../../auth/presentation/screens/sign_in_screen.dart'; // Pfad zum finalen Screen anpassen
+// Pfad zum finalen Screen anpassen
 
 class IntroductionProvider with ChangeNotifier {
   final GetIntroPagesUseCase _getIntroPagesUseCase;

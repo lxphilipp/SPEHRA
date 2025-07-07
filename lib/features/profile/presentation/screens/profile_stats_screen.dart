@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 // Importiere dein Layout, wenn es verwendet wird
-import '../../../../core/layouts/responsive_main_navigation.dart'; // Beispiel
+// Beispiel
 import '../../../../core/widgets/custom_main_app_bar.dart';
-import '../../../home/presentation/widgets/home_content.dart';
 import '../widgets/profile_stats_content.dart';
 
 class ProfileStatsScreen extends StatelessWidget {

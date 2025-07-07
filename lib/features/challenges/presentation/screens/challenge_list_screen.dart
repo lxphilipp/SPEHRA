@@ -10,19 +10,22 @@ class ChallengeListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: const ChallengeListContent(),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'challengesFAB',
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const CreateChallengeScreen()),
-            );
-          },
-          tooltip: 'Create New Challenge',
-          child: Icon(Iconsax.add),
-      ),
-
+    return
+      SafeArea(
+          child:
+          Scaffold(
+            body: const ChallengeListContent(),
+            floatingActionButton: FloatingActionButton(
+              heroTag: 'challengesFAB',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const CreateChallengeScreen()),
+                );
+              },
+              tooltip: 'Create New Challenge',
+              child: Icon(Iconsax.add),
+          ),
+        )
     );
   }
 }

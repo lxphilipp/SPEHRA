@@ -14,7 +14,6 @@ import 'user_search_screen.dart';
 import 'group_chat_screen.dart';
 
 // Core
-import '../../../../core/utils/app_logger.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -66,7 +65,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // OPTIMIERT: Farben und Stile werden jetzt vom globalen Theme gesteuert.
       appBar: AppBar(
         title: const Text("Create New Group"),
         actions: [
@@ -111,15 +109,13 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // OPTIMIERT: Verwendet Farben aus dem ColorScheme
             CircleAvatar(
               radius: 60,
-              backgroundColor: theme.colorScheme.surfaceVariant,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
               child: Icon(Iconsax.people, size: 50, color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 30),
 
-            // OPTIMIERT: Nutzt das globale InputDecorationTheme
             TextField(
               controller: _groupNameController,
               enabled: !createGroupProvider.isCreatingGroup,
@@ -152,7 +148,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(8)),
                 child: Text(
                   "Add members to your group by tapping the icon above.",

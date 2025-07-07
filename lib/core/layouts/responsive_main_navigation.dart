@@ -129,7 +129,7 @@ class _ProfileNavWidget extends StatelessWidget {
   const _ProfileNavWidget({
     required this.onTap,
     required this.isMobile,
-    this.isSelected = false,
+    required this.isSelected,
   });
 
   @override

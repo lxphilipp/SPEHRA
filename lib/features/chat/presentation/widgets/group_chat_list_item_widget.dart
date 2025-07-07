@@ -1,3 +1,5 @@
+// lib/features/chat/presentation/widgets/group_chat_list_item_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -14,10 +16,30 @@ class GroupChatListItemWidget extends StatelessWidget {
     required this.onTap,
   });
 
+  // NEUE HELFER-FUNKTION FÜR DAS DATUM
+  String _formatLastMessageTime(BuildContext context, DateTime? date) {
+    if (date == null) return '';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateToCompare = DateTime(date.year, date.month, date.day);
+
+    if (dateToCompare == today) {
+      return DateFormat('HH:mm').format(date); // Nur die Zeit für heute
+    } else if (dateToCompare == yesterday) {
+      return 'Gestern';
+    } else {
+      // Für ältere Daten nur das Datum
+      return DateFormat('dd.MM.yy').format(date);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    AppLogger.debug("GroupChatListItemWidget: Building for group ${group.name} (ID: ${group.id})");
+    AppLogger.debug(
+        "GroupChatListItemWidget: Building for group ${group.name} (ID: ${group.id})");
 
     final Widget leadingAvatar;
     if (group.imageUrl != null && group.imageUrl!.isNotEmpty) {
@@ -40,7 +62,6 @@ class GroupChatListItemWidget extends StatelessWidget {
       );
     }
 
-    // OPTIMIERT: Die Card nutzt jetzt das CardTheme und das Kind ist ein ListTile.
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: ListTile(
@@ -48,8 +69,8 @@ class GroupChatListItemWidget extends StatelessWidget {
         leading: leadingAvatar,
         title: Text(
           group.name,
-          // OPTIMIERT: Textstil aus dem Theme
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w500),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -57,20 +78,21 @@ class GroupChatListItemWidget extends StatelessWidget {
           group.lastMessage ?? "Tippe, um zu chatten...",
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          // OPTIMIERT: Textstil mit semantischer Farbe aus dem Theme
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
+        // HIER WIRD DIE NEUE FUNKTION VERWENDET
         trailing: group.lastMessageTime != null
             ? Text(
-          DateFormat('HH:mm').format(group.lastMessageTime!),
+          _formatLastMessageTime(context, group.lastMessageTime),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         )
             : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        contentPadding:
+        const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       ),
     );
   }

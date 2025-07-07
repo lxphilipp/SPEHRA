@@ -131,8 +131,8 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.center,
                         colors: [
-                          theme.colorScheme.background.withOpacity(0.9),
-                          theme.colorScheme.background.withOpacity(0.0),
+                          theme.colorScheme.surface.withOpacity(0.9),
+                          theme.colorScheme.surface.withOpacity(0.0),
                         ],
                         stops: const [0.0, 1.0],
                       ),
@@ -154,7 +154,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                       Text(
                         challenge.title,
                         style: theme.textTheme.headlineSmall?.copyWith(
-                          color: theme.colorScheme.onBackground,
+                          color: theme.colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -162,7 +162,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                       Text(
                         challenge.description.length > 120 ? '${challenge.description.substring(0, 120)}...' : challenge.description,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onBackground.withOpacity(0.85),
+                          color: theme.colorScheme.onSurface.withOpacity(0.85),
                         ),
                       ),
                     ],
@@ -207,7 +207,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                       return Chip(
                         avatar: CircleAvatar(backgroundColor: color, radius: 8),
                         label: Text(catKey, style: theme.textTheme.labelSmall),
-                        backgroundColor: theme.colorScheme.surfaceVariant,
+                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
                       );
                     }).toList(),
                   )

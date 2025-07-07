@@ -149,7 +149,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                     onTap: _openImagePicker,
                     child: CircleAvatar(
                       radius: 60,
-                      backgroundColor: theme.colorScheme.surfaceVariant,
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
                       backgroundImage: avatarImageProvider,
                       child: avatarImageProvider == null ? Icon(Icons.camera_alt, color: theme.colorScheme.onSurfaceVariant, size: 30) : null,
                     ),

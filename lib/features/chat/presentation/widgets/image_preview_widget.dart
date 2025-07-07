@@ -42,7 +42,7 @@ class ImagePreviewWidget extends StatelessWidget {
                 return Container(
                   height: 100,
                   width: 100,
-                  color: theme.colorScheme.surfaceVariant,
+                  color: theme.colorScheme.surfaceContainerHighest,
                   child: Center(
                     child: Icon(
                       Icons.broken_image,
