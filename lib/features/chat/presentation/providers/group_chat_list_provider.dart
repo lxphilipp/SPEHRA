@@ -45,7 +45,6 @@ class GroupChatListProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // --- NEU: Getter für sortierte Gruppenchats ---
   List<GroupChatEntity> get sortedGroupChats {
     List<GroupChatEntity> sorted = List.from(_groupChats);
     sorted.sort((a, b) {
@@ -63,19 +62,18 @@ class GroupChatListProvider with ChangeNotifier {
     return sorted;
   }
 
-  // --- Veralteter Getter, wird durch sortedGroupChats ersetzt ---
   List<GroupChatEntity> get groupChats => _groupChats;
 
+  void setSortCriteria(String newSortValue) {
+    final parts = newSortValue.split('_');
+    final newCriteria = parts[0];
+    final newDirectionIsAsc = (parts.length > 1 && parts[1] == 'asc');
 
-  // --- NEU: Methode zum Ändern der Sortierung ---
-  void setSortCriteria(String newCriteria) {
-    if (_sortCriteria == newCriteria) {
-      _isSortAscending = !_isSortAscending;
-    } else {
+    if (_sortCriteria != newCriteria || _isSortAscending != newDirectionIsAsc) {
       _sortCriteria = newCriteria;
-      _isSortAscending = false; // Neueste zuerst als Standard
+      _isSortAscending = newDirectionIsAsc;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void updateDependencies(AuthenticationProvider authProvider) {

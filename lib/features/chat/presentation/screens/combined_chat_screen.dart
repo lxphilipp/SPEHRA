@@ -135,76 +135,80 @@ class _CombinedChatScreenState extends State<CombinedChatScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Chats",
-                  style: theme.textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                Row(
-                  children: [
-                    PopupMenuButton<String>(
-                      icon: const Icon(Iconsax.sort),
-                      tooltip: "Sortieren nach...",
-                      onSelected: (String value) {
-                        if (_tabController.index == 0) {
-                          context
-                              .read<ChatRoomListProvider>()
-                              .setSortCriteria(value);
-                        } else {
-                          context
-                              .read<GroupChatListProvider>()
-                              .setSortCriteria(value);
-                        }
-                      },
-                      itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'lastMessageTime',
-                          child: Text('Neueste zuerst'),
-                        ),
-                        const PopupMenuItem<String>(
-                          value: 'lastMessageTime_asc',
-                          child: Text('Älteste zuerst'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+    return SafeArea(
+        child:
+        Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Chats",
+                    style: theme.textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      PopupMenuButton<String>(
+                        icon: const Icon(Iconsax.sort),
+                        tooltip: "Sortieren nach...",
+                        onSelected: (String value) {
+                          if (_tabController.index == 0) {
+                            context
+                                .read<ChatRoomListProvider>()
+                                .setSortCriteria(value);
+                          } else {
+                            context
+                                .read<GroupChatListProvider>()
+                                .setSortCriteria(value);
+                          }
+                        },
+                        // KORRIGIERTE WERTE HIER:
+                        itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                          const PopupMenuItem<String>(
+                            value: 'lastMessageTime_desc', // Eindeutig für Neueste
+                            child: Text('Neueste zuerst'),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'lastMessageTime_asc', // Eindeutig für Älteste
+                            child: Text('Älteste zuerst'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Private'),
-              Tab(text: 'Groups'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
+            TabBar(
               controller: _tabController,
-              children: const [
-                ChatHomeScreen(),
-                GroupChatListContentWidget(),
+              tabs: const [
+                Tab(text: 'Private'),
+                Tab(text: 'Groups'),
               ],
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onFabPressed,
-        tooltip: _tabController.index == 0 ? 'New Chat' : 'New Group',
-        child: const Icon(Iconsax.add),
-      ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: const [
+                  ChatHomeScreen(),
+                  GroupChatListContentWidget(),
+                ],
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _onFabPressed,
+          tooltip: _tabController.index == 0 ? 'New Chat' : 'New Group',
+          child: const Icon(Iconsax.add),
+        ),
+      )
     );
   }
 }

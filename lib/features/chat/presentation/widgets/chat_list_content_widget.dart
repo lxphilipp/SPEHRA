@@ -11,6 +11,7 @@ import '../../domain/entities/chat_room_entity.dart';
 import '../../domain/entities/chat_user_entity.dart';
 
 // Core
+import '../../../../core/utils/app_logger.dart';
 
 class ChatListContentWidget extends StatelessWidget {
   final void Function(String roomId, ChatUserEntity chatPartner) onChatRoomTap;
@@ -25,15 +26,13 @@ class ChatListContentWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final provider = context.watch<ChatRoomListProvider>();
     final currentUserId = context.watch<AuthenticationProvider>().currentUserId;
-    final chatRooms = provider.sortedChatRooms; // Verwendet die sortierte Liste
+    final chatRooms = provider.sortedChatRooms;
     final partnerDetailsMap = provider.partnerDetailsMap;
 
-    // --- Ladezustand ---
     if (provider.isLoading && chatRooms.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // --- Fehlerzustand ---
     if (provider.error != null) {
       return Center(
         child: Padding(
@@ -59,7 +58,6 @@ class ChatListContentWidget extends StatelessWidget {
       );
     }
 
-    // --- Leerer Zustand ---
     if (chatRooms.isEmpty) {
       return Center(
         child: Text(
@@ -71,7 +69,6 @@ class ChatListContentWidget extends StatelessWidget {
       );
     }
 
-    // --- Erfolgszustand: Liste anzeigen ---
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       itemCount: chatRooms.length,
@@ -106,6 +103,25 @@ class ChatRoomListItemWidget extends StatelessWidget {
     required this.onTap,
   });
 
+  // NEUE HELFER-FUNKTION FÜR DAS DATUM
+  String _formatLastMessageTime(BuildContext context, DateTime? date) {
+    if (date == null) return '';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final dateToCompare = DateTime(date.year, date.month, date.day);
+
+    if (dateToCompare == today) {
+      return DateFormat('HH:mm').format(date); // Nur die Zeit für heute
+    } else if (dateToCompare == yesterday) {
+      return 'Gestern';
+    } else {
+      // Für ältere Daten nur das Datum
+      return DateFormat('dd.MM.yy').format(date);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -121,7 +137,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
             chatPartner!.imageUrl!.isNotEmpty)
             ? NetworkImage(chatPartner!.imageUrl!)
             : null,
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        backgroundColor: theme.colorScheme.surfaceVariant,
         child: (chatPartner!.imageUrl == null || chatPartner!.imageUrl!.isEmpty)
             ? Text(title.isNotEmpty ? title[0].toUpperCase() : "?")
             : null,
@@ -129,7 +145,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
     } else {
       title = 'Lade...';
       leading = CircleAvatar(
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        backgroundColor: theme.colorScheme.surfaceVariant,
         child: const SizedBox(
           width: 20,
           height: 20,
@@ -158,9 +174,10 @@ class ChatRoomListItemWidget extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
+        // HIER WIRD DIE NEUE FUNKTION VERWENDET
         trailing: room.lastMessageTime != null
             ? Text(
-          DateFormat('HH:mm').format(room.lastMessageTime!),
+          _formatLastMessageTime(context, room.lastMessageTime),
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

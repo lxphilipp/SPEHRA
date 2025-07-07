@@ -67,7 +67,6 @@ class ChatRoomListProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // --- NEU: Getter für sortierte Chats ---
   List<ChatRoomEntity> get sortedChatRooms {
     List<ChatRoomEntity> sorted = List.from(_chatRooms);
     sorted.sort((a, b) {
@@ -75,7 +74,6 @@ class ChatRoomListProvider with ChangeNotifier {
       switch (_sortCriteria) {
         case 'lastMessageTime':
         default:
-        // Behandle null-Werte, um sie ans Ende zu sortieren
           final aTime = a.lastMessageTime ?? DateTime(1970);
           final bTime = b.lastMessageTime ?? DateTime(1970);
           comparison = aTime.compareTo(bTime);
@@ -86,17 +84,18 @@ class ChatRoomListProvider with ChangeNotifier {
     return sorted;
   }
 
-  // --- NEU: Methode zum Ändern der Sortierung ---
-  void setSortCriteria(String newCriteria) {
-    if (_sortCriteria == newCriteria) {
-      _isSortAscending = !_isSortAscending;
-    } else {
+  void setSortCriteria(String newSortValue) {
+    final parts = newSortValue.split('_');
+    final newCriteria = parts[0];
+    final newDirectionIsAsc = (parts.length > 1 && parts[1] == 'asc');
+
+    if (_sortCriteria != newCriteria || _isSortAscending != newDirectionIsAsc) {
       _sortCriteria = newCriteria;
-      // Standardrichtung für neue Kriterien
-      _isSortAscending = false; // Neueste zuerst als Standard
+      _isSortAscending = newDirectionIsAsc;
+      notifyListeners();
     }
-    notifyListeners();
   }
+
 
   /// The gateway for receiving updates from the `AuthenticationProvider`.
   /// This method is called by the `ChangeNotifierProxyProvider`.
