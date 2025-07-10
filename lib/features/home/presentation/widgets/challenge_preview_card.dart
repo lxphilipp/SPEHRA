@@ -1,4 +1,3 @@
-// lib/features/home/presentation/widgets/challenge_preview_card.dart
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '/features/challenges/domain/entities/challenge_entity.dart';
@@ -71,7 +70,8 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      challenge.difficulty,
+                      // KORREKTUR: Getter verwenden
+                      challenge.calculatedDifficulty,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -80,7 +80,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-
               SizedBox(
                 width: 40,
                 child: Column(
@@ -91,7 +90,8 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        challenge.points.toString(),
+                        // KORREKTUR: Getter verwenden
+                        challenge.calculatedPoints.toString(),
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold
                         ),

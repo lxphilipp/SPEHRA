@@ -1,7 +1,6 @@
-// lib/features/challenges/presentation/widgets/challenge_details_content.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:iconsax/iconsax.dart';
 
 // Core Widgets & Theme
 import '/core/widgets/background_image.dart';
@@ -12,6 +11,7 @@ import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
+// WICHTIG: Importieren
 
 class ChallengeDetailsContent extends StatefulWidget {
   final String challengeId;
@@ -37,6 +37,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     });
   }
 
+  // Helper-Methoden _buildActionButton und _buildCategoryImageWidget bleiben unverändert...
   Widget _buildActionButton({
     required String label,
     required VoidCallback? onPressed,
@@ -45,13 +46,13 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   }) {
     return Expanded(
       child: ElevatedButton(
-        style: style, // Der Stil wird von außen übergeben oder vom Theme geerbt.
+        style: style,
         onPressed: isLoading ? null : onPressed,
         child: isLoading
             ? const SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2), // Farbe kommt vom Button-Theme
+          child: CircularProgressIndicator(strokeWidth: 2),
         )
             : Text(label, textAlign: TextAlign.center),
       ),
@@ -60,7 +61,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
 
   Widget _buildCategoryImageWidget(ChallengeEntity challenge, ThemeData theme) {
     final sdgTheme = theme.extension<SdgColorTheme>();
-    // ... (Logik zur Bildpfad-Bestimmung bleibt gleich)
     List<String> categoryNames = List.generate(17, (i) => 'goal${i + 1}');
     int categoryIndex = -1;
     String imagePath = 'assets/images/default_sdg_placeholder.png';
@@ -76,7 +76,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
       imagePath,
       width: 50,
       height: 50,
-      // OPTIMIERT: Fallback-Farbe aus dem Theme beziehen
       errorBuilder: (context, error, stackTrace) => Icon(
         Icons.eco,
         size: 50,
@@ -89,14 +88,11 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
-
     final challengeProvider = context.watch<ChallengeProvider>();
     final userProfileProvider = context.watch<UserProfileProvider>();
     final authProvider = context.read<AuthenticationProvider>();
-
     final ChallengeEntity? challenge = challengeProvider.selectedChallenge;
 
-    // ... (Lade- und Fehler-Logik bleibt gleich)
     if (challengeProvider.isLoadingSelectedChallenge && challenge?.id != widget.challengeId) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -111,19 +107,17 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     final bool isOngoingByUser = userProfileProvider.userProfile?.ongoingTasks.contains(challenge.id) ?? false;
     final bool isActionLoading = challengeProvider.isUpdatingUserChallengeStatus;
 
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- Header Sektion ---
+          // Header Sektion (bleibt unverändert)
           SizedBox(
             height: MediaQuery.of(context).size.height / 2.2,
             child: Stack(
               fit: StackFit.expand,
               children: [
                 const BackgroundImage(),
-                // OPTIMIERT: Gradienten verwenden Farben aus dem ColorScheme
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -139,7 +133,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                     ),
                   ),
                 ),
-                // Inhalt im Header
                 Positioned(
                   bottom: 20,
                   left: 20,
@@ -150,7 +143,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                     children: [
                       _buildCategoryImageWidget(challenge, theme),
                       const SizedBox(height: 12),
-                      // OPTIMIERT: Textfarben aus dem Theme
                       Text(
                         challenge.title,
                         style: theme.textTheme.headlineSmall?.copyWith(
@@ -178,22 +170,32 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // OPTIMIERT: Alle Textfarben aus dem Theme
                 Text('Description', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
                 Text(challenge.description, style: theme.textTheme.bodyLarge),
                 const SizedBox(height: 24),
-                Text('Your Task', style: theme.textTheme.titleLarge),
+
+                // KORREKTUR: Zeige die Liste der Aufgaben an, statt eines einzigen Textfeldes.
+                Text('Your Tasks', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
-                Text(challenge.task, style: theme.textTheme.bodyLarge),
+                for (var task in challenge.tasks)
+                  ListTile(
+                    leading: const Icon(Iconsax.arrow_right_3, size: 16),
+                    title: Text(task.description),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Points: ${challenge.points}', style: theme.textTheme.titleMedium),
-                    Text('Difficulty: ${challenge.difficulty}', style: theme.textTheme.titleMedium),
+                    // KORREKTUR: Getter verwenden
+                    Text('Points: ${challenge.calculatedPoints}', style: theme.textTheme.titleMedium),
+                    Text('Difficulty: ${challenge.calculatedDifficulty}', style: theme.textTheme.titleMedium),
                   ],
                 ),
+                // ... (Related SDGs-Teil bleibt unverändert)
                 if (challenge.categories.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Text('Related SDGs:', style: theme.textTheme.titleMedium),
@@ -202,7 +204,6 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                     spacing: 8.0,
                     runSpacing: 4.0,
                     children: challenge.categories.map((catKey) {
-                      // OPTIMIERT: Fallback-Farbe aus dem Theme
                       final color = sdgTheme?.colorForSdgKey(catKey) ?? theme.colorScheme.secondaryContainer;
                       return Chip(
                         avatar: CircleAvatar(backgroundColor: color, radius: 8),
@@ -216,7 +217,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
             ),
           ),
 
-          // --- Aktionsbuttons ---
+          // --- Aktionsbuttons (bleiben unverändert) ---
           if (authProvider.isLoggedIn)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),

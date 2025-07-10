@@ -85,16 +85,14 @@ class ChallengeCardWidget extends StatelessWidget {
 
                     Row(
                       children: [
-                        // Linke Seite: Schwierigkeit
                         Chip(
-                          label: Text(challenge.difficulty),
+                          label: Text(challenge.calculatedDifficulty),
                           labelStyle: theme.textTheme.labelSmall,
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           backgroundColor: theme.colorScheme.surfaceContainerHighest,
                         ),
 
-                        // Füllt den leeren Raum
                         const Spacer(),
 
                         // Rechte Seite: Datum und Punkte nebeneinander
@@ -103,10 +101,9 @@ class ChallengeCardWidget extends StatelessWidget {
                             Iconsax.calendar_1,
                             DateFormat('dd.MM.yyyy').format(challenge.createdAt!),
                           ),
-                          const SizedBox(width: 12), // Abstand zwischen Datum und Punkten
+                          const SizedBox(width: 12),
                         ],
-
-                        buildMetaInfo(Iconsax.star, '${challenge.points} Pts'),
+                        buildMetaInfo(Iconsax.star, '${challenge.calculatedPoints} Pts'),
                       ],
                     ),
                   ],

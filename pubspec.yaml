@@ -50,13 +50,15 @@ dependencies:
   uuid: ^4.5.1
   url_launcher: ^6.3.1
   logger: ^2.4.0
-  
- 
-
   intl: any
   equatable: ^2.0.7
   cached_network_image: ^3.4.1
   collection: ^1.19.1
+  firebase_ai: ^2.2.1
+  http: any
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
+  flutter_map_cancellable_tile_provider: ^3.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

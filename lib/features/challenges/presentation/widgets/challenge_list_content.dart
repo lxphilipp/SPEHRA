@@ -108,23 +108,17 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
                     tooltip: "Filtern",
                     onPressed: () => _showAdaptiveFilterDialog(challengeProvider),
                   ),
-                  // Der PopupMenuButton, der die existierende Provider-Logik nutzt
                   PopupMenuButton<String>(
                     icon: const Icon(Iconsax.sort),
                     tooltip: "Sortieren nach...",
                     onSelected: (String value) {
-                      // Hier passiert die "Übersetzung" im UI-Layer
                       final parts = value.split('_');
                       final criteria = parts[0];
                       final direction = parts[1];
-
                       challengeProvider.setSortCriteria(criteria);
-
-                      // Wir stellen sicher, dass die Richtung auch stimmt,
-                      // falls sie durch den Klick nicht schon korrekt gesetzt wurde.
                       bool shouldBeAscending = direction == 'asc';
                       if (challengeProvider.isSortAscending != shouldBeAscending) {
-                        challengeProvider.toggleSortDirection();
+                        challengeProvider.setSortCriteria(value);
                       }
                     },
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -178,7 +172,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
               if (userProfileProvider.userProfile == null) {
                 return const Center(child: CircularProgressIndicator());
               }
-
+              
               final allFiltered = provider.filteredChallenges;
               final ongoingTaskIds = userProfileProvider.userProfile!.ongoingTasks;
               final completedTaskIds = userProfileProvider.userProfile!.completedTasks;
@@ -221,7 +215,6 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
   }
 }
 
-// _FilterScreen bleibt unverändert
 class _FilterScreen extends StatefulWidget {
   final ChallengeFilterState initialState;
   const _FilterScreen({required this.initialState});

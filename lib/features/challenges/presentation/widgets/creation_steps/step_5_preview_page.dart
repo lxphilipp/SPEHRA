@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:iconsax/iconsax.dart';
+import '../../../presentation/providers/challenge_provider.dart';
+
+class Step5PreviewPage extends StatelessWidget {
+  const Step5PreviewPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<ChallengeProvider>();
+    final challenge = provider.challengeInProgress;
+    final theme = Theme.of(context);
+
+    if (challenge == null) {
+      return const Center(child: Text('Fehler: Keine Challenge in Bearbeitung.'));
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Fast geschafft! Hier ist die Vorschau.',
+            style: theme.textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Überprüfe alles und veröffentliche deine Challenge, um andere zu inspirieren.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+
+          // --- Zusammenfassungs-Karte ---
+          Card(
+            elevation: 0,
+            color: theme.colorScheme.surfaceContainerHighest,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Titel
+                  Text(challenge.title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+
+                  // Beschreibung
+                  Text(challenge.description, style: theme.textTheme.bodyMedium),
+                  const SizedBox(height: 16),
+
+                  // Kategorien
+                  if (challenge.categories.isNotEmpty)
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: challenge.categories.map((catKey) => Chip(
+                        label: Text(catKey, style: theme.textTheme.labelSmall),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      )).toList(),
+                    ),
+                  const Divider(height: 32),
+
+                  // Berechnete Werte
+                  _buildStatRow(
+                    context,
+                    icon: Iconsax.star_1,
+                    label: 'Punkte',
+                    value: '${challenge.calculatedPoints} Pts',
+                    color: Colors.amber,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatRow(
+                    context,
+                    icon: Iconsax.diagram,
+                    label: 'Schwierigkeit',
+                    value: challenge.calculatedDifficulty,
+                    color: Colors.blueAccent,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Liste der Aufgaben
+          Text('Aufgaben (${challenge.tasks.length})', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          for (var task in challenge.tasks)
+            ListTile(
+              dense: true,
+              leading: const Icon(Iconsax.arrow_right_3, size: 16),
+              title: Text(task.description, style: theme.textTheme.bodyMedium),
+            ),
+
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(BuildContext context, {required IconData icon, required String label, required String value, required Color color}) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 12),
+        Text('$label:', style: theme.textTheme.bodyLarge),
+        const Spacer(),
+        Text(value, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+}

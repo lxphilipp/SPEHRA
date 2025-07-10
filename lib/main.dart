@@ -11,6 +11,7 @@ import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import 'app.dart'; // Your main app widget
+import 'features/challenges/domain/usecases/search_location_usecase.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
 
@@ -179,6 +180,7 @@ Future<void> main() async {
         Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
         Provider<CompleteChallengeUseCase>(create: (context) => CompleteChallengeUseCase(userProfileRepository: context.read(), challengeRepository: context.read())),
         Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
+        Provider<SearchLocationUseCase>(create: (context) => SearchLocationUseCase(context.read())),
 
         // SDG
         Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
@@ -254,6 +256,7 @@ Future<void> main() async {
             acceptChallengeUseCase: context.read<AcceptChallengeUseCase>(),
             completeChallengeUseCase: context.read<CompleteChallengeUseCase>(),
             removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
+            searchLocationUseCase: context.read<SearchLocationUseCase>(),
           ),
           update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile), // Assumes an `updateWith` method exists. Should be refactored.
         ),

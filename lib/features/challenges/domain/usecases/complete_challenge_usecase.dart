@@ -1,10 +1,11 @@
-// lib/features/challenges/domain/usecases/complete_challenge_usecase.dart
+import 'package:equatable/equatable.dart';
+import '../../../../core/usecases/use_case.dart';
 import '/core/utils/app_logger.dart';
 import '/features/profile/domain/repositories/user_profile_repository.dart';
-import '../repositories/challenge_repository.dart'; // Eigenes Repository
-// Eigene Entity
+import '../repositories/challenge_repository.dart';
 
-class CompleteChallengeUseCase {
+/// Dieser Use Case kapselt die Logik zum Abschließen einer Challenge durch einen Benutzer.
+class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams> {
   final UserProfileRepository userProfileRepository;
   final ChallengeRepository challengeRepository;
 
@@ -13,35 +14,40 @@ class CompleteChallengeUseCase {
     required this.challengeRepository,
   });
 
+  @override
   Future<bool> call(CompleteChallengeParams params) async {
-    if (params.userId.isEmpty || params.challengeId.isEmpty) return false;
+    if (params.userId.isEmpty || params.challengeId.isEmpty) {
+      return false;
+    }
 
-    // 1. Punkte der Challenge holen
+    // 1. Die vollständige Challenge-Entität abrufen.
     final challengeEntity = await challengeRepository.getChallengeById(params.challengeId);
     if (challengeEntity == null) {
       AppLogger.warning("CompleteChallengeUseCase: Challenge ${params.challengeId} not found");
-      return false; // Challenge nicht gefunden
+      return false; // Challenge nicht gefunden, kann nicht abgeschlossen werden.
     }
-    final int pointsEarned = challengeEntity.points;
 
-    // 2. User-Profil aktualisieren
+    final int pointsEarned = challengeEntity.calculatedPoints;
+
+    // 2. Das User-Profil mit den korrekt berechneten Punkten aktualisieren.
     return await userProfileRepository.markTaskAsCompleted(
       userId: params.userId,
       challengeId: params.challengeId,
-      pointsEarned: pointsEarned, // Die geholten Punkte übergeben
+      pointsEarned: pointsEarned,
     );
   }
 }
 
-class CompleteChallengeParams {
+/// Daten-Container für die Parameter des CompleteChallengeUseCase.
+class CompleteChallengeParams extends Equatable {
   final String userId;
   final String challengeId;
-  // pointsEarned wird jetzt vom UseCase selbst ermittelt
-  // final int pointsEarned;
 
-  CompleteChallengeParams({
+  const CompleteChallengeParams({
     required this.userId,
     required this.challengeId,
-    // required this.pointsEarned,
   });
+
+  @override
+  List<Object?> get props => [userId, challengeId];
 }

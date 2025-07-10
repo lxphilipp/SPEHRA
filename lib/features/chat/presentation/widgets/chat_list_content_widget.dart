@@ -11,7 +11,6 @@ import '../../domain/entities/chat_room_entity.dart';
 import '../../domain/entities/chat_user_entity.dart';
 
 // Core
-import '../../../../core/utils/app_logger.dart';
 
 class ChatListContentWidget extends StatelessWidget {
   final void Function(String roomId, ChatUserEntity chatPartner) onChatRoomTap;
@@ -137,7 +136,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
             chatPartner!.imageUrl!.isNotEmpty)
             ? NetworkImage(chatPartner!.imageUrl!)
             : null,
-        backgroundColor: theme.colorScheme.surfaceVariant,
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
         child: (chatPartner!.imageUrl == null || chatPartner!.imageUrl!.isEmpty)
             ? Text(title.isNotEmpty ? title[0].toUpperCase() : "?")
             : null,
@@ -145,7 +144,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
     } else {
       title = 'Lade...';
       leading = CircleAvatar(
-        backgroundColor: theme.colorScheme.surfaceVariant,
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
         child: const SizedBox(
           width: 20,
           height: 20,
