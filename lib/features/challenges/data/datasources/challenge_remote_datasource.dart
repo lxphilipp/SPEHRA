@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../models/address_model.dart';
@@ -25,10 +26,11 @@ abstract class ChallengeRemoteDataSource {
 
 class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
   final FirebaseFirestore firestore;
+  final FirebaseAppCheck appCheck;
 
   List<Map<String, dynamic>>? _sdgContextCache;
 
-  ChallengeRemoteDataSourceImpl({required this.firestore});
+  ChallengeRemoteDataSourceImpl({required this.firestore, required this.appCheck});
 
   @override
   Stream<List<ChallengeModel>> getAllChallengesStream() {
@@ -124,23 +126,21 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
     try {
       final responseSchema = Schema.object(
         properties: {
-          'quality_score': Schema.integer(description: "Eine Bewertung des Inputs auf einer Skala von 1 (schlecht) bis 5 (exzellent)."),
-          'feedback_tone': Schema.enumString(description: "Die Tonalität des Feedbacks.", enumValues: ['POSITIVE', 'NEUTRAL', 'CONSTRUCTIVE']),
-          'main_feedback': Schema.string(description: "Der Feedback-Satz (maximal 2 Sätze), der in der App angezeigt wird."),
-          'improvement_suggestion': Schema.string(description: "Ein konkreter Verbesserungsvorschlag oder ein leerer String, wenn keiner nötig ist."),
+          'quality_score': Schema.integer(description: "A rating of the input on a scale from 1 (poor) to 5 (excellent)."),
+          'feedback_tone': Schema.enumString(description: "The tonality of the feedback.", enumValues: ['POSITIVE', 'NEUTRAL', 'CONSTRUCTIVE']),
+          'main_feedback': Schema.string(description: "The main feedback sentence (max 2 sentences) to be displayed in the app."),
+          'improvement_suggestion': Schema.string(description: "A concrete suggestion for improvement, or an empty string if none is needed."),
         },
       );
 
-      // 2. Initialisiere das Gemini-Modell mit der JSON-Konfiguration.
-      final model = FirebaseAI.googleAI().generativeModel(
-        model: 'gemini-1.5-flash',
+      final model = FirebaseAI.googleAI(appCheck: appCheck).generativeModel(
+        model: 'gemini-2.5-flash',
         generationConfig: GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: responseSchema,
         ),
       );
 
-      // 3. Baue den dynamischen und detaillierten Prompt auf.
       final promptContext = {
         "target_language": challengeJson['language'] ?? 'en',
         "current_step": step,
@@ -148,10 +148,11 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
           "title": challengeJson['title'],
           "description": challengeJson['description'],
           "selected_categories": challengeJson['categories'] ?? [],
+          "tasks": challengeJson['tasks'] ?? [],
         }
       };
 
-      if (step == 'description' || step == 'categories') {
+      if (step == 'description' || step == 'categories' || step == 'tasks') {
         promptContext['sdg_definitions'] = await _getSdgContext();
       }
 
@@ -163,26 +164,41 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
         "context": promptContext,
         "examples": [
           {
+            "input": {
+              "challenge_data": {
+                "title": "Save the Bees: Build an Insect Hotel",
+                "description": "We are building a home for wild bees and other insects to promote local biodiversity.",
+                "selected_categories": ["goal1", "goal2"]
+              }
+            },
+            "output": {
+              "quality_score": 2,
+              "feedback_tone": "CONSTRUCTIVE",
+              "main_feedback": "The categories 'No Poverty' and 'Zero Hunger' don't quite fit the theme of bees and biodiversity.",
+              "improvement_suggestion": "Try 'Life on Land' (SDG 15). That would be a perfect match!"
+            }
+          },
+          {
             "input": { "challenge_data": { "title": "Plogging" } },
             "output": {
               "quality_score": 3,
               "feedback_tone": "NEUTRAL",
-              "main_feedback": "Ein guter Anfang! 'Plogging' ist ein bekannter Begriff, aber vielleicht nicht für jeden verständlich.",
-              "improvement_suggestion": "Wie wäre es mit 'Plogging-Runde im Park'? Das ist einladender und klarer."
+              "main_feedback": "A good start! 'Plogging' is a known term, but maybe not understandable for everyone.",
+              "improvement_suggestion": "How about 'Plogging round in the park'? That's more inviting and clear."
             }
           },
           {
-            "input": { "challenge_data": { "title": "Rette die Bienen: Baue ein Insektenhotel" } },
+            "input": { "challenge_data": { "title": "Save the Bees: Build an Insect Hotel" } },
             "output": {
               "quality_score": 5,
               "feedback_tone": "POSITIVE",
-              "main_feedback": "Wow, das ist ein fantastischer Titel! Er ist kreativ, klar und zeigt sofort den positiven Einfluss.",
+              "main_feedback": "Wow, that's a fantastic title! It's creative, clear, and immediately shows the positive impact.",
               "improvement_suggestion": ""
             }
           }
         ],
         "task_instructions": {
-          "request": "Analyze the 'challenge_data' within the given 'context'. If 'sdg_definitions' are provided, use them to verify that the challenge description and selected categories are a good thematic fit. Generate a JSON response that strictly follows the schema. All string values in your JSON output ('main_feedback', 'improvement_suggestion') MUST be written in the language specified by 'target_language'."
+          "request": "Analyze the 'challenge_data' within the given 'context'. If 'sdg_definitions' are provided, use them to verify that the challenge description and selected categories are a good thematic fit. For the 'tasks' step, evaluate if the tasks are balanced and meaningful. Generate a JSON response that strictly follows the schema. All string values in your JSON output ('main_feedback', 'improvement_suggestion') MUST be written in the language specified by 'target_language'."
         }
       };
 
@@ -197,5 +213,4 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       return null;
     }
   }
-
 }

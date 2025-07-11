@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../domain/entities/trackable_task.dart';
 import '../../../presentation/providers/challenge_provider.dart';
+import '../llm_feedback_widget.dart';
 
 class Step4TasksPage extends StatelessWidget {
   const Step4TasksPage({super.key});
@@ -13,6 +14,7 @@ class Step4TasksPage extends StatelessWidget {
     final provider = context.watch<ChallengeProvider>();
     final challenge = provider.challengeInProgress;
     final tasks = challenge?.tasks ?? [];
+    final feedbackData = provider.llmFeedbackData['tasks'];
 
     // Helper, um das richtige Icon für jeden Task-Typ zu bekommen
     IconData getIconForTask(TrackableTask task) {
@@ -58,6 +60,13 @@ class Step4TasksPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Divider(),
+          LlmFeedbackWidget(
+            isLoading: provider.isFetchingFeedback,
+            error: provider.feedbackError,
+            feedback: feedbackData?['main_feedback'],
+            improvementSuggestion: feedbackData?['improvement_suggestion'],
+            onRetry: () => provider.requestLlmFeedback('tasks'),
+          ),
 
           // Liste der bereits hinzugefügten Aufgaben
           Expanded(

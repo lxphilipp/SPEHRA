@@ -10,7 +10,6 @@ class GetLlmFeedbackUseCase implements UseCase<String?, GetLlmFeedbackParams> {
 
   @override
   Future<String?> call(GetLlmFeedbackParams params) async {
-    // Der Use Case leitet die Anfrage an das Repository weiter.
     return await repository.getLlmFeedback(
       step: params.step,
       challengeData: params.challengeData,

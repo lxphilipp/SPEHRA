@@ -218,7 +218,7 @@ packages:
     source: hosted
     version: "2.2.1"
   firebase_app_check:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_app_check
       sha256: be2a494f6c82c2a344ef4aca8dea197df7cc90132ec7c6d37c7a562fe497fcda

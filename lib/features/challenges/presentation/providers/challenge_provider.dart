@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:collection/collection.dart'; // Für den Listenvergleich
 
@@ -11,6 +12,7 @@ import '../../domain/usecases/get_all_challenges_stream_usecase.dart';
 import '../../domain/usecases/get_challenge_by_id_usecase.dart';
 import '../../domain/usecases/accept_challenge_usecase.dart';
 import '../../domain/usecases/complete_challenge_usecase.dart';
+import '../../domain/usecases/get_llm_feedback_usecase.dart';
 import '../../domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 
 // Domain Entities
@@ -40,6 +42,7 @@ class ChallengeProvider with ChangeNotifier {
   final CompleteChallengeUseCase _completeChallengeUseCase;
   final RemoveChallengeFromOngoingUseCase _removeChallengeFromOngoingUseCase;
   final SearchLocationUseCase _searchLocationUseCase;
+  final GetLlmFeedbackUseCase _getLlmFeedbackUseCase;
 
   // --- Interne Referenzen auf andere Provider ---
   late AuthenticationProvider _authProvider;
@@ -73,11 +76,19 @@ class ChallengeProvider with ChangeNotifier {
   int _currentPage = 0;
   int get currentPage => _currentPage;
 
-  // NEUER STATE
+  // --- State for Location Search ---
+
   List<AddressEntity> _locationSearchResults = [];
   List<AddressEntity> get locationSearchResults => _locationSearchResults;
   bool _isSearchingLocation = false;
   bool get isSearchingLocation => _isSearchingLocation;
+
+  // --- State for LLM Feedback ---
+
+  Timer? _debounce;
+  bool _isFetchingFeedback = false;
+  String? _feedbackError;
+  Map<String, dynamic> _llmFeedbackData = {};
 
   ChallengeProvider({
     required GetAllChallengesStreamUseCase getAllChallengesStreamUseCase,
@@ -87,13 +98,15 @@ class ChallengeProvider with ChangeNotifier {
     required CompleteChallengeUseCase completeChallengeUseCase,
     required RemoveChallengeFromOngoingUseCase removeChallengeFromOngoingUseCase,
     required SearchLocationUseCase searchLocationUseCase,
+    required GetLlmFeedbackUseCase getLlmFeedbackUseCase,
   })  : _getAllChallengesStreamUseCase = getAllChallengesStreamUseCase,
         _getChallengeByIdUseCase = getChallengeByIdUseCase,
         _createChallengeUseCase = createChallengeUseCase,
         _acceptChallengeUseCase = acceptChallengeUseCase,
         _completeChallengeUseCase = completeChallengeUseCase,
         _removeChallengeFromOngoingUseCase = removeChallengeFromOngoingUseCase,
-        _searchLocationUseCase = searchLocationUseCase {
+        _searchLocationUseCase = searchLocationUseCase,
+        _getLlmFeedbackUseCase = getLlmFeedbackUseCase{
     _initializeStreams();
   }
 
@@ -117,6 +130,11 @@ class ChallengeProvider with ChangeNotifier {
   // Interaktions-Zustand
   bool get isUpdatingUserChallengeStatus => _isUpdatingUserChallengeStatus;
   String? get userChallengeStatusError => _userChallengeStatusError;
+
+  // Feedback-Zustand
+  bool get isFetchingFeedback => _isFetchingFeedback;
+  String? get feedbackError => _feedbackError;
+  Map<String, dynamic> get llmFeedbackData => _llmFeedbackData;
 
 
   /// Gibt die gefilterte und sortierte Liste der Challenges zurück.
@@ -155,6 +173,33 @@ class ChallengeProvider with ChangeNotifier {
     return filtered;
   }
 
+  List<ChallengeEntity> get discoverChallenges {
+    final profile = _userProfileProvider.userProfile;
+    if (profile == null) return [];
+    final ongoingIds = profile.ongoingTasks.toSet();
+    final completedIds = profile.completedTasks.toSet();
+
+    return filteredChallenges.where((c) {
+      return !ongoingIds.contains(c.id) && !completedIds.contains(c.id);
+    }).toList();
+  }
+
+  List<ChallengeEntity> get ongoingChallenges {
+    final profile = _userProfileProvider.userProfile;
+    if (profile == null) return [];
+    final ongoingIds = profile.ongoingTasks.toSet();
+
+    return filteredChallenges.where((c) => ongoingIds.contains(c.id)).toList();
+  }
+
+  List<ChallengeEntity> get completedChallenges {
+    final profile = _userProfileProvider.userProfile;
+    if (profile == null) return [];
+    final completedIds = profile.completedTasks.toSet();
+
+    return filteredChallenges.where((c) => completedIds.contains(c.id)).toList();
+  }
+
   // --- Methoden zur Zustandsänderung ---
 
   void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
@@ -175,6 +220,7 @@ class ChallengeProvider with ChangeNotifier {
         notifyListeners();
       }
     });
+    AppLogger.info("All challenges: ${_allChallenges.length}");
   }
 
   void updateFilter(ChallengeFilterState newFilter) {
@@ -223,7 +269,40 @@ class ChallengeProvider with ChangeNotifier {
     _pageController = PageController();
     _currentPage = 0;
 
+    _llmFeedbackData = {};
     notifyListeners();
+  }
+  void requestLlmFeedback(String step) {
+    if (_challengeInProgress == null) return;
+
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _isFetchingFeedback = true;
+    notifyListeners();
+
+    _debounce = Timer(const Duration(milliseconds: 1200), () async {
+      try {
+        final challengeData = _challengeInProgress!;
+        final feedbackJsonString = await _getLlmFeedbackUseCase(
+          GetLlmFeedbackParams(step: step, challengeData: challengeData),
+        );
+
+        if (feedbackJsonString != null) {
+          final feedbackMap = json.decode(feedbackJsonString) as Map<String, dynamic>;
+          _llmFeedbackData[step] = feedbackMap;
+          _feedbackError = null;
+        } else {
+          _feedbackError = "Failed to get feedback.";
+        }
+      } catch (e) {
+        AppLogger.error("LLM Feedback Error in Provider", e);
+        _feedbackError = e.toString();
+        _llmFeedbackData.remove(step);
+      } finally {
+        _isFetchingFeedback = false;
+        notifyListeners();
+      }
+    });
   }
 
   void updateChallengeInProgress({
@@ -258,6 +337,8 @@ class ChallengeProvider with ChangeNotifier {
       llmFeedback: _challengeInProgress!.llmFeedback,
     );
     notifyListeners();
+    AppLogger.info("Added task to challenge: ${task.runtimeType.toString()}");
+    requestLlmFeedback('tasks');
   }
 
   void removeTaskFromChallenge(int index) {
@@ -273,6 +354,7 @@ class ChallengeProvider with ChangeNotifier {
       llmFeedback: _challengeInProgress!.llmFeedback,
     );
     notifyListeners();
+    requestLlmFeedback('tasks');
   }
 
   Future<String?> saveChallenge() async {
@@ -416,6 +498,7 @@ class ChallengeProvider with ChangeNotifier {
   void dispose() {
     _allChallengesSubscription?.cancel();
     _pageController?.dispose();
+    _debounce?.cancel(); // Wichtig: Timer im dispose aufräumen!
     super.dispose();
   }
 }

@@ -1,16 +1,18 @@
 // lib/main.dart
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import 'app.dart'; // Your main app widget
+import 'features/challenges/domain/usecases/get_llm_feedback_usecase.dart';
 import 'features/challenges/domain/usecases/search_location_usecase.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
@@ -120,15 +122,21 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    await FirebaseAppCheck.instance.activate(
+      webProvider: ReCaptchaV3Provider('6LcHiH8rAAAAAL4NOwsSwnGfXBUqOjeyRfQgKNHq'),
+      androidProvider: AndroidProvider.debug,
+      appleProvider: AppleProvider.appAttest,
+    );
     AppLogger.info("Firebase initialized successfully");
   } catch (e, stackTrace) {
     AppLogger.fatal("Failed to initialize Firebase", e, stackTrace);
     return;
   }
 
-  final fbAuth = fb_auth.FirebaseAuth.instance;
+  final fbAuth = FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;
   final storage = FirebaseStorage.instance;
+  final appcheck = FirebaseAppCheck.instance;
   const uuid = Uuid();
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -145,10 +153,11 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         // --- EXTERNAL / GLOBAL ---
-        Provider<fb_auth.FirebaseAuth>.value(value: fbAuth),
+        Provider<FirebaseAuth>.value(value: fbAuth),
         Provider<FirebaseFirestore>.value(value: firestore),
         Provider<FirebaseStorage>.value(value: storage),
         Provider<Uuid>.value(value: uuid),
+        Provider<FirebaseAppCheck>.value(value: appcheck),
 
         // --- DATA & DOMAIN LAYER (By Feature) ---
         // AUTH
@@ -172,7 +181,7 @@ Future<void> main() async {
         Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read())),
 
         // CHALLENGES
-        Provider<ChallengeRemoteDataSource>(create: (context) => ChallengeRemoteDataSourceImpl(firestore: context.read())),
+        Provider<ChallengeRemoteDataSource>(create: (context) => ChallengeRemoteDataSourceImpl(firestore: context.read(), appCheck: context.read())),
         Provider<ChallengeRepository>(create: (context) => ChallengeRepositoryImpl(remoteDataSource: context.read())),
         Provider<GetAllChallengesStreamUseCase>(create: (context) => GetAllChallengesStreamUseCase(context.read())),
         Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
@@ -181,6 +190,7 @@ Future<void> main() async {
         Provider<CompleteChallengeUseCase>(create: (context) => CompleteChallengeUseCase(userProfileRepository: context.read(), challengeRepository: context.read())),
         Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
         Provider<SearchLocationUseCase>(create: (context) => SearchLocationUseCase(context.read())),
+        Provider<GetLlmFeedbackUseCase>(create: (context) => GetLlmFeedbackUseCase(context.read())),
 
         // SDG
         Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
@@ -257,6 +267,7 @@ Future<void> main() async {
             completeChallengeUseCase: context.read<CompleteChallengeUseCase>(),
             removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
             searchLocationUseCase: context.read<SearchLocationUseCase>(),
+            getLlmFeedbackUseCase: context.read<GetLlmFeedbackUseCase>(),
           ),
           update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile), // Assumes an `updateWith` method exists. Should be refactored.
         ),

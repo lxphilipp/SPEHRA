@@ -95,7 +95,6 @@ class ChallengeCardWidget extends StatelessWidget {
 
                         const Spacer(),
 
-                        // Rechte Seite: Datum und Punkte nebeneinander
                         if (challenge.createdAt != null) ...[
                           buildMetaInfo(
                             Iconsax.calendar_1,

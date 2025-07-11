@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
+import '../../../../core/utils/app_logger.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
@@ -168,25 +169,12 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
         Expanded(
           child: Consumer<ChallengeProvider>(
             builder: (context, provider, child) {
-              final userProfileProvider = context.watch<UserProfileProvider>();
-              if (userProfileProvider.userProfile == null) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              
-              final allFiltered = provider.filteredChallenges;
-              final ongoingTaskIds = userProfileProvider.userProfile!.ongoingTasks;
-              final completedTaskIds = userProfileProvider.userProfile!.completedTasks;
-
-              final List<ChallengeEntity> discoverChallenges = allFiltered.where((c) => !ongoingTaskIds.contains(c.id) && !completedTaskIds.contains(c.id)).toList();
-              final List<ChallengeEntity> ongoingChallenges = allFiltered.where((c) => ongoingTaskIds.contains(c.id)).toList();
-              final List<ChallengeEntity> completedChallenges = allFiltered.where((c) => completedTaskIds.contains(c.id)).toList();
-
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildListView(discoverChallenges, "Keine neuen Challenges gefunden."),
-                  _buildListView(ongoingChallenges, "Du hast keine laufenden Challenges."),
-                  _buildListView(completedChallenges, "Du hast noch keine Challenges abgeschlossen."),
+                  _buildListView(provider.discoverChallenges, "Keine neuen Challenges gefunden."),
+                  _buildListView(provider.ongoingChallenges, "Du hast keine laufenden Challenges."),
+                  _buildListView(provider.completedChallenges, "Du hast noch keine Challenges abgeschlossen."),
                 ],
               );
             },
@@ -197,6 +185,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
   }
 
   Widget _buildListView(List<ChallengeEntity> challenges, String emptyMessage) {
+    AppLogger.info("Building ListView for ${challenges.length} challenges.");
     if (challenges.isEmpty) {
       return Center(
           child: Padding(

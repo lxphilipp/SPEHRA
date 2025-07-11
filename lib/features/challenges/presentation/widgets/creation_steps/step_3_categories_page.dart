@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
+import '../llm_feedback_widget.dart'; // Import des neuen Widgets
 
 class Step3CategoriesPage extends StatefulWidget {
   const Step3CategoriesPage({super.key});
@@ -13,17 +14,31 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
   final List<String> _categoryKeys = List.generate(17, (i) => 'goal${i + 1}');
   final List<String> _categoryImagePaths = List.generate(17, (i) => 'assets/icons/17_SDG_Icons/${i + 1}.png');
 
+  void _onCategoryTapped(List<String> selectedCategories, String key) {
+    final provider = context.read<ChallengeProvider>();
+    final newSelection = List<String>.from(selectedCategories);
+    if (newSelection.contains(key)) {
+      newSelection.remove(key);
+    } else {
+      newSelection.add(key);
+    }
+    // Provider updaten UND Feedback anfordern
+    provider.updateChallengeInProgress(categories: newSelection);
+    provider.requestLlmFeedback('categories');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<ChallengeProvider>();
-    final selectedCategories = context.select((ChallengeProvider p) => p.challengeInProgress?.categories) ?? [];
+    final provider = context.watch<ChallengeProvider>();
+    final selectedCategories = provider.challengeInProgress?.categories ?? [];
+    final feedbackData = provider.llmFeedbackData['categories'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 40),
           Text(
             'Wähle passende SDG-Kategorien aus.',
             style: Theme.of(context).textTheme.headlineSmall,
@@ -33,7 +48,7 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
             'Welche globalen Ziele unterstützt deine Challenge?',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Expanded(
             child: SingleChildScrollView(
               child: Wrap(
@@ -45,15 +60,7 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
                   final isSelected = selectedCategories.contains(key);
 
                   return GestureDetector(
-                    onTap: () {
-                      final newSelection = List<String>.from(selectedCategories);
-                      if (isSelected) {
-                        newSelection.remove(key);
-                      } else {
-                        newSelection.add(key);
-                      }
-                      provider.updateChallengeInProgress(categories: newSelection);
-                    },
+                    onTap: () => _onCategoryTapped(selectedCategories, key),
                     child: Container(
                       width: 70,
                       height: 70,
@@ -74,6 +81,16 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          // NEU: Feedback-Widget
+          LlmFeedbackWidget(
+            isLoading: provider.isFetchingFeedback,
+            error: provider.feedbackError,
+            feedback: feedbackData?['main_feedback'],
+            improvementSuggestion: feedbackData?['improvement_suggestion'],
+            onRetry: () => provider.requestLlmFeedback('categories'),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );

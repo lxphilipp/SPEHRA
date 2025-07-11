@@ -88,9 +88,16 @@ TrackableTask _mapToTask(Map<String, dynamic> map) {
     case 'checkbox':
       return CheckboxTask(description: map['description']);
     case 'step_counter':
-      return StepCounterTask(description: map['description'], targetSteps: map['targetSteps']);
+    // It's good practice to do this for all numeric types
+      return StepCounterTask(
+          description: map['description'],
+          targetSteps: (map['targetSteps'] as num).toInt());
     case 'location_visit':
-      return LocationVisitTask(description: map['description'], latitude: map['latitude'], longitude: map['longitude'], radius: map['radius']);
+      return LocationVisitTask(
+          description: map['description'],
+          latitude: (map['latitude'] as num).toDouble(),
+          longitude: (map['longitude'] as num).toDouble(),
+          radius: (map['radius'] as num).toDouble());
     case 'image_upload':
       return ImageUploadTask(description: map['description']);
     default:
@@ -111,5 +118,5 @@ Map<String, dynamic> _taskToMap(TrackableTask task) {
   if (task is ImageUploadTask) {
     return {'type': 'image_upload', 'description': task.description};
   }
-  throw Exception('Unbekannter Task-Typ: ${task.runtimeType}');
+  throw Exception('UnknownTask-Type: ${task.runtimeType}');
 }

@@ -9,7 +9,6 @@ class GetOngoingChallengePreviewsUseCase {
 
   GetOngoingChallengePreviewsUseCase(this._getChallengeByIdUseCase);
 
-  // Nimmt UserProfileEntity und limit direkt als Parameter
   Future<List<ChallengeEntity>?> call({
     required UserProfileEntity userProfile,
     required int limit,

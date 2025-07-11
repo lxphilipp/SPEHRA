@@ -108,7 +108,6 @@ class TaskSelectionDialog extends StatelessWidget {
               leading: const Icon(Iconsax.task_square),
               title: const Text('Einfache Aufgabe'),
               onTap: () {
-                // KORREKTUR: Pop wird aus der Klick-Aktion entfernt
                 _showSimpleTaskConfigDialog(context, 'Einfache Aufgabe erstellen', 'z.B. "Regionales Gemüse kaufen"', (desc) {
                   challengeProvider.addTaskToChallenge(CheckboxTask(description: desc));
                 });

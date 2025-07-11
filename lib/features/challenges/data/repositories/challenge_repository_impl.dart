@@ -75,16 +75,12 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
     required ChallengeEntity challengeData,
   }) async {
     try {
-      final challengeJson = {
-        'title': challengeData.title,
-        'description': challengeData.description,
-        'categories': challengeData.categories,
-      };
+      final challengeModel = ChallengeModel.fromEntity(challengeData);
+      final fullChallengeJson = challengeModel.toMap();
 
-      // Und übergeben nur noch diese einfache Map an die DataSource
       return await remoteDataSource.fetchLlmFeedback(
         step: step,
-        challengeJson: challengeJson,
+        challengeJson: fullChallengeJson,
       );
     } catch (e) {
       AppLogger.error("ChallengeRepoImpl: Error getting LLM feedback", e);
