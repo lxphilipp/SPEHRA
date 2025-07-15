@@ -1,21 +1,19 @@
 import 'package:rxdart/rxdart.dart';
 import '../../../invites/domain/entities/invite_entity.dart';
-import '../../../invites/domain/usecases/get_invites_for_context_usecase.dart'; // <-- NEUER IMPORT
+import '../../../invites/domain/usecases/get_invites_for_context_usecase.dart';
 import '../entities/message_entity.dart';
-import 'get_group_messages_stream_usecase.dart'; // <-- NEUER IMPORT
+import 'get_group_messages_stream_usecase.dart';
 
 class GetCombinedChatItemsUseCase {
-  final GetGroupMessagesStreamUseCase _getMessagesStreamUseCase; // <-- NEUE ABHÄNGIGKEIT
-  final GetInvitesForContextUseCase _getInvitesForContextUseCase; // <-- NEUE ABHÄNGIGKEIT
+  final GetGroupMessagesStreamUseCase _getMessagesStreamUseCase;
+  final GetInvitesForContextUseCase _getInvitesForContextUseCase;
 
   GetCombinedChatItemsUseCase(this._getMessagesStreamUseCase, this._getInvitesForContextUseCase);
 
   Stream<List<dynamic>> call(String groupId) {
-    // 1. Rufe die spezialisierten Use Cases auf, um die Streams zu erhalten
     final messagesStream = _getMessagesStreamUseCase(groupId: groupId);
     final invitesStream = _getInvitesForContextUseCase(groupId);
 
-    // 2. Kombiniere sie (die RxDart-Logik bleibt identisch)
     return Rx.combineLatest2(
       messagesStream,
       invitesStream,
