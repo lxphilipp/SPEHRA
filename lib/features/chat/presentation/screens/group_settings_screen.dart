@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
 // Provider & Entities
+import '../../../challenges/presentation/screens/challenge_list_screen.dart';
 import '../providers/group_chat_provider.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import 'user_search_screen.dart'; // Für die Mitgliedersuche
@@ -42,7 +43,6 @@ class GroupSettingsScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
                       backgroundColor: theme.colorScheme.surfaceContainerHighest,
                       backgroundImage: (group.imageUrl != null && group.imageUrl!.isNotEmpty)
                           ? NetworkImage(group.imageUrl!)
@@ -87,7 +87,6 @@ class GroupSettingsScreen extends StatelessWidget {
               const SizedBox(height: 8),
               if (amIAdmin)
                 ListTile(
-                  // OPTIMIERT: Farben aus dem ColorScheme
                   leading: Icon(Iconsax.user_add, color: theme.colorScheme.primary),
                   title: Text("Add Members", style: TextStyle(color: theme.colorScheme.primary)),
                   onTap: () => _navigateAndAddMembers(context, provider),
@@ -128,9 +127,19 @@ class GroupSettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               const Divider(),
 
+              if (amIAdmin) // 'amIAdmin' ist bereits in deinem GroupChatProvider definiert
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Iconsax.cup, color: theme.colorScheme.primary),
+                  title: Text(
+                    "Neue Gruppen-Challenge starten",
+                    style: TextStyle(color: theme.colorScheme.primary),
+                  ),
+                  onTap: () => _startChallengeSelection(context), // Wir lagern die Logik aus
+                ),
+
               // --- Aktionen ---
               ListTile(
-                // OPTIMIERT: Fehlerfarben aus dem ColorScheme
                 leading: Icon(Iconsax.logout, color: theme.colorScheme.error),
                 title: Text("Leave Group", style: TextStyle(color: theme.colorScheme.error)),
                 onTap: () => _showLeaveOrDeleteDialog(context, provider),
@@ -261,6 +270,30 @@ class GroupSettingsScreen extends StatelessWidget {
     if (result != null && result.isNotEmpty) {
       final idsToAdd = result.map((e) => e.id).toList();
       await provider.addMembers(idsToAdd);
+    }
+  }
+  void _startChallengeSelection(BuildContext context) async {
+    // Wir holen den Provider hier, ohne auf Änderungen zu lauschen,
+    // da wir nur eine Aktion ausführen wollen.
+    final provider = context.read<GroupChatProvider>();
+
+    // 1. Navigiere zum ChallengeListScreen und warte auf ein Ergebnis.
+    //    Wir müssen den ChallengeListScreen eventuell anpassen, damit er eine Challenge zurückgeben kann.
+    final selectedChallengeId = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        // Wir übergeben eine Flag, um dem Screen mitzuteilen, dass er im "Auswahlmodus" ist.
+        builder: (_) => const ChallengeListScreen(isSelectionMode: true),
+      ),
+    );
+
+    if (selectedChallengeId != null && context.mounted) {
+      await provider.startGroupChallenge(selectedChallengeId);
+
+      // 4. (Optional) Gib dem Admin Feedback und schließe den Einstellungs-Screen.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Challenge-Einladung wurde an die Gruppe gesendet!')),
+      );
+      Navigator.of(context).pop();
     }
   }
 }

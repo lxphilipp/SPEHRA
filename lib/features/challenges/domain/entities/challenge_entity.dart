@@ -16,6 +16,7 @@ class ChallengeEntity extends Equatable {
   final DateTime? createdAt;
   final List<TrackableTask> tasks;
   final Map<String, String>? llmFeedback;
+  final int? durationInDays; // <-- NEUES FELD HINZUGEFÜGT
 
   // --- Konstanten für die Spielbalance ---
 
@@ -45,6 +46,7 @@ class ChallengeEntity extends Equatable {
     this.createdAt,
     this.tasks = const [],
     this.llmFeedback,
+    this.durationInDays, // <-- NEUES FELD HINZUGEFÜGT
   });
 
   /// Berechnet die Gesamtpunktzahl der Challenge.
@@ -151,5 +153,6 @@ class ChallengeEntity extends Equatable {
     createdAt,
     tasks,
     llmFeedback,
+    durationInDays,
   ];
 }

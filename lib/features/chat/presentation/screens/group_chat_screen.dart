@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/add_members_to_group_usecase.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/delete_group_usecase.dart';
-import 'package:flutter_sdg/features/chat/domain/usecases/remove_member_from_group_usecase.dart';
+import 'package:flutter_sdg/features/chat/domain/usecases/get_combined_chat_items_usecase.dart'; // NEUER IMPORT
+import '../../domain/usecases/remove_member_from_group_usecase.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/update_group_chat_details_usecase.dart';
+import 'package:flutter_sdg/features/invites/domain/usecases/accept_challenge_invite_usecase.dart'; // NEUER IMPORT
+import 'package:flutter_sdg/features/invites/domain/usecases/decline_challenge_invite_usecase.dart'; // NEUER IMPORT
 import 'package:provider/provider.dart';
 
 // UseCases
+import '../../../challenges/domain/usecases/get_challenge_by_id_usecase.dart';
+import '../../../invites/domain/usecases/create_challenge_invite_usecase.dart';
 import '../../domain/usecases/watch_group_chat_by_id_usecase.dart';
-import '../../domain/usecases/get_group_messages_stream_usecase.dart';
 import '../../domain/usecases/send_message_usecase.dart';
 import '../../domain/usecases/upload_chat_image_usecase.dart';
 import '../../domain/usecases/get_chat_users_stream_by_ids_usecase.dart';
@@ -42,7 +46,6 @@ class GroupChatScreen extends StatelessWidget {
       create: (context) => GroupChatProvider(
         groupId: groupId,
         watchGroupChatByIdUseCase: context.read<WatchGroupChatByIdUseCase>(),
-        getGroupMessagesStreamUseCase: context.read<GetGroupMessagesStreamUseCase>(),
         sendMessageUseCase: context.read<SendMessageUseCase>(),
         uploadChatImageUseCase: context.read<UploadChatImageUseCase>(),
         getChatUsersStreamByIdsUseCase: context.read<GetChatUsersStreamByIdsUseCase>(),
@@ -51,6 +54,11 @@ class GroupChatScreen extends StatelessWidget {
         addMembersToGroupUseCase: context.read<AddMembersToGroupUseCase>(),
         removeMemberFromGroupUseCase: context.read<RemoveMemberFromGroupUseCase>(),
         deleteGroupUseCase: context.read<DeleteGroupUseCase>(),
+        createChallengeInviteUseCase: context.read<CreateChallengeInviteUseCase>(),
+        getChallengeByIdUseCase: context.read<GetChallengeByIdUseCase>(),
+        acceptChallengeInviteUseCase: context.read<AcceptChallengeInviteUseCase>(),
+        declineChallengeInviteUseCase: context.read<DeclineChallengeInviteUseCase>(),
+        getCombinedChatItemsUseCase: context.read<GetCombinedChatItemsUseCase>(),
       ),
       child: Consumer<GroupChatProvider>(
         builder: (context, provider, _) {
@@ -59,10 +67,8 @@ class GroupChatScreen extends StatelessWidget {
           final displayErrorState = !provider.isLoadingInitialData && provider.groupDetails == null && provider.error != null;
 
           return Scaffold(
-            // OPTIMIERT: Hintergrundfarbe aus dem Theme
             backgroundColor: theme.colorScheme.surface,
             appBar: AppBar(
-              // OPTIMIERT: Alle Stile (Farbe, Text, Icons) werden vom AppBarTheme geerbt
               title: Text(
                 appBarTitle,
                 overflow: TextOverflow.ellipsis,
@@ -93,7 +99,6 @@ class GroupChatScreen extends StatelessWidget {
                     Text(
                       provider.error ?? "Gruppe konnte nicht geladen werden.",
                       textAlign: TextAlign.center,
-                      // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
                       style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
                     ),
                     const SizedBox(height: 16),

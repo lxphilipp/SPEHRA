@@ -3,6 +3,7 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/features/invites/domain/usecases/decline_challenge_invite_usecase.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,8 +13,30 @@ import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import 'app.dart'; // Your main app widget
+import 'features/challenges/data/datasources/challenge_progress_remote_datasource.dart';
+import 'features/challenges/data/datasources/geolocation_service.dart';
+import 'features/challenges/data/datasources/health_service.dart';
+import 'features/challenges/data/datasources/image_picker_service.dart';
+import 'features/challenges/data/repositories/challenge_progress_repository_impl.dart';
+import 'features/challenges/data/repositories/device_tracking_repository_impl.dart';
+import 'features/challenges/domain/repositories/challenge_progress_repository.dart';
+import 'features/challenges/domain/repositories/device_tracking_repository.dart';
 import 'features/challenges/domain/usecases/get_llm_feedback_usecase.dart';
+import 'features/challenges/domain/usecases/refresh_steps_for_task_usecase.dart';
 import 'features/challenges/domain/usecases/search_location_usecase.dart';
+import 'features/challenges/domain/usecases/select_image_for_task_usecase.dart';
+import 'features/challenges/domain/usecases/start_challenge_usecase.dart';
+import 'features/challenges/domain/usecases/toggle_checkbox_task_usecase.dart';
+import 'features/challenges/domain/usecases/update_task_progress_usecase.dart';
+import 'features/challenges/domain/usecases/verify_location_for_task_usecase.dart';
+import 'features/challenges/domain/usecases/watch_challenge_progress_usecase.dart';
+import 'features/chat/domain/usecases/get_combined_chat_items_usecase.dart';
+import 'features/invites/data/datasources/invites_remote_datasource.dart';
+import 'features/invites/data/repositories/invites_repository_impl.dart';
+import 'features/invites/domain/repositories/invites_repository.dart';
+import 'features/invites/domain/usecases/accept_challenge_invite_usecase.dart';
+import 'features/invites/domain/usecases/create_challenge_invite_usecase.dart';
+import 'features/invites/domain/usecases/get_invites_for_context_usecase.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
 
@@ -181,8 +204,11 @@ Future<void> main() async {
         Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read())),
 
         // CHALLENGES
+        Provider<GeolocationService>(create: (_) => GeolocationService()),
+        Provider<HealthService>(create: (_) => HealthService()),
         Provider<ChallengeRemoteDataSource>(create: (context) => ChallengeRemoteDataSourceImpl(firestore: context.read(), appCheck: context.read())),
         Provider<ChallengeRepository>(create: (context) => ChallengeRepositoryImpl(remoteDataSource: context.read())),
+        Provider<DeviceTrackingRepository>(create: (context) => DeviceTrackingRepositoryImpl(geolocationService: context.read<GeolocationService>(), healthService: context.read<HealthService>(),),),
         Provider<GetAllChallengesStreamUseCase>(create: (context) => GetAllChallengesStreamUseCase(context.read())),
         Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
         Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read())),
@@ -191,6 +217,21 @@ Future<void> main() async {
         Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
         Provider<SearchLocationUseCase>(create: (context) => SearchLocationUseCase(context.read())),
         Provider<GetLlmFeedbackUseCase>(create: (context) => GetLlmFeedbackUseCase(context.read())),
+        Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
+        Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
+        Provider<StartChallengeUseCase>(create: (context) => StartChallengeUseCase(context.read())),
+        Provider<WatchChallengeProgressUseCase>(create: (context) => WatchChallengeProgressUseCase(context.read())),
+        Provider<UpdateTaskProgressUseCase>(create: (context) => UpdateTaskProgressUseCase(context.read())),
+        Provider<VerifyLocationForTaskUseCase>(create: (context) => VerifyLocationForTaskUseCase(context.read<DeviceTrackingRepository>(), context.read<UpdateTaskProgressUseCase>(),),),
+        Provider<ImagePickerService>(create: (_) => ImagePickerServiceImpl()),
+        Provider<SelectImageForTaskUseCase>(
+          create: (context) => SelectImageForTaskUseCase(
+            context.read<ImagePickerService>(),
+            context.read<UpdateTaskProgressUseCase>(),
+          ),
+        ),
+        Provider<ToggleCheckboxTaskUseCase>(create: (context) => ToggleCheckboxTaskUseCase(context.read())),
+        Provider<RefreshStepsForTaskUseCase>(create: (context) => RefreshStepsForTaskUseCase(context.read(), context.read<UpdateTaskProgressUseCase>())),
 
         // SDG
         Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
@@ -234,6 +275,39 @@ Future<void> main() async {
         Provider<SetChatClearedTimestampUseCase>(create: (context) => SetChatClearedTimestampUseCase(context.read())),
         Provider<WatchChatRoomByIdUseCase>(create: (context) => WatchChatRoomByIdUseCase(context.read())),
 
+        // INVITES
+        Provider<InvitesRepository>(create: (context) => InvitesRepositoryImpl(remoteDataSource: InvitesRemoteDataSourceImpl(firestore: context.read()))),
+        Provider<CreateChallengeInviteUseCase>(
+          create: (context) => CreateChallengeInviteUseCase(
+            context.read<InvitesRepository>(),
+            context.read<GetChallengeByIdUseCase>(), // <-- Hinzufügen
+            context.read<Uuid>(),
+          ),
+        ),
+        Provider<AcceptChallengeInviteUseCase>(
+          create: (context) => AcceptChallengeInviteUseCase(
+            context.read<InvitesRepository>(),
+            context.read<StartChallengeUseCase>(),
+          ),
+        ),
+
+        Provider<DeclineChallengeInviteUseCase>(
+          create: (context) => DeclineChallengeInviteUseCase(
+            context.read<InvitesRepository>(),
+          ),
+        ),
+        Provider<GetInvitesForContextUseCase>(
+          create: (context) => GetInvitesForContextUseCase(
+            context.read<InvitesRepository>(),
+          ),
+        ),
+        Provider<GetCombinedChatItemsUseCase>(
+          create: (context) => GetCombinedChatItemsUseCase(
+            context.read<GetGroupMessagesStreamUseCase>(),
+            context.read<GetInvitesForContextUseCase>(),
+          ),
+        ),
+
 
         // --- PRESENTATION LAYER (ChangeNotifierProviders) ---
         ChangeNotifierProvider<AuthenticationProvider>(
@@ -268,6 +342,14 @@ Future<void> main() async {
             removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
             searchLocationUseCase: context.read<SearchLocationUseCase>(),
             getLlmFeedbackUseCase: context.read<GetLlmFeedbackUseCase>(),
+            startChallengeUseCase: context.read<StartChallengeUseCase>(),
+            watchChallengeProgressUseCase: context.read<WatchChallengeProgressUseCase>(),
+            updateTaskProgressUseCase: context.read<UpdateTaskProgressUseCase>(),
+            verifyLocationForTaskUseCase: context.read<VerifyLocationForTaskUseCase>(),
+            selectImageForTaskUseCase: context.read<SelectImageForTaskUseCase>(),
+            toggleCheckboxTaskUseCase: context.read<ToggleCheckboxTaskUseCase>(),
+            refreshStepsForTaskUseCase: context.read<RefreshStepsForTaskUseCase>(),
+
           ),
           update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile), // Assumes an `updateWith` method exists. Should be refactored.
         ),

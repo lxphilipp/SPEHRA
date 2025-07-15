@@ -3,8 +3,15 @@ import 'dart:io'; // Für File
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart'; // Wichtig für 'ListEquality' und 'MapEquality'
+import 'package:flutter_sdg/features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
 
 // Entities
+import '../../../challenges/domain/repositories/challenge_repository.dart';
+import '../../../invites/domain/entities/invite_entity.dart';
+import '../../../invites/domain/usecases/accept_challenge_invite_usecase.dart';
+import '../../../invites/domain/usecases/create_challenge_invite_usecase.dart';
+import '../../../invites/domain/usecases/decline_challenge_invite_usecase.dart';
+import '../../../invites/domain/usecases/get_invites_for_context_usecase.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/entities/group_chat_entity.dart';
 import '../../domain/entities/chat_user_entity.dart';
@@ -12,6 +19,7 @@ import '../../domain/entities/chat_user_entity.dart';
 // UseCases
 import '../../domain/usecases/add_members_to_group_usecase.dart';
 import '../../domain/usecases/delete_group_usecase.dart';
+import '../../domain/usecases/get_combined_chat_items_usecase.dart';
 import '../../domain/usecases/get_group_messages_stream_usecase.dart';
 import '../../domain/usecases/remove_member_from_group_usecase.dart';
 import '../../domain/usecases/send_message_usecase.dart';
@@ -30,7 +38,6 @@ import '../../../../core/utils/app_logger.dart';
 class GroupChatProvider with ChangeNotifier {
   // --- UseCases und Abhängigkeiten ---
   final WatchGroupChatByIdUseCase _watchGroupChatByIdUseCase;
-  final GetGroupMessagesStreamUseCase _getGroupMessagesStreamUseCase;
   final SendMessageUseCase _sendMessageUseCase;
   final UploadChatImageUseCase _uploadChatImageUseCase;
   final GetChatUsersStreamByIdsUseCase _getChatUsersStreamByIdsUseCase;
@@ -39,7 +46,11 @@ class GroupChatProvider with ChangeNotifier {
   final AddMembersToGroupUseCase _addMembersToGroupUseCase;
   final RemoveMemberFromGroupUseCase _removeMemberFromGroupUseCase;
   final DeleteGroupUseCase _deleteGroupUseCase;
-
+  final GetCombinedChatItemsUseCase _getCombinedChatItemsUseCase;
+  final GetChallengeByIdUseCase _getChallengeByIdUseCase;
+  final AcceptChallengeInviteUseCase _acceptChallengeInviteUseCase;
+  final DeclineChallengeInviteUseCase _declineChallengeInviteUseCase;
+  final CreateChallengeInviteUseCase _createChallengeInviteUseCase;
 
   final String groupId;
 
@@ -47,7 +58,6 @@ class GroupChatProvider with ChangeNotifier {
   GroupChatProvider({
     required this.groupId,
     required WatchGroupChatByIdUseCase watchGroupChatByIdUseCase,
-    required GetGroupMessagesStreamUseCase getGroupMessagesStreamUseCase,
     required SendMessageUseCase sendMessageUseCase,
     required UploadChatImageUseCase uploadChatImageUseCase,
     required GetChatUsersStreamByIdsUseCase getChatUsersStreamByIdsUseCase,
@@ -56,8 +66,12 @@ class GroupChatProvider with ChangeNotifier {
     required RemoveMemberFromGroupUseCase removeMemberFromGroupUseCase,
     required AuthenticationProvider authProvider,
     required DeleteGroupUseCase deleteGroupUseCase,
+    required CreateChallengeInviteUseCase createChallengeInviteUseCase,
+    required GetChallengeByIdUseCase getChallengeByIdUseCase,
+    required AcceptChallengeInviteUseCase acceptChallengeInviteUseCase,
+    required DeclineChallengeInviteUseCase declineChallengeInviteUseCase,
+    required GetCombinedChatItemsUseCase getCombinedChatItemsUseCase,
   })  : _watchGroupChatByIdUseCase = watchGroupChatByIdUseCase,
-        _getGroupMessagesStreamUseCase = getGroupMessagesStreamUseCase,
         _sendMessageUseCase = sendMessageUseCase,
         _uploadChatImageUseCase = uploadChatImageUseCase,
         _getChatUsersStreamByIdsUseCase = getChatUsersStreamByIdsUseCase,
@@ -65,14 +79,20 @@ class GroupChatProvider with ChangeNotifier {
         _addMembersToGroupUseCase = addMembersToGroupUseCase,
         _removeMemberFromGroupUseCase = removeMemberFromGroupUseCase,
         _deleteGroupUseCase = deleteGroupUseCase,
-        _authProvider = authProvider {
+        _authProvider = authProvider,
+        _getCombinedChatItemsUseCase = getCombinedChatItemsUseCase,
+        _getChallengeByIdUseCase = getChallengeByIdUseCase,
+        _acceptChallengeInviteUseCase = acceptChallengeInviteUseCase,
+        _declineChallengeInviteUseCase = declineChallengeInviteUseCase,
+        _createChallengeInviteUseCase = createChallengeInviteUseCase
+  {
     AppLogger.debug("GroupChatProvider for groupId: $groupId initialized.");
-    _subscribeToGroupDetails(); // Startet den Haupt-Stream
+    _subscribeToGroupDetails();
   }
 
   // --- Zustand (State) des Providers ---
   GroupChatEntity? _groupDetails;
-  List<MessageEntity> _messages = [];
+  List<dynamic> _chatItems = [];
   Map<String, ChatUserEntity> _memberDetailsMap = {};
   bool _isLoadingInitialData = true;
   bool _isSendingMessage = false;
@@ -81,12 +101,12 @@ class GroupChatProvider with ChangeNotifier {
 
   // --- Stream Subscriptions ---
   StreamSubscription<GroupChatEntity?>? _groupDetailsSubscription;
-  StreamSubscription<List<MessageEntity>>? _messagesSubscription;
   StreamSubscription<List<ChatUserEntity>>? _memberDetailsSubscription;
+  StreamSubscription? _chatItemsSubscription;
 
   // --- Getter ---
   GroupChatEntity? get groupDetails => _groupDetails;
-  List<MessageEntity> get messages => _messages;
+  List<dynamic> get chatItems => _chatItems;
   Map<String, ChatUserEntity> get memberDetailsMap => _memberDetailsMap;
   bool get isLoadingInitialData => _isLoadingInitialData;
   bool get isSendingMessage => _isSendingMessage;
@@ -95,6 +115,25 @@ class GroupChatProvider with ChangeNotifier {
   String get currentUserId => _authProvider.currentUserId ?? '';
 
   // --- Kernlogik & Subscriptions (ÜBERARBEITET) ---
+
+  void _subscribeToChatItems() {
+    _chatItemsSubscription?.cancel();
+    _chatItemsSubscription = _getCombinedChatItemsUseCase(groupId).listen((items) {
+      if (!_isValidState) return;
+
+      // Using ListEquality to prevent unnecessary rebuilds
+      if (const ListEquality().equals(_chatItems, items)) {
+        return;
+      }
+
+      _chatItems = items;
+      notifyListeners();
+    }, onError: (e) {
+      if (!_isValidState) return;
+      AppLogger.error("Error in combined chat items stream for group $groupId: $e");
+      _setError("Fehler beim Laden des Chats.");
+    });
+  }
 
   void _subscribeToGroupDetails() {
     _isLoadingInitialData = true;
@@ -141,9 +180,8 @@ class GroupChatProvider with ChangeNotifier {
           }
         }
 
-        // Nachrichten-Abo nur starten, wenn es noch nicht läuft.
-        if (_messagesSubscription == null) {
-          _subscribeToMessages();
+        if (_chatItemsSubscription == null) {
+          _subscribeToChatItems();
         }
 
         if (_isLoadingInitialData) _isLoadingInitialData = false;
@@ -159,31 +197,6 @@ class GroupChatProvider with ChangeNotifier {
     );
   }
 
-  void _subscribeToMessages() {
-    _messagesSubscription?.cancel();
-    _messagesSubscription = _getGroupMessagesStreamUseCase(groupId: groupId).listen(
-          (loadedMessages) {
-        if (!_isValidState) return;
-
-        // Verhindert Rebuild, wenn die Liste identisch ist (z.B. durch Metadaten-Echo).
-        // Setzt voraus, dass MessageEntity Equatable ist.
-        if (const ListEquality().equals(_messages, loadedMessages)) {
-          AppLogger.trace("Messages received, but list is identical. Skipping notifyListeners.");
-          return;
-        }
-
-        _messages = loadedMessages;
-        AppLogger.debug("GroupChatProvider: Received ${loadedMessages.length} messages for groupId: $groupId");
-        notifyListeners();
-      },
-      onError: (e, stackTrace) {
-        if (!_isValidState) return;
-        AppLogger.error("GroupChatProvider: Error loading messages for groupId: $groupId", e, stackTrace);
-        _setError("Fehler beim Laden der Nachrichten.");
-      },
-    );
-  }
-
   void _subscribeToMemberDetails(List<String> memberIds) {
     _memberDetailsSubscription?.cancel();
     _memberDetailsSubscription = _getChatUsersStreamByIdsUseCase(userIds: memberIds).listen(
@@ -191,8 +204,6 @@ class GroupChatProvider with ChangeNotifier {
         if (!_isValidState) return;
         final newMemberMap = {for (var member in members) member.id: member};
 
-        // Verhindert Rebuild, wenn die Map der Mitgliederdetails identisch ist.
-        // Setzt voraus, dass ChatUserEntity Equatable ist.
         if (const MapEquality().equals(_memberDetailsMap, newMemberMap)) {
           AppLogger.trace("Member details received, but map is identical. Skipping notifyListeners.");
           return;
@@ -212,10 +223,10 @@ class GroupChatProvider with ChangeNotifier {
   void _handleGroupNotFoundOrDeleted(String errorMessage) {
     _error = errorMessage;
     _groupDetails = null;
-    _messages = [];
+    _chatItems = [];
     _memberDetailsMap = {};
     _isLoadingInitialData = false;
-    _messagesSubscription?.cancel();
+    _chatItemsSubscription?.cancel();
     _memberDetailsSubscription?.cancel();
     notifyListeners();
   }
@@ -224,10 +235,10 @@ class GroupChatProvider with ChangeNotifier {
   void forceReloadData() {
     AppLogger.info("GroupChatProvider: forceReloadData called for $groupId.");
     _groupDetailsSubscription?.cancel();
-    _messagesSubscription?.cancel();
+    _chatItemsSubscription?.cancel();
     _memberDetailsSubscription?.cancel();
     _groupDetails = null;
-    _messages = [];
+    _chatItems = [];
     _memberDetailsMap = {};
     _subscribeToGroupDetails();
   }
@@ -385,12 +396,99 @@ class GroupChatProvider with ChangeNotifier {
       // Normalfall oder letzter Admin (der nicht letztes Mitglied ist) -> Nur verlassen
       AppLogger.info("Member $currentUserId leaving group $groupId.");
       try {
-        await _removeMemberFromGroupUseCase(groupId: groupId, memberIdToRemove: currentUserId);
+        await _removeMemberFromGroupUseCase(
+            groupId: groupId, memberIdToRemove: currentUserId);
       } catch (e) {
         _setError("Failed to leave the group.");
         notifyListeners();
       }
     }
+  }
+  Future<void> startGroupChallenge(String challengeId) async {
+    final inviterId = _authProvider.currentUserId;
+
+    if (inviterId == null || _groupDetails == null) {
+      AppLogger.error("Kann Challenge nicht starten: User oder Gruppendetails fehlen.");
+      return;
+    }
+
+    final params = CreateInviteParams(
+      inviterId: inviterId,
+      challengeId: challengeId,
+      context: InviteContext.group,
+      contextId: _groupDetails!.id,
+      recipientIds: _groupDetails!.memberIds,
+    );
+
+    try {
+      await _createChallengeInviteUseCase(params);
+      AppLogger.info("Challenge-Einladung für Gruppe ${_groupDetails!.id} wurde erstellt.");
+    } catch (e) {
+      AppLogger.error("Fehler beim Erstellen der Challenge-Einladung: $e");
+    }
+  }
+
+// In der GroupChatProvider-Klasse
+
+  /// Akzeptiert eine Challenge-Einladung im Namen des aktuellen Nutzers.
+  Future<void> acceptChallengeInvite(InviteEntity invite) async {
+    final userId = _authProvider.currentUserId;
+    if (userId == null) {
+      _setError("Fehler: Du bist nicht eingeloggt.");
+      notifyListeners();
+      return;
+    }
+
+    // Temporären Ladezustand für die UI setzen (optional, aber empfohlen)
+    // Du könntest hier einen State wie `isAcceptingInvite = true` setzen.
+
+    try {
+      AppLogger.info("Versuche, Challenge ${invite.targetId} zu akzeptieren...");
+
+      // Schritt 1: Hol die vollständigen Challenge-Details
+      final challenge = await _getChallengeByIdUseCase(invite.targetId);
+
+      // Schritt 2: Prüfe, ob die Challenge gefunden wurde, und gib eine klare Fehlermeldung aus
+      if (challenge == null) {
+        AppLogger.error("Challenge mit ID ${invite.targetId} nicht gefunden.");
+        _setError("Fehler: Diese Challenge konnte nicht gefunden werden.");
+        notifyListeners();
+        return;
+      }
+
+      AppLogger.info("Challenge '${challenge.title}' gefunden. Starte Akzeptanz-Prozess...");
+
+      // Schritt 3: Rufe den Use Case auf
+      final params = AcceptInviteParams(
+        inviteId: invite.id,
+        userId: userId,
+        challenge: challenge,
+      );
+      await _acceptChallengeInviteUseCase(params);
+
+      AppLogger.info("Challenge-Einladung erfolgreich akzeptiert.");
+      // Die UI aktualisiert sich automatisch durch die Streams, die auf die
+      // Status-Änderung in der InviteEntity und die neue Challenge-Progression hören.
+
+    } catch (e) {
+      // Fange alle anderen unerwarteten Fehler ab
+      AppLogger.error("Unerwarteter Fehler beim Akzeptieren der Einladung: $e");
+      _setError("Ein unerwarteter Fehler ist aufgetreten.");
+      notifyListeners();
+    } finally {
+      // Ladezustand beenden (falls du einen verwendest)
+      // isAcceptingInvite = false;
+      // notifyListeners();
+    }
+  }
+
+  /// Lehnt eine Challenge-Einladung im Namen des aktuellen Nutzers ab.
+  Future<void> declineChallengeInvite(InviteEntity invite) async {
+    final userId = _authProvider.currentUserId;
+    if (userId == null) return;
+
+    final params = DeclineInviteParams(inviteId: invite.id, userId: userId);
+    await _declineChallengeInviteUseCase(params);
   }
 
   @override
@@ -398,7 +496,7 @@ class GroupChatProvider with ChangeNotifier {
     AppLogger.debug("GroupChatProvider for groupId: $groupId disposing...");
     _isValidState = false;
     _groupDetailsSubscription?.cancel();
-    _messagesSubscription?.cancel();
+    _chatItemsSubscription?.cancel();
     _memberDetailsSubscription?.cancel();
     super.dispose();
     AppLogger.debug("GroupChatProvider for groupId: $groupId disposed.");

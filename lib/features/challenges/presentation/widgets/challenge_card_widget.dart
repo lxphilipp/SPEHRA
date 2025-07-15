@@ -1,16 +1,21 @@
+// lib/features/challenges/presentation/widgets/challenge_card_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
 import '/core/theme/sdg_color_theme.dart';
 import '../../domain/entities/challenge_entity.dart';
-import '../screens/challenge_details_screen.dart';
+// NOTE: We are removing the direct import to ChallengeDetailsScreen
+// import '../screens/challenge_details_screen.dart';
 
 class ChallengeCardWidget extends StatelessWidget {
   final ChallengeEntity challenge;
+  final VoidCallback onTap; // <-- 1. PARAMETER HINZUGEFÜGT
 
   const ChallengeCardWidget({
     super.key,
     required this.challenge,
+    required this.onTap, // <-- 2. IM KONSTRUKTOR HINZUGEFÜGT
   });
 
   @override
@@ -43,16 +48,7 @@ class ChallengeCardWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChallengeDetailsScreen(
-                challengeId: challenge.id,
-              ),
-            ),
-          );
-        },
+        onTap: onTap, // <-- 3. VERWENDEN DES NEUEN PARAMETERS
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           child: Row(
@@ -67,7 +63,6 @@ class ChallengeCardWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +77,6 @@ class ChallengeCardWidget extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 10),
-
                     Row(
                       children: [
                         Chip(
@@ -92,9 +86,7 @@ class ChallengeCardWidget extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           backgroundColor: theme.colorScheme.surfaceContainerHighest,
                         ),
-
                         const Spacer(),
-
                         if (challenge.createdAt != null) ...[
                           buildMetaInfo(
                             Iconsax.calendar_1,

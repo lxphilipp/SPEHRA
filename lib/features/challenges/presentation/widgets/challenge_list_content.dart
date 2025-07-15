@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../../core/utils/app_logger.dart';
+import '../screens/challenge_details_screen.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
@@ -13,7 +14,12 @@ import 'challenge_filter_content.dart';
 
 class ChallengeListContent extends StatefulWidget {
   final int? initialTabIndex;
-  const ChallengeListContent({super.key, this.initialTabIndex});
+  final bool isSelectionMode;
+
+  const ChallengeListContent({
+    super.key, this.initialTabIndex,
+    this.isSelectionMode = false,
+  });
 
   @override
   State<ChallengeListContent> createState() => _ChallengeListContentState();
@@ -157,18 +163,22 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
           ),
         ),
 
-        TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: "Discover"),
-            Tab(text: "Ongoing"),
-            Tab(text: "Completed"),
-          ],
-        ),
+        if (!widget.isSelectionMode)
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: "Discover"),
+              Tab(text: "Ongoing"),
+              Tab(text: "Completed"),
+            ],
+          ),
 
         Expanded(
           child: Consumer<ChallengeProvider>(
             builder: (context, provider, child) {
+              if (widget.isSelectionMode) {
+                return _buildListView(provider.discoverChallenges, "Keine Challenges zur Auswahl gefunden.");
+              }
               return TabBarView(
                 controller: _tabController,
                 children: [
@@ -198,7 +208,18 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
       itemCount: challenges.length,
       itemBuilder: (context, index) {
         final challenge = challenges[index];
-        return ChallengeCardWidget(challenge: challenge);
+        return ChallengeCardWidget(
+          challenge: challenge,
+          onTap: () {
+            if (widget.isSelectionMode) {
+              Navigator.of(context).pop(challenge.id);
+            } else {
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => ChallengeDetailsScreen(challengeId: challenge.id),
+              ));
+            }
+          },
+        );
       },
     );
   }

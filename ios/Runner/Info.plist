@@ -107,5 +107,14 @@
     <!-- Permission for Camera Access (Optional if you're also allowing taking pictures) -->
     <key>NSCameraUsageDescription</key>
     <string>We need access to your camera to take a picture.</string>
+
+    <key>NSHealthShareUsageDescription</key>
+    <string>We will sync your data with the Apple Health app to give you better insights</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>We will sync your data with the Apple Health app to give you better insights</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Diese App benötigt deinen Standort, um zu prüfen, ob du das Ziel einer Challenge erreicht hast.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Deine App benötigt Zugriff auf die Galerie, damit du ein Bild als Beweis für eine Challenge auswählen kannst.</string>
 </dict>
 </plist>

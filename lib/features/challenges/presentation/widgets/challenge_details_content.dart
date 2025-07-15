@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
-// Core Widgets & Theme
-import '/core/widgets/background_image.dart';
-import '/core/theme/sdg_color_theme.dart';
+// Core Widgets & Logik
+import '../../../../core/theme/sdg_color_theme.dart';
+import 'task_progress_list_item.dart'; // Unser neues, interaktives Widget
 
 // Feature Provider & Entities
-import '/features/auth/presentation/providers/auth_provider.dart';
-import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
-// WICHTIG: Importieren
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../profile/presentation/providers/user_profile_provider.dart';
 
 class ChallengeDetailsContent extends StatefulWidget {
   final String challengeId;
@@ -29,265 +28,217 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   @override
   void initState() {
     super.initState();
+    // Ruft die Details und den Fortschritt ab, wenn das Widget zum ersten Mal gebaut wird.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<ChallengeProvider>(context, listen: false);
-      if (provider.selectedChallenge?.id != widget.challengeId || provider.selectedChallenge == null) {
-        provider.fetchChallengeDetails(widget.challengeId);
-      }
+      Provider.of<ChallengeProvider>(context, listen: false)
+          .fetchChallengeDetails(widget.challengeId);
     });
-  }
-
-  // Helper-Methoden _buildActionButton und _buildCategoryImageWidget bleiben unverändert...
-  Widget _buildActionButton({
-    required String label,
-    required VoidCallback? onPressed,
-    ButtonStyle? style,
-    bool isLoading = false,
-  }) {
-    return Expanded(
-      child: ElevatedButton(
-        style: style,
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )
-            : Text(label, textAlign: TextAlign.center),
-      ),
-    );
-  }
-
-  Widget _buildCategoryImageWidget(ChallengeEntity challenge, ThemeData theme) {
-    final sdgTheme = theme.extension<SdgColorTheme>();
-    List<String> categoryNames = List.generate(17, (i) => 'goal${i + 1}');
-    int categoryIndex = -1;
-    String imagePath = 'assets/images/default_sdg_placeholder.png';
-
-    if (challenge.categories.isNotEmpty) {
-      categoryIndex = categoryNames.indexOf(challenge.categories.first);
-      if (categoryIndex != -1) {
-        imagePath = 'assets/icons/17_SDG_Icons/${categoryIndex + 1}.png';
-      }
-    }
-
-    return Image.asset(
-      imagePath,
-      width: 50,
-      height: 50,
-      errorBuilder: (context, error, stackTrace) => Icon(
-        Icons.eco,
-        size: 50,
-        color: sdgTheme?.defaultGoalColor ?? theme.colorScheme.secondaryContainer,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Wir verwenden `Consumer` hier, um gezielt auf Änderungen zu lauschen.
+    return Consumer<ChallengeProvider>(
+      builder: (context, provider, child) {
+        final challenge = provider.selectedChallenge;
+        final theme = Theme.of(context);
+
+        // --- Lade- und Fehlerzustände ---
+        if (provider.isLoadingSelectedChallenge && challenge == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (provider.selectedChallengeError != null) {
+          return Center(child: Text('Fehler: ${provider.selectedChallengeError}'));
+        }
+        if (challenge == null) {
+          return const Center(child: Text('Keine Challenge-Details verfügbar.'));
+        }
+
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- 1. Header-Sektion ---
+              _buildHeader(context, challenge, theme),
+
+              // --- 2. Hauptinhalt (Beschreibung, Statistiken) ---
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(challenge.description, style: theme.textTheme.bodyLarge),
+                    const SizedBox(height: 24),
+                    _buildStatsRow(context, challenge, theme),
+                    const SizedBox(height: 16),
+                    if (challenge.categories.isNotEmpty)
+                      _buildSdgChips(context, challenge, theme),
+                  ],
+                ),
+              ),
+
+              // --- 3. Interaktive Aufgabenliste ---
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text('Deine Aufgaben', style: theme.textTheme.titleLarge),
+              ),
+              const SizedBox(height: 8),
+              _buildTaskList(context, provider, challenge),
+
+              // --- 4. Aktions-Buttons ---
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: _buildActionButtons(context, provider),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Baut den visuellen Header mit Titel und Kategorie-Icon.
+  Widget _buildHeader(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     final sdgTheme = theme.extension<SdgColorTheme>();
-    final challengeProvider = context.watch<ChallengeProvider>();
-    final userProfileProvider = context.watch<UserProfileProvider>();
-    final authProvider = context.read<AuthenticationProvider>();
-    final ChallengeEntity? challenge = challengeProvider.selectedChallenge;
-
-    if (challengeProvider.isLoadingSelectedChallenge && challenge?.id != widget.challengeId) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (challengeProvider.selectedChallengeError != null && challenge?.id != widget.challengeId) {
-      return Center(child: Text('Error: ${challengeProvider.selectedChallengeError}', style: TextStyle(color: theme.colorScheme.error)));
-    }
-    if (challenge == null) {
-      return Center(child: Text('Challenge details not available.', style: TextStyle(color: theme.colorScheme.onSurface)));
+    String imagePath = 'assets/icons/17_SDG_Icons/1.png'; // Fallback
+    if (challenge.categories.isNotEmpty) {
+      final categoryIndex = int.tryParse(challenge.categories.first.replaceAll('goal', '')) ?? 1;
+      imagePath = 'assets/icons/17_SDG_Icons/$categoryIndex.png';
     }
 
-    final bool isCompletedByUser = userProfileProvider.userProfile?.completedTasks.contains(challenge.id) ?? false;
-    final bool isOngoingByUser = userProfileProvider.userProfile?.ongoingTasks.contains(challenge.id) ?? false;
-    final bool isActionLoading = challengeProvider.isUpdatingUserChallengeStatus;
-
-    return SingleChildScrollView(
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      width: double.infinity,
+      color: sdgTheme?.colorForSdgKey(challenge.categories.firstOrNull ?? '').withOpacity(0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Sektion (bleibt unverändert)
-          SizedBox(
-            height: MediaQuery.of(context).size.height / 2.2,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                const BackgroundImage(),
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.center,
-                        colors: [
-                          theme.colorScheme.surface.withOpacity(0.9),
-                          theme.colorScheme.surface.withOpacity(0.0),
-                        ],
-                        stops: const [0.0, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _buildCategoryImageWidget(challenge, theme),
-                      const SizedBox(height: 12),
-                      Text(
-                        challenge.title,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        challenge.description.length > 120 ? '${challenge.description.substring(0, 120)}...' : challenge.description,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.85),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          Image.asset(imagePath, width: 50, height: 50),
+          const SizedBox(height: 12),
+          Text(
+            challenge.title,
+            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
+        ],
+      ),
+    );
+  }
 
-          // --- Detailinformationen ---
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Description', style: theme.textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(challenge.description, style: theme.textTheme.bodyLarge),
-                const SizedBox(height: 24),
+  /// Baut die Reihe mit den Statistiken (Punkte & Schwierigkeit).
+  Widget _buildStatsRow(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildStatItem(theme, Iconsax.star_1, '${challenge.calculatedPoints} Pts', 'Punkte'),
+        _buildStatItem(theme, Iconsax.diagram, challenge.calculatedDifficulty, 'Schwierigkeit'),
+      ],
+    );
+  }
 
-                // KORREKTUR: Zeige die Liste der Aufgaben an, statt eines einzigen Textfeldes.
-                Text('Your Tasks', style: theme.textTheme.titleLarge),
-                const SizedBox(height: 8),
-                for (var task in challenge.tasks)
-                  ListTile(
-                    leading: const Icon(Iconsax.arrow_right_3, size: 16),
-                    title: Text(task.description),
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
+  Widget _buildStatItem(ThemeData theme, IconData icon, String value, String label) {
+    return Column(
+      children: [
+        Icon(icon, color: theme.colorScheme.primary, size: 28),
+        const SizedBox(height: 4),
+        Text(value, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+        Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+      ],
+    );
+  }
 
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // KORREKTUR: Getter verwenden
-                    Text('Points: ${challenge.calculatedPoints}', style: theme.textTheme.titleMedium),
-                    Text('Difficulty: ${challenge.calculatedDifficulty}', style: theme.textTheme.titleMedium),
-                  ],
-                ),
-                // ... (Related SDGs-Teil bleibt unverändert)
-                if (challenge.categories.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text('Related SDGs:', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 4.0,
-                    children: challenge.categories.map((catKey) {
-                      final color = sdgTheme?.colorForSdgKey(catKey) ?? theme.colorScheme.secondaryContainer;
-                      return Chip(
-                        avatar: CircleAvatar(backgroundColor: color, radius: 8),
-                        label: Text(catKey, style: theme.textTheme.labelSmall),
-                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                      );
-                    }).toList(),
-                  )
-                ]
-              ],
-            ),
+  /// Baut die SDG-Kategorie-Chips.
+  Widget _buildSdgChips(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: challenge.categories.map((catKey) {
+        return Chip(
+          label: Text(catKey, style: theme.textTheme.labelSmall),
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        );
+      }).toList(),
+    );
+  }
+
+  /// Baut die Liste der interaktiven Aufgaben-Widgets.
+  Widget _buildTaskList(BuildContext context, ChallengeProvider provider, ChallengeEntity challenge) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: challenge.tasks.length,
+      itemBuilder: (context, index) {
+        final taskDefinition = challenge.tasks[index];
+        final taskProgress = provider.currentChallengeProgress?.taskStates[index.toString()];
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: TaskProgressListItem(
+            taskDefinition: taskDefinition,
+            taskProgress: taskProgress,
+            taskIndex: index,
           ),
+        );
+      },
+    );
+  }
 
-          // --- Aktionsbuttons (bleiben unverändert) ---
-          if (authProvider.isLoggedIn)
+  /// Baut die Aktionsbuttons basierend auf dem aktuellen Zustand.
+  Widget _buildActionButtons(BuildContext context, ChallengeProvider provider) {
+    final userProfile = context.watch<UserProfileProvider>().userProfile;
+    final challenge = provider.selectedChallenge!;
+
+    final bool isOngoing = userProfile?.ongoingTasks.contains(challenge.id) ?? false;
+    final bool isCompleted = userProfile?.completedTasks.contains(challenge.id) ?? false;
+
+    if (isCompleted) {
+      return Center(child: Chip(
+        avatar: Icon(Icons.check_circle, color: Colors.green),
+        label: Text('Abgeschlossen!'),
+      ));
+    }
+
+    if (isOngoing) {
+      return Column(
+        children: [
+          // Fehlermeldungen anzeigen, falls vorhanden
+          if (provider.userChallengeStatusError != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              child: Column(
-                children: [
-                  if (challengeProvider.userChallengeStatusError != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
-                      child: Text(
-                        challengeProvider.userChallengeStatusError!,
-                        style: TextStyle(color: theme.colorScheme.error),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  Row(
-                    children: [
-                      // Accept / Ongoing / Completed Button
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: isActionLoading || isOngoingByUser || isCompletedByUser
-                              ? null
-                              : () => challengeProvider.acceptChallenge(challenge.id),
-                          child: isActionLoading
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : Text(isOngoingByUser
-                              ? 'Ongoing'
-                              : (isCompletedByUser ? 'Completed!' : 'Accept Challenge')),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Complete Button
-                      Expanded(
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.secondary,
-                            foregroundColor: theme.colorScheme.onSecondary,
-                          ),
-                          onPressed: isActionLoading || isCompletedByUser
-                              ? null
-                              : () => challengeProvider.completeChallenge(challenge.id),
-                          child: isActionLoading && !isOngoingByUser
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : Text(isCompletedByUser ? 'Done!' : 'Mark as Completed'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Remove from Ongoing Button
-                  if (isOngoingByUser && !isCompletedByUser)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.errorContainer,
-                          foregroundColor: theme.colorScheme.onErrorContainer,
-                        ),
-                        onPressed: isActionLoading
-                            ? null
-                            : () => challengeProvider.removeChallengeFromOngoing(challenge.id),
-                        child: isActionLoading
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Remove from Ongoing'),
-                      ),
-                    ),
-                ],
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Text(
+                provider.userChallengeStatusError!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                textAlign: TextAlign.center,
               ),
             ),
-          const SizedBox(height: 30),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              icon: Icon(Iconsax.send_1),
+              label: Text('Challenge abschließen'),
+              onPressed: () => provider.completeCurrentChallenge(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              child: Text('Abbrechen'),
+              onPressed: () => provider.removeCurrentChallengeFromOngoing(),
+              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+            ),
+          ),
         ],
+      );
+    }
+
+    // Wenn noch nicht angenommen
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        child: Text('Challenge annehmen'),
+        onPressed: () => provider.acceptCurrentChallenge(),
       ),
     );
   }

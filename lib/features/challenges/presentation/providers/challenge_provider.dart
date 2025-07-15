@@ -7,12 +7,14 @@ import 'package:collection/collection.dart'; // Für den Listenvergleich
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/address_entity.dart';
+import '../../domain/entities/challenge_progress_entity.dart';
 import '../../domain/usecases/create_challenge_usecase.dart';
 import '../../domain/usecases/get_all_challenges_stream_usecase.dart';
 import '../../domain/usecases/get_challenge_by_id_usecase.dart';
 import '../../domain/usecases/accept_challenge_usecase.dart';
 import '../../domain/usecases/complete_challenge_usecase.dart';
 import '../../domain/usecases/get_llm_feedback_usecase.dart';
+import '../../domain/usecases/refresh_steps_for_task_usecase.dart';
 import '../../domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 
 // Domain Entities
@@ -24,6 +26,12 @@ import '../../domain/entities/trackable_task.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/user_profile_provider.dart';
 import '../../domain/usecases/search_location_usecase.dart';
+import '../../domain/usecases/select_image_for_task_usecase.dart';
+import '../../domain/usecases/start_challenge_usecase.dart';
+import '../../domain/usecases/toggle_checkbox_task_usecase.dart';
+import '../../domain/usecases/update_task_progress_usecase.dart';
+import '../../domain/usecases/verify_location_for_task_usecase.dart';
+import '../../domain/usecases/watch_challenge_progress_usecase.dart';
 
 
 /// Verwaltet den gesamten Zustand, der mit Challenges zu tun hat.
@@ -43,6 +51,13 @@ class ChallengeProvider with ChangeNotifier {
   final RemoveChallengeFromOngoingUseCase _removeChallengeFromOngoingUseCase;
   final SearchLocationUseCase _searchLocationUseCase;
   final GetLlmFeedbackUseCase _getLlmFeedbackUseCase;
+  final StartChallengeUseCase _startChallengeUseCase;
+  final WatchChallengeProgressUseCase _watchChallengeProgressUseCase;
+  final UpdateTaskProgressUseCase _updateTaskProgressUseCase;
+  final ToggleCheckboxTaskUseCase _toggleCheckboxTaskUseCase;
+  final RefreshStepsForTaskUseCase _refreshStepsForTaskUseCase;
+  final VerifyLocationForTaskUseCase _verifyLocationForTaskUseCase;
+  final SelectImageForTaskUseCase _selectImageForTaskUseCase;
 
   // --- Interne Referenzen auf andere Provider ---
   late AuthenticationProvider _authProvider;
@@ -57,6 +72,8 @@ class ChallengeProvider with ChangeNotifier {
 
   // --- State für die Detailansicht ---
   ChallengeEntity? _selectedChallenge;
+  ChallengeProgressEntity? _currentChallengeProgress;
+  StreamSubscription? _challengeProgressSubscription;
   bool _isLoadingSelectedChallenge = false;
   String? _selectedChallengeError;
 
@@ -90,27 +107,44 @@ class ChallengeProvider with ChangeNotifier {
   String? _feedbackError;
   Map<String, dynamic> _llmFeedbackData = {};
 
+  int? _verifyingTaskIndex;
+
   ChallengeProvider({
     required GetAllChallengesStreamUseCase getAllChallengesStreamUseCase,
     required GetChallengeByIdUseCase getChallengeByIdUseCase,
     required CreateChallengeUseCase createChallengeUseCase,
+    required SearchLocationUseCase searchLocationUseCase,
+    required GetLlmFeedbackUseCase getLlmFeedbackUseCase,
     required AcceptChallengeUseCase acceptChallengeUseCase,
     required CompleteChallengeUseCase completeChallengeUseCase,
     required RemoveChallengeFromOngoingUseCase removeChallengeFromOngoingUseCase,
-    required SearchLocationUseCase searchLocationUseCase,
-    required GetLlmFeedbackUseCase getLlmFeedbackUseCase,
+    required StartChallengeUseCase startChallengeUseCase,
+    required WatchChallengeProgressUseCase watchChallengeProgressUseCase,
+    required UpdateTaskProgressUseCase updateTaskProgressUseCase,
+    required ToggleCheckboxTaskUseCase toggleCheckboxTaskUseCase,
+    required RefreshStepsForTaskUseCase refreshStepsForTaskUseCase,
+    required VerifyLocationForTaskUseCase verifyLocationForTaskUseCase,
+    required SelectImageForTaskUseCase selectImageForTaskUseCase,
   })  : _getAllChallengesStreamUseCase = getAllChallengesStreamUseCase,
         _getChallengeByIdUseCase = getChallengeByIdUseCase,
         _createChallengeUseCase = createChallengeUseCase,
+        _searchLocationUseCase = searchLocationUseCase,
+        _getLlmFeedbackUseCase = getLlmFeedbackUseCase,
         _acceptChallengeUseCase = acceptChallengeUseCase,
         _completeChallengeUseCase = completeChallengeUseCase,
         _removeChallengeFromOngoingUseCase = removeChallengeFromOngoingUseCase,
-        _searchLocationUseCase = searchLocationUseCase,
-        _getLlmFeedbackUseCase = getLlmFeedbackUseCase{
+        _startChallengeUseCase = startChallengeUseCase,
+        _watchChallengeProgressUseCase = watchChallengeProgressUseCase,
+        _updateTaskProgressUseCase = updateTaskProgressUseCase,
+        _toggleCheckboxTaskUseCase = toggleCheckboxTaskUseCase,
+        _refreshStepsForTaskUseCase = refreshStepsForTaskUseCase,
+        _verifyLocationForTaskUseCase = verifyLocationForTaskUseCase,
+        _selectImageForTaskUseCase = selectImageForTaskUseCase {
     _initializeStreams();
   }
 
   // --- Getters für die UI ---
+  bool isVerifyingTask(int index) => _verifyingTaskIndex == index;
 
   // Listen- und Filter-Zustand
   ChallengeFilterState get filterState => _filterState;
@@ -135,6 +169,11 @@ class ChallengeProvider with ChangeNotifier {
   bool get isFetchingFeedback => _isFetchingFeedback;
   String? get feedbackError => _feedbackError;
   Map<String, dynamic> get llmFeedbackData => _llmFeedbackData;
+
+  ChallengeProgressEntity? get currentChallengeProgress => _currentChallengeProgress;
+
+
+
 
 
   /// Gibt die gefilterte und sortierte Liste der Challenges zurück.
@@ -238,22 +277,53 @@ class ChallengeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchChallengeDetails(String challengeId) async {
-    _isLoadingSelectedChallenge = true;
-    _selectedChallengeError = null;
-    notifyListeners();
+// In: lib/features/challenges/presentation/providers/challenge_provider.dart
 
-    final challenge = await _getChallengeByIdUseCase(challengeId);
-    if (challenge != null) {
-      _selectedChallenge = challenge;
-    } else {
-      _selectedChallengeError = "Challenge not found or failed to load.";
+  Future<void> fetchChallengeDetails(String challengeId) async {
+    // OPTIMALE LÖSUNG: Prüfen, ob bereits die richtige Challenge geladen wird.
+    // Verhindert unnötige Ladevorgänge, wenn man schnell hin und her klickt.
+    if (_isLoadingSelectedChallenge && _selectedChallenge?.id == challengeId) {
+      return;
     }
+
+    // 1. SOFORT den alten Zustand löschen und Ladezustand aktivieren.
+    _isLoadingSelectedChallenge = true;
+    _selectedChallenge = null; // <-- Der entscheidende Schritt!
+    _selectedChallengeError = null;
+    _currentChallengeProgress = null;
+    _challengeProgressSubscription?.cancel();
+    notifyListeners(); // UI sofort anweisen, einen Ladekreis anstelle der alten Daten zu zeigen.
+
+    // 2. Jetzt erst die neuen Daten laden.
+    final newChallenge = await _getChallengeByIdUseCase(challengeId);
+
+    // 3. Nach dem Laden den neuen Zustand setzen.
+    _selectedChallenge = newChallenge;
+
+    if (_selectedChallenge == null) {
+      _selectedChallengeError = "Challenge not found or failed to load.";
+      _isLoadingSelectedChallenge = false;
+      notifyListeners();
+      return;
+    }
+
+    // 4. Den Fortschritts-Stream für die neue Challenge starten.
+    final userId = _authProvider.currentUserId;
+    if (userId != null) {
+      final progressId = '${userId}_${_selectedChallenge!.id}';
+      _challengeProgressSubscription =
+          _watchChallengeProgressUseCase(progressId).listen((progress) {
+            _currentChallengeProgress = progress;
+            notifyListeners();
+          });
+    }
+
     _isLoadingSelectedChallenge = false;
     notifyListeners();
   }
 
-  // --- Baukasten-Methoden ---
+
+    // --- Baukasten-Methoden ---
 
   void startChallengeCreation(String authorId) {
     _challengeInProgress = ChallengeEntity(
@@ -413,7 +483,74 @@ class ChallengeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> acceptChallenge(String challengeId) async {
+  /// Akzeptiert die aktuell im Provider geladene Challenge.
+  /// Diese Methode ist für die Detailseite gedacht.
+  Future<void> acceptCurrentChallenge() async {
+    if (_selectedChallenge == null) {
+      AppLogger.warning("acceptCurrentChallenge called, but _selectedChallenge is null.");
+      return;
+    }
+    // Ruft die allgemeinere Methode mit der ID der aktuellen Challenge auf.
+    await acceptChallengeById(_selectedChallenge!.id);
+  }
+
+  /// Akzeptiert eine Challenge anhand ihrer ID.
+  /// Diese Methode ist nützlich für Listenansichten oder andere Kontexte,
+  /// in denen du nur die ID hast.
+  Future<void> acceptChallengeById(String challengeId) async {
+    final userId = _authProvider.currentUserId;
+    if (userId == null) {
+      AppLogger.error("Cannot accept challenge, user is not logged in.");
+      return;
+    }
+
+    // Finde die vollständige Challenge-Entität, da der StartChallengeUseCase sie benötigt.
+    // Wir nehmen sie aus der bereits geladenen Liste aller Challenges.
+    final challengeToStart = _allChallenges.firstWhereOrNull((c) => c.id == challengeId);
+
+    if (challengeToStart == null) {
+      AppLogger.error("Cannot accept challenge, challenge with ID $challengeId not found.");
+      return;
+    }
+
+    // 1. Ruft den UseCase auf, um die ID zur "ongoing"-Liste im User-Profil hinzuzufügen.
+    // (Dieser Schritt ist für deine Filterung in der Listenansicht wichtig)
+    await _acceptChallengeUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
+
+    // 2. Ruft den NEUEN UseCase auf, um das Fortschritts-Dokument in Firestore zu erstellen.
+    final params = StartChallengeParams(userId: userId, challenge: challengeToStart);
+    await _startChallengeUseCase(params);
+
+    // Die UI wird durch die Streams automatisch auf den neuesten Stand gebracht.
+    // Ein explizites notifyListeners() ist hier nicht nötig.
+  }
+
+  /// Schließt die aktuell im Provider geladene Challenge ab.
+  /// Führt eine Vorab-Prüfung durch und ruft dann die `ById`-Methode auf.
+  Future<bool> completeCurrentChallenge() async {
+    // Sicherheits-Check: Ist eine Challenge geladen?
+    if (_selectedChallenge == null) {
+      AppLogger.warning("completeCurrentChallenge called but _selectedChallenge is null.");
+      _userChallengeStatusError = "Keine Challenge ausgewählt.";
+      notifyListeners();
+      return false;
+    }
+
+    // Kernlogik-Check: Sind alle Aufgaben erledigt?
+    if (_currentChallengeProgress == null ||
+        !_currentChallengeProgress!.taskStates.values.every((task) => task.isCompleted)) {
+      _userChallengeStatusError = "Du hast noch nicht alle Aufgaben erledigt!";
+      notifyListeners();
+      AppLogger.warning("Attempted to complete challenge, but not all tasks are done.");
+      Timer(const Duration(seconds: 3), () { _userChallengeStatusError = null; notifyListeners(); });
+      return false;
+    }
+
+    return await completeChallengeById(_selectedChallenge!.id);
+  }
+
+  /// Enthält die Kernlogik zum Abschließen einer Challenge anhand ihrer ID.
+  Future<bool> completeChallengeById(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
       _userChallengeStatusError = "User not logged in.";
@@ -425,15 +562,44 @@ class ChallengeProvider with ChangeNotifier {
     _userChallengeStatusError = null;
     notifyListeners();
 
-    final success = await _acceptChallengeUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
+    final success = await _completeChallengeUseCase(
+        CompleteChallengeParams(userId: userId, challengeId: challengeId)
+    );
 
     _isUpdatingUserChallengeStatus = false;
-    if (!success) _userChallengeStatusError = "Could not accept challenge.";
+    if (!success) {
+      _userChallengeStatusError = "Could not mark challenge as completed.";
+    }
     notifyListeners();
     return success;
   }
 
-  Future<bool> completeChallenge(String challengeId) async {
+  /// Aktualisiert den Zustand einer bestimmten Aufgabe.
+  Future<void> updateTaskStatus(int taskIndex, bool isCompleted, {dynamic value}) async {
+    if (_currentChallengeProgress == null) return;
+
+    final params = UpdateTaskProgressParams(
+      progressId: _currentChallengeProgress!.id,
+      taskIndex: taskIndex,
+      isCompleted: isCompleted,
+      newValue: value,
+    );
+    await _updateTaskProgressUseCase(params);
+  }
+
+  /// Entfernt die aktuell geladene Challenge aus der "Ongoing"-Liste des Nutzers.
+  Future<bool> removeCurrentChallengeFromOngoing() async {
+    if (_selectedChallenge == null) {
+      AppLogger.warning("removeCurrentChallengeFromOngoing called but _selectedChallenge is null.");
+      _userChallengeStatusError = "Keine Challenge ausgewählt.";
+      notifyListeners();
+      return false;
+    }
+    return await removeChallengeFromOngoingById(_selectedChallenge!.id);
+  }
+
+  /// Enthält die Kernlogik zum Entfernen einer Challenge aus "Ongoing" anhand ihrer ID.
+  Future<bool> removeChallengeFromOngoingById(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
       _userChallengeStatusError = "User not logged in.";
@@ -445,33 +611,18 @@ class ChallengeProvider with ChangeNotifier {
     _userChallengeStatusError = null;
     notifyListeners();
 
-    final success = await _completeChallengeUseCase(CompleteChallengeParams(userId: userId, challengeId: challengeId));
+    final success = await _removeChallengeFromOngoingUseCase(
+        UserTaskParams(userId: userId, challengeId: challengeId)
+    );
 
     _isUpdatingUserChallengeStatus = false;
-    if (!success) _userChallengeStatusError = "Could not mark challenge as completed.";
-    notifyListeners();
-    return success;
-  }
-
-  Future<bool> removeChallengeFromOngoing(String challengeId) async {
-    final userId = _authProvider.currentUserId;
-    if (userId == null) {
-      _userChallengeStatusError = "User not logged in.";
-      notifyListeners();
-      return false;
+    if (!success) {
+      _userChallengeStatusError = "Could not remove challenge from 'Ongoing'.";
     }
-
-    _isUpdatingUserChallengeStatus = true;
-    _userChallengeStatusError = null;
-    notifyListeners();
-
-    final success = await _removeChallengeFromOngoingUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
-
-    _isUpdatingUserChallengeStatus = false;
-    if (!success) _userChallengeStatusError = "Could not remove challenge from 'Ongoing'.";
     notifyListeners();
     return success;
   }
+
 
   Future<void> searchLocation(String query) async {
     _locationSearchResults = [];
@@ -494,11 +645,93 @@ class ChallengeProvider with ChangeNotifier {
     _locationSearchResults = [];
   }
 
+  /// **1. Für Checkbox-Aufgaben**
+  /// Schaltet den Zustand einer Checkbox-Aufgabe um.
+  Future<void> toggleCheckboxTask(int taskIndex, bool isCompleted) async {
+    if (_currentChallengeProgress == null) return;
+
+    final params = ToggleCheckboxParams(
+      progressId: _currentChallengeProgress!.id,
+      taskIndex: taskIndex,
+      isCompleted: isCompleted,
+    );
+    await _toggleCheckboxTaskUseCase(params);
+  }
+
+  /// **2. Für Schrittzähler-Aufgaben**
+  /// Holt die aktuellen Schritte vom Health-Service und aktualisiert den Fortschritt.
+  Future<void> refreshStepCounterTask(int taskIndex) async {
+    if (_currentChallengeProgress == null || _selectedChallenge == null) return;
+
+    _verifyingTaskIndex = taskIndex;
+    notifyListeners();
+
+    final params = RefreshStepsParams(
+      progressId: _currentChallengeProgress!.id,
+      taskIndex: taskIndex,
+      taskDefinition: _selectedChallenge!.tasks[taskIndex],
+    );
+
+    try {
+      await _refreshStepsForTaskUseCase(params);
+    } catch (e) {
+      _userChallengeStatusError = "Schritte konnten nicht aktualisiert werden. Bitte Berechtigungen prüfen.";
+    }
+
+    _verifyingTaskIndex = null;
+    notifyListeners();
+  }
+
+  /// **3. Für Standort-Aufgaben**
+  /// Prüft den aktuellen Standort des Nutzers gegen das Ziel der Aufgabe.
+  Future<void> verifyLocationForTask(int taskIndex) async {
+    if (_currentChallengeProgress == null || _selectedChallenge == null) return;
+
+    _verifyingTaskIndex = taskIndex; // Setze den Index der ladenden Aufgabe
+    notifyListeners();
+
+    final params = VerifyLocationParams(
+      progressId: _currentChallengeProgress!.id,
+      taskIndex: taskIndex,
+      taskDefinition: _selectedChallenge!.tasks[taskIndex],
+    );
+
+    final bool success = await _verifyLocationForTaskUseCase(params);
+
+    if (!success) {
+      _userChallengeStatusError = "Du bist nicht am richtigen Ort.";
+      // Optional: Fehlermeldung nach einiger Zeit ausblenden
+      Timer(const Duration(seconds: 3), () { _userChallengeStatusError = null; notifyListeners(); });
+    }
+
+    _verifyingTaskIndex = null;
+    notifyListeners();
+  }
+
+  /// **4. Für Bild-Aufgaben (simulierter Upload)**
+  /// Öffnet die Galerie und speichert den lokalen Pfad des Bildes als Beweis.
+  Future<void> selectImageForTask(int taskIndex) async {
+    if (_currentChallengeProgress == null) return;
+
+    _verifyingTaskIndex = taskIndex;
+    notifyListeners();
+
+    final params = SelectImageParams(
+      progressId: _currentChallengeProgress!.id,
+      taskIndex: taskIndex,
+    );
+
+    await _selectImageForTaskUseCase(params);
+
+    _verifyingTaskIndex = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _allChallengesSubscription?.cancel();
     _pageController?.dispose();
-    _debounce?.cancel(); // Wichtig: Timer im dispose aufräumen!
+    _debounce?.cancel();
     super.dispose();
   }
 }
