@@ -264,7 +264,6 @@ class ChatRoomListProvider with ChangeNotifier {
 
   /// Explicitly triggers a reload of the chat rooms.
   void forceReloadChatRooms() {
-    // Correctly uses the internal _currentUserId field.
     final userId = _currentUserId;
     if (userId != null) {
       AppLogger.info("ChatRoomListProvider: Force reloading chat rooms.");
