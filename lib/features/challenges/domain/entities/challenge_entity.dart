@@ -1,12 +1,12 @@
-import 'dart:math'; // Wird für die min()-Funktion im Punkte-Getter benötigt.
+import 'dart:math'; // Required for the min() function in the points getter.
 import 'package:equatable/equatable.dart';
-import 'trackable_task.dart'; // Importiert die neuen, modularen Aufgaben-Entitäten.
+import 'trackable_task.dart'; // Imports the new, modular task entities.
 
-/// Repräsentiert eine Challenge in der Domain-Schicht.
+/// Represents a challenge in the domain layer.
 ///
-/// Diese Klasse ist unveränderlich und enthält die gesamte Geschäftslogik
-/// zur Berechnung von Punkten und Schwierigkeit sowie zur Validierung
-/// der Aufgaben-Zusammensetzung.
+/// This class is immutable and contains all business logic
+/// for calculating points and difficulty, as well as validatin^^g
+/// the task composition.
 class ChallengeEntity extends Equatable {
   final String id;
   final String title;
@@ -16,24 +16,24 @@ class ChallengeEntity extends Equatable {
   final DateTime? createdAt;
   final List<TrackableTask> tasks;
   final Map<String, String>? llmFeedback;
-  final int? durationInDays; // <-- NEUES FELD HINZUGEFÜGT
+  final int? durationInDays; // <-- NEW FIELD ADDED
 
-  // --- Konstanten für die Spielbalance ---
+  // --- Constants for game balance ---
 
-  /// Die Basispunktzahl für eine einfache, nicht verifizierbare Checkbox-Aufgabe.
+  /// The base points for a simple, non-verifiable checkbox task.
   static const int _pointsPerCheckbox = 5;
 
-  /// Die Basispunktzahl für eine Aufgabe, die einen Beweis erfordert (z.B. Foto, Standort).
+  /// The base points for a task that requires proof (e.g., photo, location).
   static const int _pointsPerProvableTask = 50;
 
-  /// Bonuspunkte pro 1000 Schritte für die Schrittzähler-Aufgabe.
+  /// Bonus points per 1000 steps for the step counter task.
   static const int _pointsPer1000Steps = 10;
 
-  /// Das absolute Punktelimit, das eine einzelne Challenge gewähren kann.
+  /// The absolute point limit that a single challenge can grant.
   static const int maxPoints = 500;
 
-  /// Definiert, wie viele Punkte für Checkboxen pro beweisbarer Aufgabe freigeschaltet werden.
-  /// Dies ist der Kern des "Punkte-Budget"-Modells.
+  /// Defines how many points for checkboxes are unlocked per provable task.
+  /// This is the core of the "points budget" model.
   static const int unlockedCheckboxPointsPerProvableTask = 25;
 
 
@@ -46,32 +46,32 @@ class ChallengeEntity extends Equatable {
     this.createdAt,
     this.tasks = const [],
     this.llmFeedback,
-    this.durationInDays, // <-- NEUES FELD HINZUGEFÜGT
+    this.durationInDays, // <-- NEW FIELD ADDED
   });
 
-  /// Berechnet die Gesamtpunktzahl der Challenge.
+  /// Calculates the total points of the challenge.
   ///
-  /// Diese Methode implementiert die "Punkte-Budget"-Logik:
-  /// 1. Sie berechnet die Summe der Punkte aus beweisbaren Aufgaben.
-  /// 2. Sie berechnet, wie viele Punkte durch Checkboxen verdient werden können (das Budget).
-  /// 3. Sie addiert die Punkte aus Checkboxen nur bis zu diesem Budget-Limit.
-  /// 4. Die Gesamtpunktzahl wird durch `maxPoints` gedeckelt.
+  /// This method implements the "points budget" logic:
+  /// 1. It calculates the sum of points from provable tasks.
+  /// 2. It calculates how many points can be earned through checkboxes (the budget).
+  /// 3. It adds points from checkboxes only up to this budget limit.
+  /// 4. The total score is capped by `maxPoints`.
   int get calculatedPoints {
-    // 1. Zähle die beweisbaren Aufgaben, um das Budget zu bestimmen.
+    // 1. Count the provable tasks to determine the budget.
     final provableTaskCount = tasks.where((task) => task is! CheckboxTask).length;
 
-    // 2. Berechne das maximale Punkte-Budget, das durch Checkboxen verdient werden kann.
+    // 2. Calculate the maximum points budget that can be earned through checkboxes.
     final maxAllowedCheckboxPoints = provableTaskCount * unlockedCheckboxPointsPerProvableTask;
 
-    // 3. Berechne die tatsächlichen, potenziellen Punkte aus den Checkboxen.
+    // 3. Calculate the actual, potential points from the checkboxes.
     final actualCheckboxPoints = tasks
         .whereType<CheckboxTask>()
         .fold(0, (sum, task) => sum + _pointsPerCheckbox);
 
-    // 4. Ermittle die anrechenbaren Checkbox-Punkte (das Minimum aus Budget und tatsächlichen Punkten).
+    // 4. Determine the creditable checkbox points (the minimum of budget and actual points).
     final countableCheckboxPoints = min(maxAllowedCheckboxPoints, actualCheckboxPoints);
 
-    // 5. Berechne die Punkte aus den beweisbaren Aufgaben.
+    // 5. Calculate the points from the provable tasks.
     final int provableTasksPoints = tasks.fold(0, (sum, task) {
       if (task is LocationVisitTask || task is ImageUploadTask) {
         return sum + _pointsPerProvableTask;
@@ -80,17 +80,17 @@ class ChallengeEntity extends Equatable {
         final stepBonus = (task.targetSteps / 1000).floor() * _pointsPer1000Steps;
         return sum + _pointsPerProvableTask + stepBonus;
       }
-      return sum; // Ignoriert Checkboxen in dieser Faltung.
+      return sum; // Ignores checkboxes in this fold.
     });
 
-    // 6. Addiere die Punkte der beweisbaren Aufgaben und die anrechenbaren Checkbox-Punkte.
+    // 6. Add the points from provable tasks and the creditable checkbox points.
     final totalPoints = countableCheckboxPoints + provableTasksPoints;
 
-    // 7. Wende das globale Punktelimit an.
+    // 7. Apply the global point limit.
     return min(totalPoints, maxPoints);
   }
 
-  /// Berechnet die Schwierigkeit der Challenge basierend auf der Gesamtpunktzahl.
+  /// Calculates the difficulty of the challenge based on the total points.
   String get calculatedDifficulty {
     final points = calculatedPoints;
     if (points > 350) return "Experienced";
@@ -99,16 +99,16 @@ class ChallengeEntity extends Equatable {
     return "Easy";
   }
 
-  /// Gibt die anrechenbaren Punkte für eine bestimmte Aufgabe an einem Index zurück.
-  /// Dies ist die "Auskunfts-Methode" für die UI, damit diese die Logik nicht kennen muss.
+  /// Returns the creditable points for a specific task at an index.
+  /// This is the "information method" for the UI, so it doesn't need to know the logic.
   int getPointsForTaskAtIndex(int index) {
     if (index < 0 || index >= tasks.length) {
-      return 0; // Sicherung gegen ungültigen Index.
+      return 0; // Safeguard against invalid index.
     }
 
     final task = tasks[index];
 
-    // Punkte für beweisbare Aufgaben sind unkompliziert.
+    // Points for provable tasks are straightforward.
     if (task is! CheckboxTask) {
       if (task is LocationVisitTask || task is ImageUploadTask) {
         return _pointsPerProvableTask;
@@ -117,14 +117,14 @@ class ChallengeEntity extends Equatable {
         final stepBonus = (task.targetSteps / 1000).floor() * _pointsPer1000Steps;
         return _pointsPerProvableTask + stepBonus;
       }
-      return 0; // Sollte nicht vorkommen.
+      return 0; // Should not happen.
     }
 
-    // Für CheckboxTasks muss das Budget geprüft werden.
+    // For CheckboxTasks, the budget must be checked.
     final provableTaskCount = tasks.where((t) => t is! CheckboxTask).length;
     final maxAllowedCheckboxPoints = provableTaskCount * unlockedCheckboxPointsPerProvableTask;
 
-    // Finde den "Rang" der aktuellen Checkbox heraus.
+    // Find the "rank" of the current checkbox.
     int checkboxRank = -1;
     for (int i = 0; i <= index; i++) {
       if (tasks[i] is CheckboxTask) {
@@ -132,10 +132,10 @@ class ChallengeEntity extends Equatable {
       }
     }
 
-    // Berechne die Punkte, die durch vorherige Checkboxen bereits "verbraucht" wurden.
+    // Calculate the points already "consumed" by previous checkboxes.
     final pointsConsumedByPreviousCheckboxes = checkboxRank * _pointsPerCheckbox;
 
-    // Wenn die aktuelle Checkbox noch ins Budget passt, gibt sie Punkte, sonst nicht.
+    // If the current checkbox still fits within the budget, it grants points, otherwise not.
     if (pointsConsumedByPreviousCheckboxes < maxAllowedCheckboxPoints) {
       return _pointsPerCheckbox;
     } else {

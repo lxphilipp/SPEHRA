@@ -10,12 +10,12 @@ import '../../domain/entities/challenge_entity.dart';
 
 class ChallengeCardWidget extends StatelessWidget {
   final ChallengeEntity challenge;
-  final VoidCallback onTap; // <-- 1. PARAMETER HINZUGEFÜGT
+  final VoidCallback onTap; // <-- 1. PARAMETER ADDED
 
   const ChallengeCardWidget({
     super.key,
     required this.challenge,
-    required this.onTap, // <-- 2. IM KONSTRUKTOR HINZUGEFÜGT
+    required this.onTap, // <-- 2. ADDED IN CONSTRUCTOR
   });
 
   @override
@@ -48,7 +48,7 @@ class ChallengeCardWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap, // <-- 3. VERWENDEN DES NEUEN PARAMETERS
+        onTap: onTap, // <-- 3. USING THE NEW PARAMETER
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           child: Row(

@@ -23,8 +23,8 @@ class TaskConfigurationDialog extends StatelessWidget {
         child: formContent,
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Abbrechen')),
-        FilledButton(onPressed: isSaveEnabled ? onSave : null, child: const Text('Hinzufügen')),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+        FilledButton(onPressed: isSaveEnabled ? onSave : null, child: const Text('Add')),
       ],
     );
   }

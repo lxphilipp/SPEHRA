@@ -47,11 +47,11 @@ class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
 
     return Scaffold(
       appBar: AppBar(
-        // Die Suchleiste ist jetzt Teil der AppBar
+        // The search bar is now part of the AppBar
         title: TextField(
           controller: _searchController,
           autofocus: true,
-          decoration: const InputDecoration.collapsed(hintText: 'Ort suchen...'),
+          decoration: const InputDecoration.collapsed(hintText: 'Search location...'),
           onSubmitted: (_) => provider.searchLocation(_searchController.text),
         ),
         actions: [
@@ -59,12 +59,12 @@ class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
               ? const Padding(padding: EdgeInsets.all(16.0), child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 3)))
               : IconButton(
             icon: const Icon(Icons.search),
-            tooltip: 'Suchen',
+            tooltip: 'Search',
             onPressed: () => provider.searchLocation(_searchController.text),
           ),
           IconButton(
             icon: const Icon(Icons.check),
-            tooltip: 'Ort bestätigen',
+            tooltip: 'Confirm location',
             onPressed: () => Navigator.of(context).pop(_pickedLocation),
           ),
         ],
@@ -106,7 +106,7 @@ class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
               child: Icon(Icons.location_pin, size: 50, color: Colors.red),
             ),
           ),
-          // Die Suchergebnisse werden in einem schicken, ausziehbaren Sheet angezeigt
+          // The search results are displayed in a neat, expandable sheet
           if (provider.locationSearchResults.isNotEmpty)
             DraggableScrollableSheet(
               initialChildSize: 0.3,

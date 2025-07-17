@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import des neuen Widgets
+import '../llm_feedback_widget.dart'; // Import of the new widget
 
 class Step3CategoriesPage extends StatefulWidget {
   const Step3CategoriesPage({super.key});
@@ -22,7 +22,7 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
     } else {
       newSelection.add(key);
     }
-    // Provider updaten UND Feedback anfordern
+    // Update provider AND request feedback
     provider.updateChallengeInProgress(categories: newSelection);
     provider.requestLlmFeedback('categories');
   }
@@ -40,12 +40,12 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
         children: [
           const SizedBox(height: 40),
           Text(
-            'Wähle passende SDG-Kategorien aus.',
+            'Choose suitable SDG categories.',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Welche globalen Ziele unterstützt deine Challenge?',
+            'Which global goals does your challenge support?',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
@@ -82,7 +82,7 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
             ),
           ),
           const SizedBox(height: 16),
-          // NEU: Feedback-Widget
+          // NEW: Feedback Widget
           LlmFeedbackWidget(
             isLoading: provider.isFetchingFeedback,
             error: provider.feedbackError,

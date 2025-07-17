@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
 import '/features/profile/domain/repositories/user_profile_repository.dart';
 
-/// Dieser Use Case entfernt eine Challenge aus der "Ongoing"-Liste eines Nutzers.
+/// This Use Case removes a challenge from a user's "Ongoing" list.
 class RemoveChallengeFromOngoingUseCase implements UseCase<bool, UserTaskParams> {
   final UserProfileRepository userProfileRepository;
 
@@ -16,8 +16,8 @@ class RemoveChallengeFromOngoingUseCase implements UseCase<bool, UserTaskParams>
   }
 }
 
-/// Ein wiederverwendbarer Daten-Container für Use Cases, die eine
-/// Interaktion zwischen einem Nutzer und einer Aufgabe/Challenge beschreiben.
+/// A reusable data container for Use Cases that describe an
+/// interaction between a user and a task/challenge.
 class UserTaskParams extends Equatable {
   final String userId;
   final String challengeId;

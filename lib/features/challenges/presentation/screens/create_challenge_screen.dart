@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/create_challenge_form.dart'; // Das neue Formular-Widget
+import '../widgets/create_challenge_form.dart'; // The new form widget
 
 class CreateChallengeScreen extends StatelessWidget {
   const CreateChallengeScreen({super.key});

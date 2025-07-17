@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
-/// Ein Widget zur Anzeige von LLM-generiertem Feedback.
-/// Es behandelt Lade-, Erfolgs- und Fehlerzustände.
+/// A widget for displaying LLM-generated feedback.
+/// It handles loading, success, and error states.
 class LlmFeedbackWidget extends StatelessWidget {
   final bool isLoading;
   final String? feedback;
@@ -50,7 +50,7 @@ class LlmFeedbackWidget extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
             const SizedBox(width: 12),
-            Text("Analysiere deine Eingabe...", style: theme.textTheme.bodyMedium),
+            Text("Analyzing your input...", style: theme.textTheme.bodyMedium),
           ],
         ),
       );
@@ -63,7 +63,7 @@ class LlmFeedbackWidget extends StatelessWidget {
         iconColor: theme.colorScheme.error,
         child: Row(
           children: [
-            Expanded(child: Text("Feedback konnte nicht geladen werden.", style: theme.textTheme.bodyMedium)),
+            Expanded(child: Text("Failed to load feedback.", style: theme.textTheme.bodyMedium)),
             if (onRetry != null)
               IconButton(onPressed: onRetry, icon: const Icon(Iconsax.refresh)),
           ],
@@ -84,7 +84,7 @@ class LlmFeedbackWidget extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  "Tipp: $improvementSuggestion",
+                  "Tip: $improvementSuggestion",
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

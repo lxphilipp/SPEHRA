@@ -20,7 +20,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
   late ChallengeFilterState _currentFilterState;
   late final TextEditingController _searchController;
 
-  // Daten für die Filter-Optionen
+  // Data for filter options
   final List<String> _difficulties = ["Easy", "Normal", "Advanced", "Experienced"];
   final Map<String, String> _sdgData = {
     for (var i = 1; i <= 17; i++) 'goal$i': 'SDG $i'
@@ -68,7 +68,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('SDG-Kategorie hinzufügen'),
+        title: const Text('Add SDG Category'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -99,11 +99,11 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        // 1. Text-Suche
+        // 1. Text Search
         TextField(
           controller: _searchController,
           decoration: const InputDecoration(
-            labelText: 'Suche nach Titel...',
+            labelText: 'Search by title...',
             prefixIcon: Icon(Icons.search),
             border: OutlineInputBorder(),
           ),
@@ -111,8 +111,8 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
         ),
         const SizedBox(height: 24),
 
-        // 2. Schwierigkeit
-        Text('Schwierigkeit', style: theme.textTheme.titleMedium),
+        // 2. Difficulty
+        Text('Difficulty', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
@@ -135,14 +135,14 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
         ),
         const SizedBox(height: 24),
 
-        // 3. SDG-Kategorien (interaktiv)
-        Text('SDG-Kategorien', style: theme.textTheme.titleMedium),
+        // 3. SDG Categories (interactive)
+        Text('SDG Categories', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
           runSpacing: 4.0,
           children: [
-            // Die bereits ausgewählten Chips
+            // The already selected chips
             ..._currentFilterState.selectedSdgKeys.map((key) {
               return InputChip(
                 label: Text(_sdgData[key] ?? key),
@@ -156,18 +156,18 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
                 },
               );
             }),
-            // Der Button zum Hinzufügen neuer Chips
+            // The button to add new chips
             ActionChip(
               avatar: const Icon(Icons.add),
-              label: const Text('Hinzufügen'),
+              label: const Text('Add'),
               onPressed: _showAddSdgDialog,
             ),
           ],
         ),
         const SizedBox(height: 24),
 
-        // 4. Datumsbereich
-        Text('Erstelldatum', style: theme.textTheme.titleMedium),
+        // 4. Date Range
+        Text('Creation Date', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         InkWell(
           onTap: _pickDateRange,
@@ -182,7 +182,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
               children: [
                 Text(
                   _currentFilterState.dateRange == null
-                      ? 'Datumsbereich auswählen'
+                      ? 'Select date range'
                       : '${DateFormat('dd.MM.yy').format(_currentFilterState.dateRange!.start)} - ${DateFormat('dd.MM.yy').format(_currentFilterState.dateRange!.end)}',
                 ),
                 const Icon(Icons.calendar_today_outlined),

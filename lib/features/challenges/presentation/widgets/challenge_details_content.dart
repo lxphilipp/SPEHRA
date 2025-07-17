@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
-// Core Widgets & Logik
+// Core Widgets & Logic
 import '../../../../core/theme/sdg_color_theme.dart';
-import 'task_progress_list_item.dart'; // Unser neues, interaktives Widget
+import '../providers/challenge_provider.dart';
+import 'task_progress_list_item.dart'; // Our new, interactive widget
 
 // Feature Provider & Entities
-import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../profile/presentation/providers/user_profile_provider.dart';
 
 class ChallengeDetailsContent extends StatefulWidget {
@@ -28,7 +27,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   @override
   void initState() {
     super.initState();
-    // Ruft die Details und den Fortschritt ab, wenn das Widget zum ersten Mal gebaut wird.
+    // Fetches details and progress when the widget is first built.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ChallengeProvider>(context, listen: false)
           .fetchChallengeDetails(widget.challengeId);
@@ -37,31 +36,27 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
 
   @override
   Widget build(BuildContext context) {
-    // Wir verwenden `Consumer` hier, um gezielt auf Änderungen zu lauschen.
     return Consumer<ChallengeProvider>(
       builder: (context, provider, child) {
         final challenge = provider.selectedChallenge;
         final theme = Theme.of(context);
 
-        // --- Lade- und Fehlerzustände ---
+        // --- Loading and Error States ---
         if (provider.isLoadingSelectedChallenge && challenge == null) {
           return const Center(child: CircularProgressIndicator());
         }
         if (provider.selectedChallengeError != null) {
-          return Center(child: Text('Fehler: ${provider.selectedChallengeError}'));
+          return Center(child: Text('Error: ${provider.selectedChallengeError}'));
         }
         if (challenge == null) {
-          return const Center(child: Text('Keine Challenge-Details verfügbar.'));
+          return const Center(child: Text('No Challenge Details Available.'));
         }
 
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- 1. Header-Sektion ---
               _buildHeader(context, challenge, theme),
-
-              // --- 2. Hauptinhalt (Beschreibung, Statistiken) ---
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -80,7 +75,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
               // --- 3. Interaktive Aufgabenliste ---
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text('Deine Aufgaben', style: theme.textTheme.titleLarge),
+                child: Text('Your Tasks', style: theme.textTheme.titleLarge),
               ),
               const SizedBox(height: 8),
               _buildTaskList(context, provider, challenge),
@@ -99,7 +94,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
-  /// Baut den visuellen Header mit Titel und Kategorie-Icon.
+  /// Builds the visual header with title and category icon.
   Widget _buildHeader(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     final sdgTheme = theme.extension<SdgColorTheme>();
     String imagePath = 'assets/icons/17_SDG_Icons/1.png'; // Fallback
@@ -126,13 +121,13 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
-  /// Baut die Reihe mit den Statistiken (Punkte & Schwierigkeit).
+  /// Builds the row with statistics (points & difficulty).
   Widget _buildStatsRow(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem(theme, Iconsax.star_1, '${challenge.calculatedPoints} Pts', 'Punkte'),
-        _buildStatItem(theme, Iconsax.diagram, challenge.calculatedDifficulty, 'Schwierigkeit'),
+        _buildStatItem(theme, Iconsax.star_1, '${challenge.calculatedPoints} Pts', 'Points'),
+        _buildStatItem(theme, Iconsax.diagram, challenge.calculatedDifficulty, 'Difficulty'),
       ],
     );
   }
@@ -148,7 +143,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
-  /// Baut die SDG-Kategorie-Chips.
+  /// Builds the SDG category chips.
   Widget _buildSdgChips(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     return Wrap(
       spacing: 8.0,
@@ -162,7 +157,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
-  /// Baut die Liste der interaktiven Aufgaben-Widgets.
+  /// Builds the list of interactive task widgets.
   Widget _buildTaskList(BuildContext context, ChallengeProvider provider, ChallengeEntity challenge) {
     return ListView.builder(
       shrinkWrap: true,
@@ -184,7 +179,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
-  /// Baut die Aktionsbuttons basierend auf dem aktuellen Zustand.
+  /// Builds the action buttons based on the current state.
   Widget _buildActionButtons(BuildContext context, ChallengeProvider provider) {
     final userProfile = context.watch<UserProfileProvider>().userProfile;
     final challenge = provider.selectedChallenge!;
@@ -195,14 +190,14 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     if (isCompleted) {
       return Center(child: Chip(
         avatar: Icon(Icons.check_circle, color: Colors.green),
-        label: Text('Abgeschlossen!'),
+        label: Text('Completed!'),
       ));
     }
 
     if (isOngoing) {
       return Column(
         children: [
-          // Fehlermeldungen anzeigen, falls vorhanden
+          // Display error messages, if any
           if (provider.userChallengeStatusError != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
@@ -216,7 +211,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
             width: double.infinity,
             child: FilledButton.icon(
               icon: Icon(Iconsax.send_1),
-              label: Text('Challenge abschließen'),
+              label: Text('Complete Challenge'),
               onPressed: () => provider.completeCurrentChallenge(),
             ),
           ),
@@ -224,20 +219,19 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
           SizedBox(
             width: double.infinity,
             child: TextButton(
-              child: Text('Abbrechen'),
               onPressed: () => provider.removeCurrentChallengeFromOngoing(),
               style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+              child: Text('Cancel'),
             ),
           ),
         ],
       );
     }
 
-    // Wenn noch nicht angenommen
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        child: Text('Challenge annehmen'),
+        child: Text('Accept Challenge'),
         onPressed: () => provider.acceptCurrentChallenge(),
       ),
     );

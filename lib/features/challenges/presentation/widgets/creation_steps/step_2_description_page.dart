@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import des neuen Widgets
+import '../llm_feedback_widget.dart'; // Import of the new widget
 
 class Step2DescriptionPage extends StatefulWidget {
   const Step2DescriptionPage({super.key});
@@ -38,20 +38,20 @@ class _Step2DescriptionPageState extends State<Step2DescriptionPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Super! Beschreibe nun deine Challenge.',
+            'Great! Now describe your challenge.',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Was ist das Ziel? Warum ist diese Aktion wichtig?',
+            'What is the goal? Why is this action important?',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
           TextFormField(
             controller: _controller,
             decoration: const InputDecoration(
-              labelText: 'Beschreibung',
-              hintText: 'z.B. "Befreien wir unseren Park von Müll..."',
+              labelText: 'Description',
+              hintText: 'e.g. Lets free our park from trash..',
             ),
             maxLines: 5,
             minLines: 1,

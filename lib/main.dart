@@ -3,7 +3,6 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/features/invites/domain/usecases/decline_challenge_invite_usecase.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,7 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
-import 'app.dart'; // Your main app widget
+import 'app.dart';
 import 'features/challenges/data/datasources/challenge_progress_remote_datasource.dart';
 import 'features/challenges/data/datasources/geolocation_service.dart';
 import 'features/challenges/data/datasources/health_service.dart';
@@ -21,6 +20,8 @@ import 'features/challenges/data/repositories/challenge_progress_repository_impl
 import 'features/challenges/data/repositories/device_tracking_repository_impl.dart';
 import 'features/challenges/domain/repositories/challenge_progress_repository.dart';
 import 'features/challenges/domain/repositories/device_tracking_repository.dart';
+import 'features/challenges/domain/usecases/add_participant_to_group_challenge_usecase.dart';
+import 'features/challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
 import 'features/challenges/domain/usecases/get_llm_feedback_usecase.dart';
 import 'features/challenges/domain/usecases/refresh_steps_for_task_usecase.dart';
 import 'features/challenges/domain/usecases/search_location_usecase.dart';
@@ -36,6 +37,7 @@ import 'features/invites/data/repositories/invites_repository_impl.dart';
 import 'features/invites/domain/repositories/invites_repository.dart';
 import 'features/invites/domain/usecases/accept_challenge_invite_usecase.dart';
 import 'features/invites/domain/usecases/create_challenge_invite_usecase.dart';
+import 'features/invites/domain/usecases/decline_challenge_invite_usecase.dart';
 import 'features/invites/domain/usecases/get_invites_for_context_usecase.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
@@ -213,12 +215,23 @@ Future<void> main() async {
         Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
         Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read())),
         Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
-        Provider<CompleteChallengeUseCase>(create: (context) => CompleteChallengeUseCase(userProfileRepository: context.read(), challengeRepository: context.read())),
+
+        // ** KORREKTE REIHENFOLGE **
+        // 1. Zuerst die Repositories, die von nichts anderem hier abhängen
+        Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
+        Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
+
+        // 2. Dann die Use Cases, die von den Repositories abhängen
+        Provider<CompleteChallengeUseCase>(
+          create: (context) => CompleteChallengeUseCase(
+            userProfileRepository: context.read(),
+            challengeRepository: context.read(),
+            progressRepository: context.read(),
+          ),
+        ),
         Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
         Provider<SearchLocationUseCase>(create: (context) => SearchLocationUseCase(context.read())),
         Provider<GetLlmFeedbackUseCase>(create: (context) => GetLlmFeedbackUseCase(context.read())),
-        Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
-        Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
         Provider<StartChallengeUseCase>(create: (context) => StartChallengeUseCase(context.read())),
         Provider<WatchChallengeProgressUseCase>(create: (context) => WatchChallengeProgressUseCase(context.read())),
         Provider<UpdateTaskProgressUseCase>(create: (context) => UpdateTaskProgressUseCase(context.read())),
@@ -232,6 +245,8 @@ Future<void> main() async {
         ),
         Provider<ToggleCheckboxTaskUseCase>(create: (context) => ToggleCheckboxTaskUseCase(context.read())),
         Provider<RefreshStepsForTaskUseCase>(create: (context) => RefreshStepsForTaskUseCase(context.read(), context.read<UpdateTaskProgressUseCase>())),
+        Provider<CreateGroupChallengeProgressUseCase>(create: (context) => CreateGroupChallengeProgressUseCase(context.read())),
+        Provider<AddParticipantToGroupChallengeUseCase>(create: (context) => AddParticipantToGroupChallengeUseCase(context.read())),
 
         // SDG
         Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
@@ -277,34 +292,31 @@ Future<void> main() async {
 
         // INVITES
         Provider<InvitesRepository>(create: (context) => InvitesRepositoryImpl(remoteDataSource: InvitesRemoteDataSourceImpl(firestore: context.read()))),
-        Provider<CreateChallengeInviteUseCase>(
-          create: (context) => CreateChallengeInviteUseCase(
-            context.read<InvitesRepository>(),
-            context.read<GetChallengeByIdUseCase>(), // <-- Hinzufügen
-            context.read<Uuid>(),
-          ),
-        ),
         Provider<AcceptChallengeInviteUseCase>(
           create: (context) => AcceptChallengeInviteUseCase(
             context.read<InvitesRepository>(),
             context.read<StartChallengeUseCase>(),
+            context.read<AcceptChallengeUseCase>(),
+            context.read<CreateGroupChallengeProgressUseCase>(),
+            context.read<AddParticipantToGroupChallengeUseCase>(),
           ),
         ),
-
-        Provider<DeclineChallengeInviteUseCase>(
-          create: (context) => DeclineChallengeInviteUseCase(
+        Provider<CreateChallengeInviteUseCase>(
+          create: (context) => CreateChallengeInviteUseCase(
             context.read<InvitesRepository>(),
+            context.read<GetChallengeByIdUseCase>(),
+            context.read<StartChallengeUseCase>(),
+            context.read<AcceptChallengeUseCase>(),
+            context.read<Uuid>(),
           ),
         ),
-        Provider<GetInvitesForContextUseCase>(
-          create: (context) => GetInvitesForContextUseCase(
-            context.read<InvitesRepository>(),
-          ),
-        ),
+        Provider<DeclineChallengeInviteUseCase>(create: (context) => DeclineChallengeInviteUseCase(context.read<InvitesRepository>())),
+        Provider<GetInvitesForContextUseCase>(create: (context) => GetInvitesForContextUseCase(context.read<InvitesRepository>())),
         Provider<GetCombinedChatItemsUseCase>(
           create: (context) => GetCombinedChatItemsUseCase(
             context.read<GetGroupMessagesStreamUseCase>(),
             context.read<GetInvitesForContextUseCase>(),
+            context.read<ChallengeProgressRepository>(),
           ),
         ),
 
@@ -349,9 +361,8 @@ Future<void> main() async {
             selectImageForTaskUseCase: context.read<SelectImageForTaskUseCase>(),
             toggleCheckboxTaskUseCase: context.read<ToggleCheckboxTaskUseCase>(),
             refreshStepsForTaskUseCase: context.read<RefreshStepsForTaskUseCase>(),
-
           ),
-          update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile), // Assumes an `updateWith` method exists. Should be refactored.
+          update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile),
         ),
 
         ChangeNotifierProvider<SdgListProvider>(create: (context) => SdgListProvider(getAllSdgListItemsUseCase: context.read<GetAllSdgListItemsUseCase>())),
@@ -362,7 +373,7 @@ Future<void> main() async {
             getOngoingChallengePreviewsUseCase: context.read<GetOngoingChallengePreviewsUseCase>(),
             getCompletedChallengePreviewsUseCase: context.read<GetCompletedChallengePreviewsUseCase>(),
           ),
-          update: (context, auth, profile, challenges, sdgList, previous) => previous!..updateDependencies(auth, profile, challenges, sdgList), // Assumes an `updateWith` method exists. Should be refactored.
+          update: (context, auth, profile, challenges, sdgList, previous) => previous!..updateDependencies(auth, profile, challenges, sdgList),
         ),
 
         // Refactored Chat providers

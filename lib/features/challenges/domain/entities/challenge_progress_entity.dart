@@ -8,7 +8,7 @@ class ChallengeProgressEntity extends Equatable {
   final DateTime startedAt;
   final DateTime? endsAt; // Optional für zeitlich begrenzte Challenges
   final Map<String, TaskProgressEntity> taskStates; // Key: Task Index als String
-
+  final String? inviteId; // <-- NEU: Um den Bezug zur Einladung herzustellen
 
   const ChallengeProgressEntity({
     required this.id,
@@ -17,8 +17,9 @@ class ChallengeProgressEntity extends Equatable {
     required this.startedAt,
     this.endsAt,
     required this.taskStates,
+    this.inviteId,
   });
 
   @override
-  List<Object?> get props => [id, userId, challengeId, startedAt, endsAt, taskStates];
+  List<Object?> get props => [id, userId, challengeId, startedAt, endsAt, taskStates, inviteId];
 }

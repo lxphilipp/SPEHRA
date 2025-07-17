@@ -31,5 +31,5 @@ abstract class UserProfileRepository {
     required String challengeId,
     required int pointsEarned,
   });
-
+  Future<void> addBonusPoints({required List<String> userIds, required int points});
 }

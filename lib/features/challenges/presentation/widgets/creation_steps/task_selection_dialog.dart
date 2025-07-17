@@ -21,7 +21,7 @@ class TaskSelectionDialog extends StatelessWidget {
         title: title,
         formContent: TextFormField(
           controller: descriptionController,
-          decoration: InputDecoration(labelText: 'Aufgabenbeschreibung', hintText: hint),
+          decoration: InputDecoration(labelText: 'Task Description', hintText: hint),
           autofocus: true,
         ),
         onSave: () {
@@ -40,7 +40,7 @@ class TaskSelectionDialog extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => TaskConfigurationDialog(
-        title: 'Schrittzähler-Aufgabe erstellen',
+        title: 'Create Step Counter Task',
         formContent: StepCounterTaskForm(
           descriptionController: descriptionController,
           stepsController: stepsController,
@@ -68,7 +68,7 @@ class TaskSelectionDialog extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) => TaskConfigurationDialog(
-        title: 'Standort-Aufgabe erstellen',
+        title: 'Create Location Task',
         formContent: LocationVisitTaskForm(
           descriptionController: descriptionController,
           radiusController: radiusController,
@@ -99,37 +99,37 @@ class TaskSelectionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Wähle einen Aufgabentyp'),
+      title: const Text('Select a Task Type'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Iconsax.task_square),
-              title: const Text('Einfache Aufgabe'),
+              title: const Text('Simple Task'),
               onTap: () {
-                _showSimpleTaskConfigDialog(context, 'Einfache Aufgabe erstellen', 'z.B. "Regionales Gemüse kaufen"', (desc) {
+                _showSimpleTaskConfigDialog(context, 'Create Simple Task', 'e.g. "Buy regional vegetables"', (desc) {
                   challengeProvider.addTaskToChallenge(CheckboxTask(description: desc));
                 });
               },
             ),
             ListTile(
               leading: const Icon(Iconsax.camera),
-              title: const Text('Foto-Beweis'),
+              title: const Text('Photo Proof'),
               onTap: () {
-                _showSimpleTaskConfigDialog(context, 'Foto-Aufgabe erstellen', 'z.B. "Fotografiere dein Insektenhotel"', (desc) {
+                _showSimpleTaskConfigDialog(context, 'Create Photo Task', 'e.g. "Photograph your insect hotel"', (desc) {
                   challengeProvider.addTaskToChallenge(ImageUploadTask(description: desc));
                 });
               },
             ),
             ListTile(
               leading: const Icon(Iconsax.ruler),
-              title: const Text('Schrittzähler'),
+              title: const Text('Step Counter'),
               onTap: () => _showStepCounterDialog(context),
             ),
             ListTile(
               leading: const Icon(Iconsax.location),
-              title: const Text('Standortbesuch'),
+              title: const Text('Location Visit'),
               onTap: () => _showLocationVisitDialog(context),
             ),
           ],
@@ -137,7 +137,7 @@ class TaskSelectionDialog extends StatelessWidget {
       ),
 
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Schließen'))
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close'))
       ],
     );
   }

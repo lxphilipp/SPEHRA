@@ -33,4 +33,13 @@ class InvitesRepositoryImpl implements InvitesRepository {
       return models.map((model) => model.toEntity()).toList();
     });
   }
+  @override
+  Future<InviteEntity?> updateAndGetInvite({required String inviteId, required String recipientId, required InviteStatus newStatus}) async {
+    final model = await remoteDataSource.updateAndGetInvite(
+      inviteId: inviteId,
+      recipientId: recipientId,
+      newStatus: newStatus.name, // Enum in String umwandeln
+    );
+    return model?.toEntity(); // Model in Entity umwandeln
+  }
 }

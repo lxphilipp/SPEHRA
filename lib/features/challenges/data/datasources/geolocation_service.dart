@@ -1,40 +1,40 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
-/// Ein Service, der die Kommunikation mit dem Geolocator-Paket kapselt.
+/// A service that encapsulates communication with the Geolocator package.
 class GeolocationService {
 
-  /// Holt die aktuelle Position des Nutzers.
-  /// Diese Methode kümmert sich um die Abfrage von Berechtigungen.
+  /// Fetches the user's current position.
+  /// This method handles permission requests.
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Prüfen, ob die Standortdienste des Geräts aktiviert sind.
+    // Check if location services are enabled on the device.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Standortdienste sind deaktiviert.');
+      return Future.error('Location services are disabled.');
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Standortberechtigungen wurden verweigert.');
+        return Future.error('Location permissions were denied.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Berechtigungen wurden dauerhaft verweigert.
+      // Permissions are permanently denied.
       return Future.error(
-          'Standortberechtigungen sind dauerhaft verweigert, wir können keine Anfrage stellen.');
+          'Location permissions are permanently denied, we cannot request them.');
     }
 
-    // Wenn wir hier ankommen, sind die Berechtigungen erteilt.
+    // If we reach here, permissions are granted.
     return await Geolocator.getCurrentPosition();
   }
 
-  /// Berechnet die Distanz zwischen zwei geografischen Punkten in Metern.
+  /// Calculates the distance between two geographical points in meters.
   double getDistanceInMeters(LatLng start, LatLng end) {
     return Geolocator.distanceBetween(
         start.latitude, start.longitude,
@@ -42,8 +42,8 @@ class GeolocationService {
     );
   }
 
-  /// Die primäre öffentliche Methode. Prüft, ob der Nutzer sich innerhalb eines
-  /// bestimmten Radius um ein Ziel befindet.
+  /// The primary public method. Checks if the user is within a
+  /// certain radius of a target location.
   Future<bool> isUserAtLocation(LatLng targetLocation, double radiusInMeters) async {
     try {
       final currentPosition = await _determinePosition();
@@ -55,7 +55,7 @@ class GeolocationService {
       return distance <= radiusInMeters;
 
     } catch (e) {
-      // Leitet Fehler (z.B. keine Berechtigung) an den Aufrufer weiter.
+      // Forwards errors (e.g., no permission) to the caller.
       rethrow;
     }
   }

@@ -37,6 +37,19 @@ class InviteModel {
     );
   }
 
+  factory InviteModel.fromMap(Map<String, dynamic> data, String id) {
+    return InviteModel(
+      id: id,
+      inviterId: data['inviterId'] ?? '',
+      targetId: data['targetId'] ?? '',
+      targetTitle: data['targetTitle'] ?? '',
+      context: data['context'] ?? 'direct',
+      contextId: data['contextId'],
+      recipients: Map<String, String>.from(data['recipients'] ?? {}),
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+    );
+  }
+
   /// Konvertiert das Model in eine Map für Firestore
   Map<String, dynamic> toMap() {
     return {

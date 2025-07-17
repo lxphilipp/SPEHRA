@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-/// Abstrakte Basisklasse für alle nachverfolgbaren Aufgabentypen in einer Challenge.
-/// Jede Aufgabe hat eine Beschreibung und einen Abschluss-Status.
+/// Abstract base class for all trackable task types in a Challenge.
+/// Each task has a description and a completion status.
 abstract class TrackableTask extends Equatable {
   final String description;
   final bool isCompleted;
@@ -12,12 +12,12 @@ abstract class TrackableTask extends Equatable {
   List<Object?> get props => [description, isCompleted];
 }
 
-/// Eine einfache Aufgabe, die durch Abhaken erledigt wird.
+/// A simple task that is completed by checking a box.
 class CheckboxTask extends TrackableTask {
   const CheckboxTask({required super.description, super.isCompleted});
 }
 
-/// Eine Aufgabe, die das Erreichen einer bestimmten Schrittzahl erfordert.
+/// A task that requires reaching a certain number of steps.
 class StepCounterTask extends TrackableTask {
   final int targetSteps;
 
@@ -31,7 +31,7 @@ class StepCounterTask extends TrackableTask {
   List<Object?> get props => [...super.props, targetSteps];
 }
 
-/// Eine Aufgabe, die den Besuch eines geografischen Ortes erfordert.
+/// A task that requires visiting a geographical location.
 class LocationVisitTask extends TrackableTask {
   final double latitude;
   final double longitude;
@@ -49,9 +49,9 @@ class LocationVisitTask extends TrackableTask {
   List<Object?> get props => [...super.props, latitude, longitude, radius];
 }
 
-/// Eine Aufgabe, die das Hochladen eines Bildes als Beweis erfordert.
+/// A task that requires uploading an image as proof.
 class ImageUploadTask extends TrackableTask {
-  final String? uploadedImageUrl; // Speichert die URL des hochgeladenen Bildes
+  final String? uploadedImageUrl; // Stores the URL of the uploaded image
 
   const ImageUploadTask({
     required super.description,

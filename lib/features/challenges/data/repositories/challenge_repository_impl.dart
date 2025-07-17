@@ -90,10 +90,10 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
 
   @override
   Future<List<AddressEntity>> searchLocation(String query) async {
-    // 1. Daten von der DataSource als reines Daten-Model holen
+    // 1. Fetch data from the DataSource as a pure data model
     final addressModels = await remoteDataSource.searchLocation(query);
 
-    // 2. HIER PASSIERT DIE ÜBERSETZUNG: Model -> Entity
+    // 2. HERE THE TRANSLATION HAPPENS: Model -> Entity
     return addressModels.map((model) => AddressEntity(
       displayName: model.displayName,
       point: LatLng(model.latitude, model.longitude),

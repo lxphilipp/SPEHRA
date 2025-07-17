@@ -45,7 +45,7 @@ class TaskProgressListItem extends StatelessWidget {
     );
   }
 
-  /// Baut das Icon auf der linken Seite.
+  /// Builds the icon on the left side.
   Icon _buildLeadingIcon(bool isCompleted, ThemeData theme) {
     if (isCompleted) {
       return Icon(Iconsax.tick_circle, color: Colors.green);
@@ -68,7 +68,7 @@ class TaskProgressListItem extends StatelessWidget {
     return Icon(iconData, color: theme.colorScheme.primary);
   }
 
-  /// Baut den Untertitel, falls vorhanden (z.B. für Bilder).
+  /// Builds the subtitle, if available (e.g., for images).
   Widget? _buildSubtitle() {
     final imagePath = (taskProgress?.progressValue is String)
         ? taskProgress!.progressValue as String
@@ -90,38 +90,38 @@ class TaskProgressListItem extends StatelessWidget {
     return null;
   }
 
-  /// Baut das interaktive Widget auf der rechten Seite.
+  /// Builds the interactive widget on the right side.
   Widget _buildTrailingWidget(BuildContext context, ChallengeProvider provider, bool isCompleted, ThemeData theme) {
-    // Das ist der Schlüssel: Wir verwenden einen AnimatedSwitcher.
+    // This is the key: We use an AnimatedSwitcher.
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300), // Dauer der Animation
+      duration: const Duration(milliseconds: 300), // Animation duration
       transitionBuilder: (Widget child, Animation<double> animation) {
-        // Eine einfache Ein-/Ausblend-Animation
+        // A simple fade-in/fade-out animation
         return FadeTransition(opacity: animation, child: child);
       },
       child: _buildCurrentTrailingState(context, provider, isCompleted, theme),
     );
   }
 
-  /// Diese neue Hilfsmethode entscheidet, welches Widget (Icon oder Ladekreis)
-  /// im AnimatedSwitcher angezeigt werden soll.
+  /// This new helper method decides which widget (icon or loading circle)
+  /// should be displayed in the AnimatedSwitcher.
   Widget _buildCurrentTrailingState(BuildContext context, ChallengeProvider provider, bool isCompleted, ThemeData theme) {
-    // Wir prüfen, ob GENAU DIESER Task gerade lädt.
+    // We check if EXACTLY THIS task is currently loading.
     if (provider.isVerifyingTask(taskIndex)) {
-      // WICHTIG: Wir geben dem Ladekreis einen festen Container,
-      // der die gleiche Größe hat wie die Klickfläche eines IconButtons,
-      // um das "Springen" zu verhindern.
+      // IMPORTANT: We give the loading circle a fixed container,
+      // which has the same size as the clickable area of an IconButton,
+      // to prevent "jumping".
       return Container(
-        key: const ValueKey('loader'), // Eindeutiger Schlüssel für die Animation
+        key: const ValueKey('loader'), // Unique key for the animation
         width: 48.0,
         height: 48.0,
-        padding: const EdgeInsets.all(12.0), // Padding, um den Kreis kleiner zu machen
+        padding: const EdgeInsets.all(12.0), // Padding to make the circle smaller
         child: const CircularProgressIndicator(strokeWidth: 2.0),
       );
     }
 
-    // Wenn nicht geladen wird, bauen wir das passende Icon-Widget.
-    // Wir geben ihm einen Schlüssel, damit der AnimatedSwitcher weiß, dass es ein neues Widget ist.
+    // If not loading, we build the appropriate Icon widget.
+    // We give it a key so the AnimatedSwitcher knows it's a new widget.
     switch (taskDefinition) {
       case CheckboxTask():
         return Checkbox(
@@ -162,7 +162,7 @@ class TaskProgressListItem extends StatelessWidget {
         return IconButton(
           key: const ValueKey('image'),
           icon: const Icon(Iconsax.camera),
-          tooltip: "Bild als Beweis auswählen",
+          tooltip: "Select image as proof",
           onPressed: () => provider.selectImageForTask(taskIndex),
         );
 

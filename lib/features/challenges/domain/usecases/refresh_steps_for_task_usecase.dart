@@ -12,14 +12,14 @@ class RefreshStepsForTaskUseCase {
 
   Future<void> call(RefreshStepsParams params) async {
     try {
-      // 1. Hol die aktuellen Schritte über das abstrakte Repository
+      // 1. Get current steps via the abstract repository
       final stepsToday = await _deviceTrackingRepository.getTodaysSteps();
 
-      // 2. Hol die Aufgaben-Definition, um das Ziel zu kennen
+      // 2. Get the task definition to know the target
       final taskDefinition = params.taskDefinition as StepCounterTask;
       final bool isCompleted = stepsToday >= taskDefinition.targetSteps;
 
-      // 3. Rufe den Update-Spezialisten auf, um den Fortschritt zu speichern
+      // 3. Call the update specialist to save the progress
       await _updateTaskProgressUseCase(UpdateTaskProgressParams(
         progressId: params.progressId,
         taskIndex: params.taskIndex,
@@ -28,9 +28,9 @@ class RefreshStepsForTaskUseCase {
       ));
 
     } catch (e) {
-      // Fehlerbehandlung, z.B. Logging
-      print("Fehler im RefreshStepsForTaskUseCase: $e");
-      // Optional: Exception weiterwerfen, damit der Provider sie fangen kann
+      // Error handling, e.g., logging
+      print("Error in RefreshStepsForTaskUseCase: $e");
+      // Optional: Re-throw exception so the Provider can catch it
       rethrow;
     }
   }

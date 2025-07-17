@@ -66,7 +66,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
       newFilterState = await showDialog<ChallengeFilterState>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Challenges filtern"),
+          title: const Text("Filter Challenges"),
           content: SizedBox(
             width: 400,
             child: ChallengeFilterContent(
@@ -75,8 +75,8 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, const ChallengeFilterState()), child: const Text("Zurücksetzen")),
-            TextButton(onPressed: () => Navigator.pop(context, dialogFilterState), child: const Text("Anwenden")),
+            TextButton(onPressed: () => Navigator.pop(context, const ChallengeFilterState()), child: const Text("Reset")),
+            TextButton(onPressed: () => Navigator.pop(context, dialogFilterState), child: const Text("Apply")),
           ],
         ),
       );
@@ -94,7 +94,7 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
     final authProvider = context.read<AuthenticationProvider>();
 
     if (!authProvider.isLoggedIn) {
-      return const Center(child: Text("Bitte einloggen, um Challenges zu sehen."));
+      return const Center(child: Text("Please log in to see challenges."));
     }
 
     return Column(
@@ -112,12 +112,12 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
                 children: [
                   IconButton(
                     icon: const Icon(Iconsax.filter),
-                    tooltip: "Filtern",
+                    tooltip: "Filter",
                     onPressed: () => _showAdaptiveFilterDialog(challengeProvider),
                   ),
                   PopupMenuButton<String>(
                     icon: const Icon(Iconsax.sort),
-                    tooltip: "Sortieren nach...",
+                    tooltip: "Sort by...",
                     onSelected: (String value) {
                       final parts = value.split('_');
                       final criteria = parts[0];
@@ -131,29 +131,29 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                       const PopupMenuItem<String>(
                         value: 'createdAt_desc',
-                        child: Text('Neueste zuerst'),
+                        child: Text('Newest first'),
                       ),
                       const PopupMenuItem<String>(
                         value: 'createdAt_asc',
-                        child: Text('Älteste zuerst'),
+                        child: Text('Oldest first'),
                       ),
                       const PopupMenuDivider(),
                       const PopupMenuItem<String>(
                         value: 'points_desc',
-                        child: Text('Meiste Punkte'),
+                        child: Text('Most points'),
                       ),
                       const PopupMenuItem<String>(
                         value: 'points_asc',
-                        child: Text('Wenigste Punkte'),
+                        child: Text('Fewest points'),
                       ),
                       const PopupMenuDivider(),
                       const PopupMenuItem<String>(
                         value: 'difficulty_asc',
-                        child: Text('Einfachste zuerst'),
+                        child: Text('Easiest first'),
                       ),
                       const PopupMenuItem<String>(
                         value: 'difficulty_desc',
-                        child: Text('Schwerste zuerst'),
+                        child: Text('Hardest first'),
                       ),
                     ],
                   ),
@@ -177,14 +177,14 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
           child: Consumer<ChallengeProvider>(
             builder: (context, provider, child) {
               if (widget.isSelectionMode) {
-                return _buildListView(provider.discoverChallenges, "Keine Challenges zur Auswahl gefunden.");
+                return _buildListView(provider.discoverChallenges, "No challenges found for selection.");
               }
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildListView(provider.discoverChallenges, "Keine neuen Challenges gefunden."),
-                  _buildListView(provider.ongoingChallenges, "Du hast keine laufenden Challenges."),
-                  _buildListView(provider.completedChallenges, "Du hast noch keine Challenges abgeschlossen."),
+                  _buildListView(provider.discoverChallenges, "No new challenges found."),
+                  _buildListView(provider.ongoingChallenges, "You have no ongoing challenges."),
+                  _buildListView(provider.completedChallenges, "You have not completed any challenges yet."),
                 ],
               );
             },
@@ -256,7 +256,7 @@ class __FilterScreenState extends State<_FilterScreen> {
             onPressed: () {
               Navigator.of(context).pop(_currentFilterState);
             },
-            child: const Text('Anwenden'),
+            child: const Text('Apply'),
           ),
         ],
       ),

@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'location_picker_sheet.dart'; // Import des BottomSheet-Widgets
+import 'location_picker_sheet.dart'; // Import of the BottomSheet widget
 
 class LocationVisitTaskForm extends StatefulWidget {
   final TextEditingController descriptionController;
@@ -39,7 +39,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
     _currentCenter = widget.initialLocation;
     _fetchAddressForLocation(_currentCenter);
 
-    // Initialen Wert für den Radius-Controller setzen
+    // Set initial value for the radius controller
     widget.radiusController.text = _currentRadius.toStringAsFixed(0);
 
     widget.radiusController.addListener(() {
@@ -57,7 +57,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
     super.dispose();
   }
 
-  // In LocationVisitTaskForm - ändere den Aufruf:
+  // In LocationVisitTaskForm - change the call:
   void _openLocationPicker() async {
     FocusScope.of(context).unfocus();
 
@@ -89,7 +89,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
 
   Future<void> _fetchAddressForLocation(LatLng location) async {
     setState(() {
-      _addressController.text = 'Adresse wird geladen...';
+      _addressController.text = 'Loading address...';
     });
 
     final url = Uri.parse(
@@ -100,16 +100,16 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          _addressController.text = data['display_name'] ?? 'Adresse nicht gefunden';
+          _addressController.text = data['display_name'] ?? 'Address not found';
         });
       } else {
         setState(() {
-          _addressController.text = 'Adresse nicht verfügbar';
+          _addressController.text = 'Address not available';
         });
       }
     } catch (e) {
       setState(() {
-        _addressController.text = 'Fehler beim Laden der Adresse';
+        _addressController.text = 'Error loading address';
       });
     }
   }
@@ -122,13 +122,13 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
       children: [
         TextFormField(
           controller: widget.descriptionController,
-          decoration: const InputDecoration(labelText: 'Aufgabenbeschreibung'),
+          decoration: const InputDecoration(labelText: 'Task Description'),
           autofocus: true,
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: widget.radiusController,
-          decoration: const InputDecoration(labelText: 'Radius in Metern', hintText: 'z.B. 50'),
+          decoration: const InputDecoration(labelText: 'Radius in meters', hintText: 'e.g. 50'),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         ),
@@ -137,7 +137,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
           controller: _addressController,
           readOnly: true,
           decoration: const InputDecoration(
-            labelText: 'Standort',
+            labelText: 'Location',
             suffixIcon: Icon(Icons.map_outlined),
           ),
           onTap: _openLocationPicker,

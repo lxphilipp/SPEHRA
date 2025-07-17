@@ -80,7 +80,7 @@ class ChallengeModel extends Equatable {
   List<Object?> get props => [id, title, description, categories, authorId, createdAt, tasks, llmFeedback];
 }
 
-// --- Hilfsfunktionen für die Task-Konvertierung ---
+// --- Helper functions for Task conversion ---
 
 TrackableTask _mapToTask(Map<String, dynamic> map) {
   final type = map['type'];
@@ -101,7 +101,7 @@ TrackableTask _mapToTask(Map<String, dynamic> map) {
     case 'image_upload':
       return ImageUploadTask(description: map['description']);
     default:
-      throw Exception('Unbekannter Task-Typ: $type');
+      throw Exception('Unknown Task Type: $type');
   }
 }
 
@@ -118,5 +118,5 @@ Map<String, dynamic> _taskToMap(TrackableTask task) {
   if (task is ImageUploadTask) {
     return {'type': 'image_upload', 'description': task.description};
   }
-  throw Exception('UnknownTask-Type: ${task.runtimeType}');
+  throw Exception('Unknown Task-Type: ${task.runtimeType}');
 }

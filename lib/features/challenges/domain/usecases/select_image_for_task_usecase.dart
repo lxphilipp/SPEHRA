@@ -24,7 +24,7 @@ class SelectImageForTaskUseCase {
       }
       return null;
     } catch (e) {
-      print("Fehler im SelectImageForTaskUseCase: $e");
+      print("Error in SelectImageForTaskUseCase: $e");
       return null;
     }
   }

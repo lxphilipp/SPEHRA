@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import des neuen Widgets
+import '../llm_feedback_widget.dart'; // Import of the new widget
 
 class Step1TitlePage extends StatefulWidget {
   const Step1TitlePage({super.key});
@@ -29,7 +29,7 @@ class _Step1TitlePageState extends State<Step1TitlePage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<ChallengeProvider>();
-    // Wir verwenden `context.watch` hier, damit das Widget neu gebaut wird, wenn sich das Feedback ändert.
+    // We use `context.watch` here so the widget rebuilds when the feedback changes.
     final feedbackData = context.watch<ChallengeProvider>().llmFeedbackData['title'];
 
     return Padding(
@@ -39,20 +39,20 @@ class _Step1TitlePageState extends State<Step1TitlePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Zuerst: Welchen Titel soll deine Challenge haben?',
+            'First: What title should your challenge have?',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Ein guter Titel ist kurz, klar und motivierend.',
+            'A good title is short, clear, and motivating.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 32),
           TextFormField(
             controller: _controller,
             decoration: const InputDecoration(
-              labelText: 'Challenge-Titel',
-              hintText: 'z.B. "Müll sammeln im Stadtpark"',
+              labelText: 'Challenge Title',
+              hintText: 'e.g. "Collecting trash in the city park"',
             ),
             onChanged: (value) {
               provider.updateChallengeInProgress(title: value);

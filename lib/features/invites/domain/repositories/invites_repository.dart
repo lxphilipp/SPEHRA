@@ -14,4 +14,5 @@ abstract class InvitesRepository {
   /// Liefert einen Stream aller Einladungen, die für einen bestimmten Chat-Kontext
   /// (z.B. einen Gruppenchat) relevant sind.
   Stream<List<InviteEntity>> getInvitesForContext(String contextId);
+  Future<InviteEntity?> updateAndGetInvite({required String inviteId, required String recipientId, required InviteStatus newStatus});
 }

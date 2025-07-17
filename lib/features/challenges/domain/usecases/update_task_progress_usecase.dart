@@ -7,14 +7,18 @@ class UpdateTaskProgressUseCase {
 
   UpdateTaskProgressUseCase(this._repository);
 
-  Future<void> call(UpdateTaskProgressParams params) {
-    // Logik, um zu bestimmen, ob der Task nun abgeschlossen ist
+  Future<void> call(UpdateTaskProgressParams params) async {
+    // Logic to determine if the task is now completed
     final newState = TaskProgressEntity(
       isCompleted: params.isCompleted,
       progressValue: params.newValue,
       completedAt: params.isCompleted ? DateTime.now() : null,
     );
-    return _repository.updateTaskState(params.progressId, params.taskIndex.toString(), newState);
+    await _repository.updateTaskState(params.progressId, params.taskIndex.toString(), newState);
+    final individualProgress = await _repository.watchChallengeProgress(params.progressId).first;
+    if (individualProgress?.inviteId != null) {
+      await _repository.incrementGroupProgress(individualProgress!.inviteId!);
+    }
   }
 }
 

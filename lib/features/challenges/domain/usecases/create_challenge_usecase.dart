@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
-import '../entities/trackable_task.dart'; // Wichtig: Import der neuen Tasks
+import '../entities/trackable_task.dart'; // Important: Import of new tasks
 import '../repositories/challenge_repository.dart';
 
-/// Dieser Use Case kapselt die Logik zum Erstellen einer neuen Challenge.
-/// Er nimmt die notwendigen Parameter entgegen und leitet sie an das Repository weiter.
+/// This Use Case encapsulates the logic for creating a new Challenge.
+/// It takes the necessary parameters and forwards them to the repository.
 class CreateChallengeUseCase implements UseCase<String?, CreateChallengeParams> {
   final ChallengeRepository repository;
 
@@ -24,8 +24,8 @@ class CreateChallengeUseCase implements UseCase<String?, CreateChallengeParams> 
   }
 }
 
-/// Ein Daten-Container-Objekt, das die Parameter für die Erstellung einer Challenge bündelt.
-/// Dies macht den Code sauberer und besser lesbar als eine lange Liste von Parametern.
+/// A data container object that bundles the parameters for creating a challenge.
+/// This makes the code cleaner and more readable than a long list of parameters.
 class CreateChallengeParams extends Equatable {
   final String title;
   final String description;

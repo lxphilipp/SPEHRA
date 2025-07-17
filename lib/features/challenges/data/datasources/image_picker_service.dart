@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-/// Ein abstrakter Vertrag, der definiert, was der Service können muss.
-/// Der Domain-Layer wird nur dieses Interface kennen.
+/// An abstract contract that defines what the service must be able to do.
+/// The domain layer will only know this interface.
 abstract class ImagePickerService {
   Future<File?> pickImageFromGallery();
 }
 
 
-/// Die konkrete Implementierung, die das image_picker-Paket verwendet.
+/// The concrete implementation that uses the image_picker package.
 class ImagePickerServiceImpl implements ImagePickerService {
   final ImagePicker _picker = ImagePicker();
 
@@ -17,18 +17,18 @@ class ImagePickerServiceImpl implements ImagePickerService {
     try {
       final pickedFile = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80, // Bilder leicht komprimieren
-        maxWidth: 1024,  // Bilder für die Anzeige verkleinern
+        imageQuality: 80, // Compress images slightly
+        maxWidth: 1024,  // Resize images for display
       );
 
       if (pickedFile != null) {
         return File(pickedFile.path);
       }
-      return null; // Nutzer hat die Auswahl abgebrochen
+      return null; // User cancelled selection
     } catch (e) {
-      // Fehler beim Öffnen der Galerie oder bei Berechtigungen
+      // Error opening gallery or with permissions
       print("ImagePickerService Error: $e");
-      rethrow; // Fehler weitergeben, damit der Use Case ihn behandeln kann
+      rethrow; // Re-throw error so the Use Case can handle it
     }
   }
 }

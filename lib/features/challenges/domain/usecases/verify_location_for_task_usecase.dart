@@ -15,25 +15,25 @@ class VerifyLocationForTaskUseCase {
       final targetTask = params.taskDefinition as LocationVisitTask;
       final targetLocation = LatLng(targetTask.latitude, targetTask.longitude);
 
-      // Nutzt jetzt die abstrakte Methode des Repositories
+      // Now uses the abstract method of the repository
       final isAtLocation = await _deviceTrackingRepository.isUserAtLocation(
           targetLocation,
           targetTask.radius
       );
 
-      // 2. Wenn erfolgreich, den Update-UseCase aufrufen
+      // 2. If successful, call the Update-UseCase
       if (isAtLocation) {
         await _updateTaskProgressUseCase(UpdateTaskProgressParams(
           progressId: params.progressId,
           taskIndex: params.taskIndex,
           isCompleted: true,
-          newValue: "Ort am ${DateTime.now()} bestätigt",
+          newValue: "Location confirmed on ${DateTime.now()}",
         ));
       }
       return isAtLocation;
 
     } catch (e) {
-      // Fehlerbehandlung
+      // Error handling
       return false;
     }
   }
@@ -54,7 +54,7 @@ class VerifyLocationParams extends Equatable {
   List<Object?> get props => [progressId, taskIndex, taskDefinition];
 }
 
-// Ergänzung im GeolocationService:
+// Addition in GeolocationService:
 // class GeolocationService {
 //   ...
 //   Future<bool> isUserAtLocation(LatLng target, double radius) async { ... }

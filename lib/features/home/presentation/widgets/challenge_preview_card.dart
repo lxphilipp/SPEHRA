@@ -70,7 +70,7 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      // KORREKTUR: Getter verwenden
+                      // CORRECTION: Use getter
                       challenge.calculatedDifficulty,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -90,7 +90,7 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        // KORREKTUR: Getter verwenden
+                        // CORRECTION: Use getter
                         challenge.calculatedPoints.toString(),
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold

@@ -1,15 +1,15 @@
 // lib/features/challenges/domain/repositories/device_tracking_repository.dart
 import 'package:latlong2/latlong.dart';
 
-/// Ein abstrakter Vertrag für alle gerätespezifischen Tracking-Funktionen.
-/// Die Domain-Schicht hängt nur von diesem Interface ab.
+/// An abstract contract for all device-specific tracking functions.
+/// The domain layer only depends on this interface.
 abstract class DeviceTrackingRepository {
-  /// Holt die Anzahl der Schritte, die heute gemacht wurden.
+  /// Fetches the number of steps taken today.
   Future<int> getTodaysSteps();
 
-  /// Prüft, ob sich der Nutzer an einem bestimmten Ort befindet.
+  /// Checks if the user is at a specific location.
   Future<bool> isUserAtLocation(LatLng targetLocation, double radiusInMeters);
 
-// Hier könntest du zukünftig weitere Methoden hinzufügen, z.B. für Bild-Uploads.
+// Here you could add more methods in the future, e.g., for image uploads.
 // Future<String> uploadChallengeProofImage(File image);
 }

@@ -24,6 +24,7 @@ class StartChallengeUseCase {
           ? DateTime.now().add(Duration(days: params.challenge.durationInDays!))
           : null,
       taskStates: initialTaskStates,
+      inviteId: params.inviteId,
     );
 
     return _progressRepository.createChallengeProgress(progress);
@@ -33,9 +34,14 @@ class StartChallengeUseCase {
 class StartChallengeParams extends Equatable {
   final String userId;
   final ChallengeEntity challenge;
+  final String? inviteId; // <-- HERE the parameter is defined
 
-  const StartChallengeParams({required this.userId, required this.challenge});
+  const StartChallengeParams({
+    required this.userId,
+    required this.challenge,
+    this.inviteId,
+  });
 
   @override
-  List<Object?> get props => [userId, challenge];
+  List<Object?> get props => [userId, challenge, inviteId];
 }

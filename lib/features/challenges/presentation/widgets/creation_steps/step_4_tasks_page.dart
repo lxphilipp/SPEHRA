@@ -16,7 +16,7 @@ class Step4TasksPage extends StatelessWidget {
     final tasks = challenge?.tasks ?? [];
     final feedbackData = provider.llmFeedbackData['tasks'];
 
-    // Helper, um das richtige Icon für jeden Task-Typ zu bekommen
+    // Helper to get the correct icon for each task type
     IconData getIconForTask(TrackableTask task) {
       if (task is CheckboxTask) return Iconsax.task_square;
       if (task is StepCounterTask) return Iconsax.ruler;
@@ -32,22 +32,22 @@ class Step4TasksPage extends StatelessWidget {
         children: [
           const SizedBox(height: 40),
           Text(
-            'Füge nun die Aufgaben hinzu.',
+            'Now add the tasks.',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Eine gute Challenge hat mindestens eine beweisbare Aufgabe (z.B. Foto-Upload oder Standortbesuch).',
+            'A good challenge has at least one verifiable task (e.g., photo upload or location visit).',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
 
-          // Button zum Hinzufügen einer neuen Aufgabe
+          // Button to add a new task
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: const Icon(Iconsax.add),
-              label: const Text('Aufgabe hinzufügen'),
+              label: const Text('Add Task'),
               onPressed: () {
                 showDialog(
                   context: context,
@@ -68,10 +68,10 @@ class Step4TasksPage extends StatelessWidget {
             onRetry: () => provider.requestLlmFeedback('tasks'),
           ),
 
-          // Liste der bereits hinzugefügten Aufgaben
+          // List of already added tasks
           Expanded(
             child: tasks.isEmpty
-                ? const Center(child: Text('Noch keine Aufgaben hinzugefügt.'))
+                ? const Center(child: Text('No tasks added yet.'))
                 : ListView.builder(
               itemCount: tasks.length,
               itemBuilder: (context, index) {

@@ -2,14 +2,14 @@ import '../../../../core/usecases/use_case.dart';
 import '../entities/challenge_entity.dart';
 import '../repositories/challenge_repository.dart';
 
-/// Dieser Use Case holt die Details einer einzelnen Challenge anhand ihrer ID.
+/// This Use Case fetches the details of a single challenge by its ID.
 class GetChallengeByIdUseCase implements UseCase<ChallengeEntity?, String> {
   final ChallengeRepository repository;
 
   GetChallengeByIdUseCase(this.repository);
 
-  /// Ruft eine Challenge anhand ihrer ID ab.
-  /// [params] ist hier direkt die challengeId als String.
+  /// Retrieves a challenge by its ID.
+  /// [params] here is directly the challengeId as a String.
   @override
   Future<ChallengeEntity?> call(String params) async {
     return await repository.getChallengeById(params);

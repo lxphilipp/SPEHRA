@@ -13,7 +13,7 @@ class Step5PreviewPage extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (challenge == null) {
-      return const Center(child: Text('Fehler: Keine Challenge in Bearbeitung.'));
+      return const Center(child: Text('Error: No challenge in progress.'));
     }
 
     return SingleChildScrollView(
@@ -22,17 +22,17 @@ class Step5PreviewPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Fast geschafft! Hier ist die Vorschau.',
+            'Almost done! Here is the preview',
             style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Überprüfe alles und veröffentliche deine Challenge, um andere zu inspirieren.',
+            'Review everything and publish your challenge to inspire others.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
 
-          // --- Zusammenfassungs-Karte ---
+          // --- Summary Card ---
           Card(
             elevation: 0,
             color: theme.colorScheme.surfaceContainerHighest,
@@ -41,15 +41,15 @@ class Step5PreviewPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Titel
+                  // Title
                   Text(challenge.title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
 
-                  // Beschreibung
+                  // Description
                   Text(challenge.description, style: theme.textTheme.bodyMedium),
                   const SizedBox(height: 16),
 
-                  // Kategorien
+                  // Categories
                   if (challenge.categories.isNotEmpty)
                     Wrap(
                       spacing: 8.0,
@@ -61,11 +61,11 @@ class Step5PreviewPage extends StatelessWidget {
                     ),
                   const Divider(height: 32),
 
-                  // Berechnete Werte
+                  // Calculated values
                   _buildStatRow(
                     context,
                     icon: Iconsax.star_1,
-                    label: 'Punkte',
+                    label: 'Points',
                     value: '${challenge.calculatedPoints} Pts',
                     color: Colors.amber,
                   ),
@@ -73,7 +73,7 @@ class Step5PreviewPage extends StatelessWidget {
                   _buildStatRow(
                     context,
                     icon: Iconsax.diagram,
-                    label: 'Schwierigkeit',
+                    label: 'Difficulty',
                     value: challenge.calculatedDifficulty,
                     color: Colors.blueAccent,
                   ),
@@ -83,8 +83,8 @@ class Step5PreviewPage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Liste der Aufgaben
-          Text('Aufgaben (${challenge.tasks.length})', style: theme.textTheme.titleMedium),
+          // List of tasks
+          Text('Tasks (${challenge.tasks.length})', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
           for (var task in challenge.tasks)
             ListTile(

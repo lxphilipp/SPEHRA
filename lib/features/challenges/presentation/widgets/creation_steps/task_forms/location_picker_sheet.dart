@@ -69,7 +69,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
       height: MediaQuery.of(context).size.height * 0.9,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ort und Radius festlegen'),
+          title: const Text('Set Location and Radius'),
           leading: const CloseButton(),
           centerTitle: true,
           elevation: 0,
@@ -118,7 +118,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               padding: const EdgeInsets.all(8.0),
               child: SearchAnchor.bar(
                 searchController: _searchController,
-                barHintText: 'Ort suchen...',
+                barHintText: 'Search location...',
                 suggestionsBuilder: (BuildContext context, SearchController controller) {
                   final query = controller.text;
 
@@ -138,14 +138,14 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                            title: Text('Suche läuft...'),
+                            title: Text('Searching...'),
                           );
                         }
 
                         if (snapshot.hasError) {
                           return const ListTile(
                             leading: Icon(Icons.error),
-                            title: Text('Fehler bei der Suche'),
+                            title: Text('Error during search'),
                           );
                         }
 
@@ -153,7 +153,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
 
                         if (results.isEmpty) {
                           return const ListTile(
-                            title: Text('Keine Ergebnisse gefunden'),
+                            title: Text('No results found'),
                           );
                         }
 
@@ -228,7 +228,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               }
             });
           },
-          label: const Text("Standort bestätigen"),
+          label: const Text("Confirm Location"),
           icon: const Icon(Iconsax.check),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

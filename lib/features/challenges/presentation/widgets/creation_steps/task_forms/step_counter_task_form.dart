@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Das Formular zur Konfiguration einer StepCounterTask.
+/// The form for configuring a StepCounterTask.
 class StepCounterTaskForm extends StatelessWidget {
   final TextEditingController descriptionController;
   final TextEditingController stepsController;
@@ -20,8 +20,8 @@ class StepCounterTaskForm extends StatelessWidget {
         TextFormField(
           controller: descriptionController,
           decoration: const InputDecoration(
-            labelText: 'Aufgabenbeschreibung',
-            hintText: 'z.B. "Gehe heute spazieren"',
+            labelText: 'Task Description',
+            hintText: 'e.g. "Go for a walk today"',
           ),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
@@ -30,8 +30,8 @@ class StepCounterTaskForm extends StatelessWidget {
         TextFormField(
           controller: stepsController,
           decoration: const InputDecoration(
-            labelText: 'Schrittziel',
-            hintText: 'z.B. "5000"',
+            labelText: 'Step Goal',
+            hintText: 'e.g. "5000"',
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],

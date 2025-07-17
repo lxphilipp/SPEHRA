@@ -218,4 +218,26 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       return false;
     }
   }
+
+  @override
+  Future<void> addBonusPoints({required List<String> userIds, required int points}) async {
+    if (userIds.isEmpty || points <= 0) return;
+
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+
+    for (String userId in userIds) {
+      final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+      batch.update(userDocRef, {
+        'points': FieldValue.increment(points)
+      });
+    }
+
+    try {
+      await batch.commit();
+      AppLogger.info("Bonus points ($points) successfully added to ${userIds.length} users.");
+    } catch (e) {
+      AppLogger.error("Error committing batch for bonus points", e);
+      throw Exception("Failed to add bonus points.");
+    }
+  }
 }

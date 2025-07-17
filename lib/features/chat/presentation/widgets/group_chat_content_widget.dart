@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 // Providers
+import '../../../challenges/domain/entities/group_challenge_progress_entity.dart';
+import '../../../challenges/presentation/widgets/group_challenge_status_card.dart';
 import '../providers/group_chat_provider.dart';
 
 // Widgets
@@ -86,7 +88,6 @@ class _GroupChatContentWidgetState extends State<GroupChatContentWidget> {
             itemBuilder: (context, index) {
               final item = chatItems[index];
 
-              // HERE IS THE CORE LOGIC: We decide which widget to render
               if (item is MessageEntity) {
                 final senderDetails = chatProvider.getMemberDetail(item.fromId);
                 return ChatMessageItemWidget(
@@ -98,6 +99,8 @@ class _GroupChatContentWidgetState extends State<GroupChatContentWidget> {
                 return ChallengeInviteCardWidget(
                   invite: item,
                 );
+              } else if (item is GroupChallengeProgressEntity) {
+                return GroupChallengeStatusCard(groupProgress: item);
               }
 
               // Fallback for any other type

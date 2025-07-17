@@ -5,24 +5,24 @@ import 'create_challenge_screen.dart';
 
 class ChallengeListScreen extends StatelessWidget {
   final int? initialTabIndex;
-  final bool isSelectionMode; // <-- PARAMETER HINZUGEFÜGT
+  final bool isSelectionMode; // <-- PARAMETER ADDED
 
   const ChallengeListScreen({
     super.key,
     this.initialTabIndex,
-    this.isSelectionMode = false, // <-- Standardwert ist 'false'
+    this.isSelectionMode = false, // <-- Default value is 'false'
   });
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        // WICHTIG: Wir geben den Parameter hier weiter
+        // IMPORTANT: We pass the parameter here
         body: ChallengeListContent(
           initialTabIndex: initialTabIndex,
-          isSelectionMode: isSelectionMode, // <-- HIER WIRD ER WEITERGEGEBEN
+          isSelectionMode: isSelectionMode, // <-- PASSED HERE
         ),
-        floatingActionButton: isSelectionMode ? null : FloatingActionButton( // FAB im Auswahlmodus ausblenden
+        floatingActionButton: isSelectionMode ? null : FloatingActionButton( // Hide FAB in selection mode
           heroTag: 'challengesFAB',
           onPressed: () {
             Navigator.of(context).push(
