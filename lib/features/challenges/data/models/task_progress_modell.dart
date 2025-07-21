@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../domain/entities/challenge_progress_entity.dart';
 import '../../domain/entities/task_progress_entity.dart';
 
 class TaskProgressModel {

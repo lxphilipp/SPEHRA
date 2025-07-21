@@ -5,19 +5,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_sdg/features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
-import 'package:flutter_sdg/features/challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
 import 'package:rxdart/rxdart.dart';
 
 // Entities
 import '../../../challenges/domain/entities/challenge_entity.dart';
 import '../../../challenges/domain/entities/group_challenge_progress_entity.dart';
-import '../../../challenges/domain/repositories/challenge_repository.dart';
 import '../../../challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart';
 import '../../../invites/domain/entities/invite_entity.dart';
 import '../../../invites/domain/usecases/accept_challenge_invite_usecase.dart';
 import '../../../invites/domain/usecases/create_challenge_invite_usecase.dart';
 import '../../../invites/domain/usecases/decline_challenge_invite_usecase.dart';
-import '../../../invites/domain/usecases/get_invites_for_context_usecase.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/entities/group_chat_entity.dart';
 import '../../domain/entities/chat_user_entity.dart';

@@ -1,5 +1,3 @@
-// lib/features/home/presentation/widgets/home_content.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
@@ -35,45 +33,32 @@ class HomeContent extends StatelessWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           children: [
             // --- 1. Minimalistischer Header ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: _buildModernHeader(context, userName, userProfile),
-            ),
+            _buildModernHeader(context, userName, userProfile),
             const SizedBox(height: 24),
 
             // --- 2. Impact-Statistiken ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: _buildImpactStats(context, userProfile),
-            ),
+            _buildImpactStats(context, userProfile),
             const SizedBox(height: 24),
 
             // --- 3. Horizontale SDG-Karten ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: _buildSectionHeader(context, "Spotlight on a Goal", () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const SdgListScreen()));
-              }),
-            ),
+            _buildSectionHeader(context, "Spotlight on a Goal", () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SdgListScreen()));
+            }),
             const SizedBox(height: 12),
+            // The carousel will now respect the ListView's padding.
+            // We need to adjust its internal structure slightly.
             _buildSdgCarousel(context, homeProvider),
             const SizedBox(height: 24),
 
             // --- 4. VERTIKALE Challenge-Liste ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: _buildSectionHeader(context, "Your Ongoing Challenges", () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeListScreen(initialTabIndex: 1)));
-              }),
-            ),
+            _buildSectionHeader(context, "Your Ongoing Challenges", () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeListScreen(initialTabIndex: 1)));
+            }),
             const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: _buildChallengesList(context, homeProvider.ongoingChallengePreviews, homeProvider.isLoadingOngoingPreviews),
-            ),
+            _buildChallengesList(context, homeProvider.ongoingChallengePreviews, homeProvider.isLoadingOngoingPreviews),
           ],
         ),
       ),
@@ -123,18 +108,22 @@ class HomeContent extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          StatDisplayCard(
-            value: userProfile.points.toString(),
-            label: "Total Points",
-            icon: Iconsax.star,
-            iconColor: Colors.amber.shade600,
+          Expanded(
+            child: StatDisplayCard(
+              value: userProfile.points.toString(),
+              label: "Total Points",
+              icon: Iconsax.star,
+              iconColor: Colors.amber.shade600,
+            ),
           ),
           const SizedBox(width: 16),
-          StatDisplayCard(
-            value: userProfile.level.toString(),
-            label: "Your Level",
-            icon: Iconsax.shield_tick,
-            iconColor: Colors.blue.shade400,
+          Expanded(
+            child: StatDisplayCard(
+              value: userProfile.level.toString(),
+              label: "Your Level",
+              icon: Iconsax.shield_tick,
+              iconColor: Colors.blue.shade400,
+            ),
           ),
         ],
       ),
@@ -158,24 +147,30 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  // HIER IST DIE ANPASSUNG mit CarouselView
   Widget _buildSdgCarousel(BuildContext context, HomeProvider homeProvider) {
     final theme = Theme.of(context);
     if (homeProvider.isLoadingSdgItems) return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
-    if (homeProvider.sdgNavItems.isEmpty) return const SizedBox(height: 180, child: Center(child: Text("Keine Ziele gefunden.")));
+    if (homeProvider.sdgNavItems.isEmpty) return const SizedBox(height: 180, child: Center(child: Text("No SDGs found.")));
 
     return SizedBox(
       height: 180,
       child: CarouselView.weighted(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 10),
         itemSnapping: true,
         shrinkExtent: 500.0,
-        flexWeights: const [5, 3],
-        // Mappt die SDG-Daten auf unsere DashboardCard-Widgets
+        flexWeights: const [1,1],
+        onTap: (int index) {
+          final item = homeProvider.sdgNavItems[index];
+          Navigator.push(
+              context,
+              MaterialPageRoute(builder: (c) => SdgDetailScreen(sdgId: item.id))
+          );
+        },
         children: homeProvider.sdgNavItems.map((item) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6.0),
-            child: DashboardCard(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => SdgDetailScreen(sdgId: item.id))),
+            return DashboardCard(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -184,8 +179,7 @@ class HomeContent extends StatelessWidget {
                   Text(item.title, textAlign: TextAlign.center, style: theme.textTheme.titleMedium)
                 ],
               ),
-            ),
-          );
+            );
         }).toList(),
       ),
     );

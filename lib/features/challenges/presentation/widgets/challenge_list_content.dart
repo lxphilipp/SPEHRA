@@ -5,7 +5,6 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../screens/challenge_details_screen.dart';
 import '/features/auth/presentation/providers/auth_provider.dart';
-import '/features/profile/presentation/providers/user_profile_provider.dart';
 import '../providers/challenge_provider.dart';
 import '../../domain/entities/challenge_entity.dart';
 import '../../domain/entities/challenge_filter_state.dart';

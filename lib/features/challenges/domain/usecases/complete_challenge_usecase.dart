@@ -1,10 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
-import '../../../chat/domain/entities/message_entity.dart';
-import '../../../chat/domain/usecases/send_message_usecase.dart';
 import '../../../profile/domain/repositories/user_profile_repository.dart';
-import '../entities/challenge_entity.dart';
 import '../repositories/challenge_progress_repository.dart';
 import '../repositories/challenge_repository.dart';
 import 'get_game_balance_usecase.dart';

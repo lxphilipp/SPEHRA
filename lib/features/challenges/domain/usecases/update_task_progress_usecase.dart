@@ -81,7 +81,7 @@ class UpdateTaskProgressUseCase implements UseCase<void, UpdateTaskProgressParam
         // ACTION 2: Send the celebratory milestone message to the chat
         final milestoneMessage = MessageEntity(
             id: '', fromId: 'system', toId: updatedGroupProgress.contextId,
-            msg: "🎉 Milestone Unlocked: ${milestone}%! The whole team gets a bonus of $bonusPoints points!",
+            msg: "🎉 Milestone Unlocked: $milestone%! The whole team gets a bonus of $bonusPoints points!",
             type: MessageType.milestoneUnlocked, createdAt: DateTime.now()
         );
         await _sendMessageUseCase(message: milestoneMessage, contextId: updatedGroupProgress.contextId, isGroupMessage: true);

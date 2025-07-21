@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
 import '../../../challenges/domain/usecases/accept_challenge_usecase.dart'; // <-- NEU
-import '../../../challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
 import '../../../challenges/domain/usecases/get_challenge_by_id_usecase.dart';
 import '../../../challenges/domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 import '../../../challenges/domain/usecases/start_challenge_usecase.dart';

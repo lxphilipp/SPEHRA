@@ -19,7 +19,6 @@ import '../../domain/entities/message_entity.dart';
 import '../../../invites/domain/entities/invite_entity.dart';
 
 // Core
-import '../../../../core/utils/app_logger.dart';
 
 class GroupChatContentWidget extends StatefulWidget {
   const GroupChatContentWidget({super.key});

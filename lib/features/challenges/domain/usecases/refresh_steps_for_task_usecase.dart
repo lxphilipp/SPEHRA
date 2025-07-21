@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../entities/challenge_progress_entity.dart';
 import '../entities/trackable_task.dart';
 import '../repositories/device_tracking_repository.dart';
 import 'update_task_progress_usecase.dart';

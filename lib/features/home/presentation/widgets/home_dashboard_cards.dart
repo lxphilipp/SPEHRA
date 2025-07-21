@@ -1,38 +1,35 @@
 // lib/features/home/presentation/widgets/home_dashboard_cards.dart
 import 'package:flutter/material.dart';
 
-// Eine universelle Karte für unser neues Dashboard-Design
 class DashboardCard extends StatelessWidget {
   final Color? color;
   final Widget child;
-  final VoidCallback? onTap;
 
   const DashboardCard({
     super.key,
     this.color,
     required this.child,
-    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
+      margin: EdgeInsets.zero, // Important for height
       elevation: 0,
       color: color ?? theme.colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+      child: SizedBox.expand( // Important for layout
         child: child,
       ),
     );
   }
 }
 
-// Spezielle Karte für die Hauptstatistiken (Punkte, Level etc.)
+// StatDisplayCard remains unchanged
 class StatDisplayCard extends StatelessWidget {
   final String value;
   final String label;
@@ -50,25 +47,23 @@ class StatDisplayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Expanded(
-      child: DashboardCard(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: iconColor, size: 28),
-              const Spacer(),
-              Text(
-                value,
-                style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                label,
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
+    return DashboardCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: iconColor, size: 28),
+            const Spacer(),
+            Text(
+              value,
+              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
         ),
       ),
     );

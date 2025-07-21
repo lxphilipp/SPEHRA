@@ -1,6 +1,5 @@
 // lib/features/challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart
 
-import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart'; // WICHTIG: Import der Basisklasse
 import '../../domain/entities/group_challenge_progress_entity.dart';
 import '../../domain/repositories/challenge_progress_repository.dart';
