@@ -1,11 +1,15 @@
+// lib/features/challenges/presentation/widgets/task_progress_list_item.dart
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:iconsax/iconsax.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/trackable_task.dart';
 import '../../domain/entities/task_progress_entity.dart';
 import '../providers/challenge_provider.dart';
@@ -48,7 +52,7 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=${task.latitude}&lon=${task.longitude}');
 
     try {
-      final response = await http.get(url, headers: {'User-Agent': 'de.meine.app'});
+      final response = await http.get(url, headers: {'User-Agent': 'de.app.sphera'});
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
         setState(() {
@@ -158,7 +162,8 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'de.app.sphera', // Replace with your app's package name
+              userAgentPackageName: 'de.app.sphera',
+              tileProvider: CancellableNetworkTileProvider(),
             ),
             CircleLayer(
               circles: [
@@ -170,6 +175,15 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
                   borderColor: theme.colorScheme.primary,
                   borderStrokeWidth: 2,
                 )
+              ],
+            ),
+            // OSM Tile Usage Policy Requirement: Add attribution.
+            RichAttributionWidget(
+              attributions: [
+                TextSourceAttribution(
+                  '© OpenStreetMap contributors',
+                  onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+                ),
               ],
             ),
           ],
@@ -187,11 +201,18 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.file(
-              File(imagePath),
+            child: io.File(imagePath).existsSync()
+                ? Image.file(
+              io.File(imagePath),
               height: 150,
               width: double.infinity,
               fit: BoxFit.cover,
+            )
+                : Container( // Placeholder if image file is missing
+              height: 150,
+              width: double.infinity,
+              color: theme.colorScheme.surfaceContainer,
+              child: const Center(child: Icon(Iconsax.image, color: Colors.grey)),
             ),
           ),
         );

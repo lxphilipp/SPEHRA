@@ -30,7 +30,7 @@ class ChallengeModel extends Equatable {
       id: snapshot.id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
-      categories: List<String>.from(data['category'] ?? []),
+      categories: List<String>.from(data['categories'] ?? data['category'] ?? []),
       authorId: data['authorId'] ?? '',
       createdAt: data['createdAt'] as Timestamp?,
       tasks: List<Map<String, dynamic>>.from(data['tasks'] ?? []),
@@ -42,7 +42,7 @@ class ChallengeModel extends Equatable {
     return {
       'title': title,
       'description': description,
-      'category': categories,
+      'categories': categories,
       'authorId': authorId,
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'tasks': tasks,
@@ -80,7 +80,7 @@ class ChallengeModel extends Equatable {
   List<Object?> get props => [id, title, description, categories, authorId, createdAt, tasks, llmFeedback];
 }
 
-// --- Helper functions for Task conversion ---
+// --- Helper functions for Task conversion (unchanged) ---
 
 TrackableTask _mapToTask(Map<String, dynamic> map) {
   final type = map['type'];
@@ -88,7 +88,6 @@ TrackableTask _mapToTask(Map<String, dynamic> map) {
     case 'checkbox':
       return CheckboxTask(description: map['description']);
     case 'step_counter':
-    // It's good practice to do this for all numeric types
       return StepCounterTask(
           description: map['description'],
           targetSteps: (map['targetSteps'] as num).toInt());

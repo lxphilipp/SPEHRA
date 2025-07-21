@@ -1,7 +1,10 @@
+// lib/features/challenges/presentation/widgets/creation_steps/step_3_categories_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../sdg/presentation/providers/sdg_list_provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import of the new widget
+import '../llm_feedback_widget.dart';
+import '../../../../sdg/presentation/providers/sdg_detail_provider.dart';
 
 class Step3CategoriesPage extends StatefulWidget {
   const Step3CategoriesPage({super.key});
@@ -11,88 +14,149 @@ class Step3CategoriesPage extends StatefulWidget {
 }
 
 class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
-  final List<String> _categoryKeys = List.generate(17, (i) => 'goal${i + 1}');
-  final List<String> _categoryImagePaths = List.generate(17, (i) => 'assets/icons/17_SDG_Icons/${i + 1}.png');
+  // --- SOLUTION ---
+  // The method no longer accepts the list as a parameter.
+  void _onCategoryToggled(String key) {
+    // Read the provider fresh inside the method to get the latest state.
+    final challengeProvider = context.read<ChallengeProvider>();
 
-  void _onCategoryTapped(List<String> selectedCategories, String key) {
-    final provider = context.read<ChallengeProvider>();
-    final newSelection = List<String>.from(selectedCategories);
+    // Get the most current list of categories directly from the provider's state.
+    final currentSelection = challengeProvider.challengeInProgress?.categories ?? [];
+
+    // Create a mutable copy to modify it.
+    final newSelection = List<String>.from(currentSelection);
+
+    // Toggle the selection.
     if (newSelection.contains(key)) {
       newSelection.remove(key);
     } else {
       newSelection.add(key);
     }
-    // Update provider AND request feedback
-    provider.updateChallengeInProgress(categories: newSelection);
-    provider.requestLlmFeedback('categories');
+
+    // Now, update the provider and request feedback with the guaranteed fresh list.
+    challengeProvider.updateChallengeInProgress(categories: newSelection);
+    challengeProvider.requestLlmFeedback('categories');
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ChallengeProvider>();
-    final selectedCategories = provider.challengeInProgress?.categories ?? [];
-    final feedbackData = provider.llmFeedbackData['categories'];
+    final challengeProvider = context.watch<ChallengeProvider>();
+    final sdgListProvider = context.watch<SdgListProvider>();
+    final sdgDetailProvider = context.read<SdgDetailProvider>();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 40),
-          Text(
-            'Choose suitable SDG categories.',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Which global goals does your challenge support?',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Wrap(
-                spacing: 12.0,
-                runSpacing: 12.0,
-                children: List.generate(_categoryKeys.length, (index) {
-                  final key = _categoryKeys[index];
-                  final imagePath = _categoryImagePaths[index];
-                  final isSelected = selectedCategories.contains(key);
+    final selectedCategories = challengeProvider.challengeInProgress?.categories ?? [];
+    final allSdgItems = sdgListProvider.sdgListItems;
+    final feedbackData = challengeProvider.llmFeedbackData['categories'];
+    final theme = Theme.of(context);
 
-                  return GestureDetector(
-                    onTap: () => _onCategoryTapped(selectedCategories, key),
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade700,
-                          width: 3,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Image.asset(imagePath, fit: BoxFit.contain),
-                      ),
-                    ),
-                  );
-                }),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
+              Text(
+                'Choose suitable SDG categories.',
+                style: theme.textTheme.headlineSmall,
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(
+                'Select a category and expand for details.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
-          const SizedBox(height: 16),
-          // NEW: Feedback Widget
-          LlmFeedbackWidget(
-            isLoading: provider.isFetchingFeedback,
-            error: provider.feedbackError,
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: allSdgItems.length,
+            itemBuilder: (context, index) {
+              final sdgItem = allSdgItems[index];
+              final isSelected = selectedCategories.contains(sdgItem.id);
+
+              return Card(
+                clipBehavior: Clip.antiAlias,
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                child: ExpansionTile(
+                  key: PageStorageKey(sdgItem.id),
+                  onExpansionChanged: (isExpanding) {
+                    if (isExpanding) {
+                      sdgDetailProvider.fetchSdgDetails(sdgItem.id);
+                    }
+                  },
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Checkbox(
+                        value: isSelected,
+                        onChanged: (bool? value) {
+                          // --- SOLUTION ---
+                          // Call the corrected method without passing the stale list.
+                          _onCategoryToggled(sdgItem.id);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Image.asset(sdgItem.listImageAssetPath, width: 40, height: 40),
+                    ],
+                  ),
+                  title: Text(sdgItem.title, style: theme.textTheme.titleMedium),
+                  children: <Widget>[
+                    Consumer<SdgDetailProvider>(
+                      builder: (context, detailProvider, child) {
+                        if (detailProvider.isLoading && detailProvider.currentSdgDetail?.id != sdgItem.id) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final sdgDetails = detailProvider.currentSdgDetail;
+                        if (sdgDetails == null || sdgDetails.id != sdgItem.id) {
+                          return const SizedBox.shrink();
+                        }
+                        return Container(
+                          color: theme.colorScheme.surfaceContainer,
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: sdgDetails.descriptionPoints
+                                .map((point) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("• ", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+                                  Expanded(child: Text(point, style: theme.textTheme.bodyMedium)),
+                                ],
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+          child: LlmFeedbackWidget(
+            isLoading: challengeProvider.isFetchingFeedback,
+            error: challengeProvider.feedbackError,
             feedback: feedbackData?['main_feedback'],
             improvementSuggestion: feedbackData?['improvement_suggestion'],
-            onRetry: () => provider.requestLlmFeedback('categories'),
+            onRetry: () => challengeProvider.requestLlmFeedback('categories'),
           ),
-          const SizedBox(height: 16),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

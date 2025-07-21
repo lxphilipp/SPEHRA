@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/features/auth/presentation/screens/sign_in_screen.dart';
 
-import 'core/theme/app_theme.dart'; // Dieser Import wird sich später ändern!
+import 'core/theme/app_theme.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

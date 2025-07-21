@@ -1,3 +1,4 @@
+// lib/features/challenges/presentation/widgets/creation_steps/task_forms/location_visit_task_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_ti
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'location_picker_sheet.dart'; // Import of the BottomSheet widget
 
@@ -96,7 +98,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}');
 
     try {
-      final response = await http.get(url, headers: {'User-Agent': 'de.meine.app'});
+      final response = await http.get(url, headers: {'User-Agent': 'de.app.sphera'});
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
@@ -158,7 +160,7 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
                 children: [
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.flutter_sdg',
+                    userAgentPackageName: 'de.app.sphera',
                     tileProvider: CancellableNetworkTileProvider(),
                   ),
                   CircleLayer(
@@ -171,6 +173,14 @@ class _LocationVisitTaskFormState extends State<LocationVisitTaskForm> {
                         borderColor: Colors.blue,
                         borderStrokeWidth: 2,
                       )
+                    ],
+                  ),
+                  RichAttributionWidget(
+                    attributions: [
+                      TextSourceAttribution(
+                        '© OpenStreetMap contributors',
+                        onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+                      ),
                     ],
                   ),
                 ],

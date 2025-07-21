@@ -1,3 +1,4 @@
+// lib/features/challenges/presentation/screens/challenge_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../widgets/challenge_list_content.dart';
@@ -5,33 +6,39 @@ import 'create_challenge_screen.dart';
 
 class ChallengeListScreen extends StatelessWidget {
   final int? initialTabIndex;
-  final bool isSelectionMode; // <-- PARAMETER ADDED
+  final bool isSelectionMode;
 
   const ChallengeListScreen({
     super.key,
     this.initialTabIndex,
-    this.isSelectionMode = false, // <-- Default value is 'false'
+    this.isSelectionMode = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        // IMPORTANT: We pass the parameter here
-        body: ChallengeListContent(
+    return Scaffold(
+      appBar: isSelectionMode
+          ? AppBar(
+        title: const Text('Select a Challenge'),
+      )
+          : null,
+      body: SafeArea(
+        child: ChallengeListContent(
           initialTabIndex: initialTabIndex,
-          isSelectionMode: isSelectionMode, // <-- PASSED HERE
+          isSelectionMode: isSelectionMode,
         ),
-        floatingActionButton: isSelectionMode ? null : FloatingActionButton( // Hide FAB in selection mode
-          heroTag: 'challengesFAB',
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const CreateChallengeScreen()),
-            );
-          },
-          tooltip: 'Create New Challenge',
-          child: const Icon(Iconsax.add),
-        ),
+      ),
+      floatingActionButton: isSelectionMode
+          ? null // Hide FAB in selection mode
+          : FloatingActionButton(
+        heroTag: 'challengesFAB',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const CreateChallengeScreen()),
+          );
+        },
+        tooltip: 'Create New Challenge',
+        child: const Icon(Iconsax.add),
       ),
     );
   }

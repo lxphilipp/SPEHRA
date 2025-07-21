@@ -1,3 +1,4 @@
+// lib/features/challenges/presentation/widgets/creation_steps/task_forms/location_picker_sheet.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_ti
 import 'package:iconsax/iconsax.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../domain/entities/address_entity.dart';
 import '../../../providers/challenge_provider.dart';
 
@@ -90,7 +92,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.flutter_sdg',
+                  userAgentPackageName: 'de.app.sphera',
                   tileProvider: CancellableNetworkTileProvider(),
                 ),
                 CircleLayer(
@@ -105,6 +107,14 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                     )
                   ],
                 ),
+                RichAttributionWidget(
+                  attributions: [
+                    TextSourceAttribution(
+                      '© OpenStreetMap contributors',
+                      onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
+                    ),
+                  ],
+                ),
               ],
             ),
             const Center(
@@ -113,7 +123,6 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               ),
             ),
 
-            // KORREKTE SearchAnchor Implementierung mit FutureBuilder Pattern
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SearchAnchor.bar(
@@ -126,7 +135,6 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                     return <Widget>[];
                   }
 
-                  // FutureBuilder Pattern für asynchrone Suchen
                   return <Widget>[
                     FutureBuilder<List<AddressEntity>>(
                       future: _searchLocations(query),
