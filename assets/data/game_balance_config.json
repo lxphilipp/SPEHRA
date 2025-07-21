@@ -1,0 +1,27 @@
+{
+  "points": {
+    "perCheckboxTask": 5,
+    "perProvableTask": 50,
+    "per1000Steps": 10,
+    "maxTotalPoints": 500
+  },
+  "bonuses": {
+    "unlockedCheckboxPointsPerProvableTask": 25
+  },
+  "difficultyThresholds": [
+    { "name": "Easy", "points": 0 },
+    { "name": "Normal", "points": 51 },
+    { "name": "Advanced", "points": 151 },
+    { "name": "Experienced", "points": 351 }
+  ],
+  "groupChallengeMilestones": [
+    {
+      "percentage": 50,
+      "bonusFactor": 0.10
+    },
+    {
+      "percentage": 100,
+      "bonusFactor": 0.25
+    }
+  ]
+}

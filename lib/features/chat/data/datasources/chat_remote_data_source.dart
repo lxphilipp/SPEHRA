@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 // Models und Entities für Chat
 import '../../../../core/utils/app_logger.dart';
+import '../../domain/entities/message_entity.dart';
 import '../models/chat_room_model.dart';
 import '../models/group_chat_model.dart';
 import '../models/message_model.dart';
@@ -36,9 +37,9 @@ abstract class ChatRemoteDataSource {
   Future<void> updateChatRoomWithMessage({
     required String roomId,
     required String lastMessage,
-    required String messageType, // z.B. 'text', 'image'
+    required String messageType,
   });
-  
+
   Future<void> hideChatForUser(String roomId, String userId);
   Future<void> unhideChatForUser(String roomId, String userId);
   Future<void> setChatClearedTimestamp(String roomId, String userId);
@@ -181,10 +182,10 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   ChatUserEntity _mapUserModelToChatUserEntity(UserModel userModel) {
     return ChatUserEntity(
       id: userModel.id!,
-      name: userModel.name ?? 'Unbekannter User',
+      name: userModel.name ?? 'Unknown User',
       imageUrl: userModel.imageURL,
       isOnline: userModel.online,
-      lastActiveAt: userModel.lastActiveAt, // UserModel hat jetzt DateTime? lastActiveAt
+      lastActiveAt: userModel.lastActiveAt,
     );
   }
 
@@ -245,32 +246,28 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
       return roomId;
     } catch (e) {
-      throw ChatDataSourceException("Fehler beim Erstellen/Abrufen des Chatraums mit $partnerUserId", cause: e);
+      throw ChatDataSourceException("Error creating/getting chat room with $partnerUserId", cause: e);
     }
   }
 
   @override
   Stream<List<ChatRoomModel>> getChatRoomsStream(String currentUserId) {
     try {
-      // 1. Abfrage OHNE den inkompatiblen 'whereNotIn'-Filter
       return _chatRoomsCollection
           .where('members', arrayContains: currentUserId)
           .orderBy('last_message_time', descending: true)
           .snapshots(includeMetadataChanges: false)
           .map((querySnapshot) {
 
-        // 2. Alle Ergebnisse in Models umwandeln
         final allChatRooms = querySnapshot.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>;
           return ChatRoomModel.fromJson(data, doc.id);
         }).toList();
 
-        // 3. HIER die Filterlogik im Code anwenden
         final visibleChatRooms = allChatRooms.where((room) {
           return !room.hiddenFor.contains(currentUserId);
         }).toList();
 
-        // 4. Die GEFILTERTE Liste zurückgeben
         return visibleChatRooms;
       });
     } catch (e) {
@@ -293,7 +290,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       await _chatRoomsCollection.doc(roomId).update(updateData);
     } catch (e) {
       print("ChatDataSource Error in updateChatRoomWithMessage: $e");
-      throw ChatDataSourceException("Fehler beim Aktualisieren des Chatraums $roomId", cause: e);
+      throw ChatDataSourceException("Error updating chat room $roomId", cause: e);
     }
   }
 
@@ -305,12 +302,12 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     required List<String> adminIds,
     String? imageUrl,
     MessageModel? initialMessage,
-    required String currentUserId, // HINZUGEFÜGT: Ersteller-ID für initialMessage
+    required String currentUserId,
   }) async {
     final groupId = uuid.v4();
     try {
       final newGroupChat = GroupChatModel(
-        id: groupId, // Client-seitig generierte ID
+        id: groupId,
         name: name,
         memberIds: memberIds,
         adminIds: adminIds,
@@ -324,7 +321,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       if (initialMessage != null) {
         final messageToSend = initialMessage.copyWith(
           id: initialMessage.id.isNotEmpty ? initialMessage.id : uuid.v4(),
-          fromId: currentUserId, // Absender der initialen Nachricht
+          fromId: currentUserId,
           createdAt: DateTime.now(),
         );
         await sendMessage(
@@ -336,7 +333,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       return groupId;
     } catch (e) {
       print("ChatDataSource Error in createGroupChat: $e");
-      throw ChatDataSourceException("Fehler beim Erstellen der Gruppe '$name'", cause: e);
+      throw ChatDataSourceException("Error creating group '$name'", cause: e);
     }
   }
 
@@ -351,16 +348,16 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .map((snapshot) {
         return snapshot.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>?;
-          if (data == null) throw ChatDataSourceException("Fehlerhafte Daten für Gruppenchat ${doc.id}");
+          if (data == null) throw ChatDataSourceException("Malformed data for group chat ${doc.id}");
           return GroupChatModel.fromJson(data, doc.id);
         }).toList();
       }).handleError((error, stackTrace) {
-        print("ChatDataSource Error im getGroupChatsStream: $error, Stack: $stackTrace");
-        throw ChatDataSourceException("Fehler beim Streamen der Gruppenchats", cause: error);
+        print("ChatDataSource Error in getGroupChatsStream: $error, Stack: $stackTrace");
+        throw ChatDataSourceException("Error streaming group chats", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error beim Initialisieren des getGroupChatsStream: $e");
-      throw ChatDataSourceException("Fehler beim Initialisieren des Gruppenchat-Streams", cause: e);
+      print("ChatDataSource Error initializing getGroupChatsStream: $e");
+      throw ChatDataSourceException("Error initializing group chat stream", cause: e);
     }
   }
 
@@ -378,15 +375,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       await _groupChatsCollection.doc(groupId).update(updateData);
     } catch (e) {
       print("ChatDataSource Error in updateGroupChatWithMessage: $e");
-      throw ChatDataSourceException("Fehler beim Aktualisieren des Gruppenchats $groupId", cause: e);
+      throw ChatDataSourceException("Error updating group chat $groupId", cause: e);
     }
   }
 
   @override
   Future<void> updateGroupChatDetails(GroupChatModel groupChatModel) async {
     try {
-      // Verwende die spezifische toUpdateMap oder baue das Map hier, um sicherzustellen,
-      // dass nur erlaubte Felder aktualisiert werden.
       final Map<String, dynamic> dataToUpdate = {
         'name': groupChatModel.name,
         'members': groupChatModel.memberIds,
@@ -395,12 +390,12 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       if (groupChatModel.imageUrl != null) {
         dataToUpdate['image_url'] = groupChatModel.imageUrl;
       } else {
-        dataToUpdate['image_url'] = null; // oder FieldValue.delete()
+        dataToUpdate['image_url'] = null;
       }
       await _groupChatsCollection.doc(groupChatModel.id).update(dataToUpdate);
     } catch (e) {
       print("ChatDataSource Error in updateGroupChatDetails: $e");
-      throw ChatDataSourceException("Fehler beim Aktualisieren der Gruppendetails für ${groupChatModel.id}", cause: e);
+      throw ChatDataSourceException("Error updating group details for ${groupChatModel.id}", cause: e);
     }
   }
 
@@ -412,7 +407,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       });
     } catch (e) {
       print("ChatDataSource Error in addMembersToGroup: $e");
-      throw ChatDataSourceException("Fehler beim Hinzufügen von Mitgliedern zur Gruppe $groupId", cause: e);
+      throw ChatDataSourceException("Error adding members to group $groupId", cause: e);
     }
   }
 
@@ -425,7 +420,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       });
     } catch (e) {
       print("ChatDataSource Error in removeMemberFromGroup: $e");
-      throw ChatDataSourceException("Fehler beim Entfernen von Mitglied $memberIdToRemove aus Gruppe $groupId", cause: e);
+      throw ChatDataSourceException("Error removing member $memberIdToRemove from group $groupId", cause: e);
     }
   }
 
@@ -434,59 +429,75 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       return _groupChatsCollection
           .doc(groupId)
-          .snapshots() // Hört auf Änderungen am Dokument
+          .snapshots()
           .map((snapshot) {
         if (snapshot.exists && snapshot.data() != null) {
           final data = snapshot.data() as Map<String, dynamic>;
           return GroupChatModel.fromJson(data, snapshot.id);
         } else {
-          return null; // Gruppe nicht gefunden oder gelöscht
+          return null;
         }
       }).handleError((error, stackTrace) {
-        AppLogger.error("ChatDataSource: Fehler im watchGroupChatById Stream für Gruppe $groupId", error, stackTrace);
-        // Fehler im Stream weitergeben
-        throw ChatDataSourceException("Fehler beim Beobachten der Gruppe $groupId", cause: error);
+        AppLogger.error("ChatDataSource: Error in watchGroupChatById stream for group $groupId", error, stackTrace);
+        throw ChatDataSourceException("Error watching group $groupId", cause: error);
       });
     } catch (e) {
-      AppLogger.error("ChatDataSource: Fehler beim Initialisieren des watchGroupChatById Streams für Gruppe $groupId", e);
-      throw ChatDataSourceException("Fehler beim Initialisieren des Streams für Gruppe $groupId", cause: e);
+      AppLogger.error("ChatDataSource: Error initializing watchGroupChatById stream for group $groupId", e);
+      throw ChatDataSourceException("Error initializing stream for group $groupId", cause: e);
     }
   }
   // --- Message Operations ---
   @override
   Future<void> sendMessage({
-    required MessageModel message, // Enthält fromId, toId (für 1-1), msg, type
+    required MessageModel message,
     required String contextId,
     required bool isGroupMessage,
   }) async {
     final collectionName = isGroupMessage ? 'groups' : 'rooms';
-    // Stelle sicher, dass die Nachricht eine ID und einen Zeitstempel hat
     final messageToSend = message.copyWith(
       id: message.id.isNotEmpty ? message.id : uuid.v4(),
-      createdAt: message.createdAt ?? DateTime.now(), // Falls noch nicht gesetzt
+      createdAt: message.createdAt ?? DateTime.now(),
     );
 
     try {
-      if (!isGroupMessage) {
+      // This ensures that if a user sends a message to a chat they previously hid,
+      // the chat becomes visible again for them.
+      if (!isGroupMessage && message.fromId != 'system') {
         await unhideChatForUser(contextId, message.fromId);
       }
+
+      // Save the message to the subcollection
       await firestore
           .collection(collectionName)
           .doc(contextId)
           .collection('messages')
           .doc(messageToSend.id)
-          .set(messageToSend.toJsonForCreate()); // Wandelt DateTime in Timestamp
+          .set(messageToSend.toJsonForCreate());
 
-      // Aktualisiere lastMessage im Hauptdokument
-      final messagePreview = messageToSend.type == 'image' ? '📷 Bild' : messageToSend.msg;
-      if (isGroupMessage) {
-        await updateGroupChatWithMessage(groupId: contextId, lastMessage: messagePreview, messageType: messageToSend.type);
+      // Determine the preview text for the chat list
+      String messagePreview;
+      if (messageToSend.type == MessageType.image) {
+        messagePreview = '📷 Image';
       } else {
-        await updateChatRoomWithMessage(roomId: contextId, lastMessage: messagePreview, messageType: messageToSend.type);
+        // For both text and system messages, use the message content as the preview
+        messagePreview = messageToSend.msg;
+      }
+
+      // Update the parent document with the latest message info
+      if (isGroupMessage) {
+        await updateGroupChatWithMessage(
+            groupId: contextId,
+            lastMessage: messagePreview,
+            messageType: messageToSend.type.name);
+      } else {
+        await updateChatRoomWithMessage(
+            roomId: contextId,
+            lastMessage: messagePreview,
+            messageType: messageToSend.type.name);
       }
     } catch (e) {
       print("ChatDataSource Error in sendMessage: $e");
-      throw ChatDataSourceException("Fehler beim Senden der Nachricht in $contextId", cause: e);
+      throw ChatDataSourceException("Error sending message in $contextId", cause: e);
     }
   }
 
@@ -495,19 +506,18 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       return _chatRoomsCollection.doc(roomId).collection('messages')
           .orderBy('created_at', descending: true)
-      // HIER IST DIE MAGIE:
-          .snapshots(includeMetadataChanges: false) // <-- DIESE ZEILE HINZUFÜGEN
+          .snapshots(includeMetadataChanges: false)
           .map((snapshot) => snapshot.docs.map((doc) {
         final data = doc.data();
         return MessageModel.fromJson(data, doc.id);
       }).toList())
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error im getMessagesStream für Raum $roomId: $error, Stack: $stackTrace");
-        throw ChatDataSourceException("Fehler beim Streamen der Nachrichten für Raum $roomId", cause: error);
+        print("ChatDataSource Error in getMessagesStream for room $roomId: $error, Stack: $stackTrace");
+        throw ChatDataSourceException("Error streaming messages for room $roomId", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error beim Initialisieren des getMessagesStream für Raum $roomId: $e");
-      throw ChatDataSourceException("Fehler beim Initialisieren des Nachrichten-Streams für Raum $roomId", cause: e);
+      print("ChatDataSource Error initializing getMessagesStream for room $roomId: $e");
+      throw ChatDataSourceException("Error initializing message stream for room $roomId", cause: e);
     }
   }
 
@@ -518,16 +528,16 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .orderBy('created_at', descending: true)
           .snapshots()
           .map((snapshot) => snapshot.docs.map((doc) {
-        final data = doc.data(); // Map<String, dynamic>
+        final data = doc.data();
         return MessageModel.fromJson(data, doc.id);
       }).toList())
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error im getGroupMessagesStream für Gruppe $groupId: $error, Stack: $stackTrace");
-        throw ChatDataSourceException("Fehler beim Streamen der Nachrichten für Gruppe $groupId", cause: error);
+        print("ChatDataSource Error in getGroupMessagesStream for group $groupId: $error, Stack: $stackTrace");
+        throw ChatDataSourceException("Error streaming messages for group $groupId", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error beim Initialisieren des getGroupMessagesStream für Gruppe $groupId: $e");
-      throw ChatDataSourceException("Fehler beim Initialisieren des Nachrichten-Streams für Gruppe $groupId", cause: e);
+      print("ChatDataSource Error initializing getGroupMessagesStream for group $groupId: $e");
+      throw ChatDataSourceException("Error initializing message stream for group $groupId", cause: e);
     }
   }
 
@@ -540,12 +550,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   }) async {
     final collectionPath = isGroupMessage ? _groupChatsCollection : _chatRoomsCollection;
     try {
-      // KORREKTUR: Verwende 'read_at' statt 'readAt'
       await collectionPath.doc(contextId).collection('messages').doc(messageId)
           .update({'read_at': FieldValue.serverTimestamp()});
     } catch (e) {
       print("ChatDataSource Error in markMessageAsRead: $e");
-      throw ChatDataSourceException("Fehler beim Markieren der Nachricht $messageId als gelesen in $contextId", cause: e);
+      throw ChatDataSourceException("Error marking message $messageId as read in $contextId", cause: e);
     }
   }
 
@@ -560,7 +569,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       await collectionPath.doc(contextId).collection('messages').doc(messageId).delete();
     } catch (e) {
       print("ChatDataSource Error in deleteMessage: $e");
-      throw ChatDataSourceException("Fehler beim Löschen der Nachricht $messageId in $contextId", cause: e);
+      throw ChatDataSourceException("Error deleting message $messageId in $contextId", cause: e);
     }
   }
 
@@ -571,7 +580,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final docSnapshot = await _usersCollection.doc(userId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data() as Map<String, dynamic>?;
-        if (data == null) throw ChatDataSourceException("Fehlerhafte User-Daten für $userId");
+        if (data == null) throw ChatDataSourceException("Malformed user data for $userId");
         final userModel = UserModel.fromMap(data, docSnapshot.id);
         return _mapUserModelToChatUserEntity(userModel);
       } else {
@@ -579,7 +588,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
     } catch (e) {
       print("ChatDataSource Error in getChatUserById: $e");
-      throw ChatDataSourceException("Fehler beim Laden des Chat-User-Profils: $userId", cause: e);
+      throw ChatDataSourceException("Error loading chat user profile: $userId", cause: e);
     }
   }
 
@@ -587,28 +596,26 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Stream<List<ChatUserEntity>> getChatUsersStreamByIds(List<String> userIds) {
     if (userIds.isEmpty) return Stream.value([]);
     try {
-      // Firestore's 'whereIn' supports up to 30 elements if FieldPath.documentId is used.
-      // For more than 30, you'd need to batch or use a different approach.
       return _usersCollection
           .where(FieldPath.documentId, whereIn: userIds)
           .snapshots()
           .map((snapshot) {
         return snapshot.docs
-            .where((doc) => doc.exists) // Sicherstellen, dass das Dokument existiert
+            .where((doc) => doc.exists)
             .map((doc) {
           final data = doc.data() as Map<String, dynamic>?;
-          if (data == null) throw ChatDataSourceException("Fehlerhafte User-Daten im Stream für ${doc.id}");
+          if (data == null) throw ChatDataSourceException("Malformed user data in stream for ${doc.id}");
           return _mapUserModelToChatUserEntity(UserModel.fromMap(data, doc.id));
         })
             .toList();
       })
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error im getChatUsersStreamByIds: $error, Stack: $stackTrace");
-        throw ChatDataSourceException("Fehler beim Streamen der Chat-User-Profile", cause: error);
+        print("ChatDataSource Error in getChatUsersStreamByIds: $error, Stack: $stackTrace");
+        throw ChatDataSourceException("Error streaming chat user profiles", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error beim Initialisieren des getChatUsersStreamByIds: $e");
-      throw ChatDataSourceException("Fehler beim Initialisieren des Chat-User-Profil-Streams", cause: e);
+      print("ChatDataSource Error initializing getChatUsersStreamByIds: $e");
+      throw ChatDataSourceException("Error initializing chat user profile stream", cause: e);
     }
   }
 
@@ -616,14 +623,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<List<ChatUserEntity>> findChatUsersByNamePrefix(String namePrefix, {List<String> excludeIds = const []}) async {
     if (namePrefix.isEmpty) return [];
     try {
-      // Beginne mit der Basis-Query
       Query query = _usersCollection
           .where('name', isGreaterThanOrEqualTo: namePrefix)
           .where('name', isLessThanOrEqualTo: '$namePrefix\uf8ff')
           .limit(10);
 
-      // WICHTIG: Füge die "whereNotIn"-Bedingung hinzu, wenn es IDs zum Ausschließen gibt
-      // Firestore's "whereNotIn" unterstützt bis zu 30 Werte.
       if (excludeIds.isNotEmpty) {
         query = query.where(FieldPath.documentId, whereNotIn: excludeIds);
       }
@@ -634,13 +638,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .where((doc) => doc.exists)
           .map((doc) {
         final data = doc.data() as Map<String, dynamic>?;
-        if (data == null) throw ChatDataSourceException("Fehlerhafte User-Daten bei Suche für ${doc.id}");
+        if (data == null) throw ChatDataSourceException("Malformed user data in search for ${doc.id}");
         return _mapUserModelToChatUserEntity(UserModel.fromMap(data, doc.id));
       })
           .toList();
     } catch (e) {
       print("ChatDataSource Error in findChatUsersByNamePrefix: $e");
-      throw ChatDataSourceException("Fehler bei der Usersuche nach Name '$namePrefix'", cause: e);
+      throw ChatDataSourceException("Error searching users by name '$namePrefix'", cause: e);
     }
   }
 
@@ -663,7 +667,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       return downloadUrl;
     } catch (e) {
       print("ChatDataSource Error in uploadChatImage: $e");
-      throw ChatDataSourceException("Fehler beim Hochladen des Chat-Bildes", cause: e);
+      throw ChatDataSourceException("Error uploading chat image", cause: e);
     }
   }
 
@@ -705,7 +709,6 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       await _chatRoomsCollection.doc(roomId).update({
         'cleared_at.$userId': FieldValue.serverTimestamp(),
       });
-      // Optional auch die Vorschau zurücksetzen
       await _chatRoomsCollection.doc(roomId).update({
         'last_message': null,
         'last_message_time': null,
@@ -735,7 +738,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       return _chatRoomsCollection
           .doc(roomId)
-          .snapshots(includeMetadataChanges: false) // Nur bei echten Datenänderungen
+          .snapshots(includeMetadataChanges: false)
           .map((snapshot) {
         if (snapshot.exists && snapshot.data() != null) {
           return ChatRoomModel.fromJson(snapshot.data() as Map<String, dynamic>, snapshot.id);

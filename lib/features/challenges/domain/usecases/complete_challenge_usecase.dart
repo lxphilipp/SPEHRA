@@ -1,44 +1,43 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../chat/domain/entities/message_entity.dart';
+import '../../../chat/domain/usecases/send_message_usecase.dart';
 import '../../../profile/domain/repositories/user_profile_repository.dart';
 import '../entities/challenge_entity.dart';
 import '../repositories/challenge_progress_repository.dart';
 import '../repositories/challenge_repository.dart';
+import 'get_game_balance_usecase.dart';
 
-/// Encapsulates the complex logic for completing a challenge.
-/// Awards base points to the player and distributes team bonuses when milestones are reached.
 class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams> {
   final UserProfileRepository _userProfileRepository;
   final ChallengeRepository _challengeRepository;
   final ChallengeProgressRepository _progressRepository;
-
-  // --- Milestone and bonus configuration ---
-  static const Map<int, double> _milestones = {
-    50: 0.10,  // At 50% progress, there's a 10% bonus
-    100: 0.25, // At 100% progress, there's a 25% bonus
-  };
+  final GetGameBalanceUseCase _getGameBalanceUseCase;
 
   CompleteChallengeUseCase({
     required UserProfileRepository userProfileRepository,
     required ChallengeRepository challengeRepository,
     required ChallengeProgressRepository progressRepository,
+    required GetGameBalanceUseCase getGameBalanceUseCase,
   })  : _userProfileRepository = userProfileRepository,
         _challengeRepository = challengeRepository,
-        _progressRepository = progressRepository;
+        _progressRepository = progressRepository,
+        _getGameBalanceUseCase = getGameBalanceUseCase;
 
   @override
   Future<bool> call(CompleteChallengeParams params) async {
     try {
-      // 1. Fetch challenge data and base points
+      final balance = await _getGameBalanceUseCase(NoParams());
+
       final challenge = await _challengeRepository.getChallengeById(params.challengeId);
       if (challenge == null) {
         AppLogger.warning("CompleteChallengeUseCase: Challenge ${params.challengeId} not found.");
         return false;
       }
-      final int basePoints = challenge.calculatedPoints;
 
-      // 2. Update player's individual progress (award base points)
+      final int basePoints = challenge.calculatePoints(balance);
+
       await _userProfileRepository.markTaskAsCompleted(
         userId: params.userId,
         challengeId: params.challengeId,
@@ -46,33 +45,28 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
       );
       AppLogger.info("Base points ($basePoints) awarded to user ${params.userId}.");
 
-      // 3. Check if this is part of a group challenge
       final progressId = '${params.userId}_${params.challengeId}';
       final individualProgress = await _progressRepository.watchChallengeProgress(progressId).first;
       final inviteId = individualProgress?.inviteId;
 
       if (inviteId == null) {
-        AppLogger.info("Solo challenge completed. No bonus awarded.");
-        return true; // Was a solo challenge -> successfully completed.
-      }
-
-      // 4. Fetch group progress
-      final groupProgress = await _progressRepository.getGroupProgress(inviteId);
-      if (groupProgress == null) {
-        AppLogger.warning("Group progress for Invite $inviteId not found. No bonus awarded.");
+        AppLogger.info("Solo challenge completed. No bonus logic triggered.");
         return true;
       }
 
-      // 5. Check if new milestones were reached with this completion
+      final groupProgress = await _progressRepository.getGroupProgress(inviteId);
+      if (groupProgress == null) {
+        AppLogger.warning("Group progress for Invite $inviteId not found. Cannot award bonus.");
+        return true;
+      }
+
       final progressPercentage = (groupProgress.completedTasksCount * 100) / groupProgress.totalTasksRequired;
 
-      for (var milestoneEntry in _milestones.entries) {
+      for (var milestoneEntry in balance.groupChallengeMilestones.entries) {
         final int milestone = milestoneEntry.key;
         final double bonusFactor = milestoneEntry.value;
 
-        // Check if milestone is reached but not yet awarded
         if (progressPercentage >= milestone && !groupProgress.unlockedMilestones.contains(milestone)) {
-
           final bonusPoints = (basePoints * bonusFactor).round();
           AppLogger.info("Milestone ($milestone%) reached! Distributing $bonusPoints bonus points to all participants.");
 
@@ -82,7 +76,6 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
             points: bonusPoints,
           );
 
-          // Mark milestone as "awarded" to prevent double awarding
           await _progressRepository.markMilestoneAsAwarded(inviteId, milestone);
         }
       }
@@ -96,7 +89,6 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
   }
 }
 
-/// Data container for the parameters of the CompleteChallengeUseCase.
 class CompleteChallengeParams extends Equatable {
   final String userId;
   final String challengeId;

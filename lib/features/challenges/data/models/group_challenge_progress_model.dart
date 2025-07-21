@@ -15,7 +15,7 @@ class GroupChallengeProgressModel {
   GroupChallengeProgressModel({
     required this.id,
     required this.challengeId,
-    required this.contextId, // Added
+    required this.contextId,
     required this.participantIds,
     required this.totalTasksRequired,
     required this.completedTasksCount,
@@ -39,10 +39,23 @@ class GroupChallengeProgressModel {
   }
 
   /// Converts this model into a Map that can be stored in Firestore.
+  factory GroupChallengeProgressModel.fromMap(Map<String, dynamic> map, String id) {
+    return GroupChallengeProgressModel(
+      id: id,
+      challengeId: map['challengeId'] ?? '',
+      contextId: map['contextId'] ?? '',
+      participantIds: List<String>.from(map['participantIds'] ?? []),
+      totalTasksRequired: (map['totalTasksRequired'] as num?)?.toInt() ?? 0,
+      completedTasksCount: (map['completedTasksCount'] as num?)?.toInt() ?? 0,
+      unlockedMilestones: List<int>.from(map['unlockedMilestones'] ?? []),
+      createdAt: map['createdAt'] ?? Timestamp.now(),
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'challengeId': challengeId,
-      'contextId': contextId, // Added
+      'contextId': contextId,
       'participantIds': participantIds,
       'totalTasksRequired': totalTasksRequired,
       'completedTasksCount': completedTasksCount,

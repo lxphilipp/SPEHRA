@@ -1,11 +1,20 @@
-// KEIN import 'package:equatable/equatable.dart';
+// lib/features/chat/domain/entities/message_entity.dart
 
-class MessageEntity {
+import 'package:equatable/equatable.dart';
+
+enum MessageType {
+  text,
+  image,
+  progressUpdate,
+  milestoneUnlocked,
+}
+
+class MessageEntity extends Equatable {
   final String id;
   final String toId;
   final String fromId;
   final String msg;
-  final String type;
+  final MessageType type;
   final DateTime? createdAt;
   final DateTime? readAt;
 
@@ -20,38 +29,14 @@ class MessageEntity {
   });
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is MessageEntity &&
-        other.id == id &&
-        other.toId == toId &&
-        other.fromId == fromId &&
-        other.msg == msg &&
-        other.type == type &&
-        other.createdAt == createdAt &&
-        other.readAt == readAt;
-  }
-
-  @override
-  int get hashCode {
-    return Object.hash(
-      id,
-      toId,
-      fromId,
-      msg,
-      type,
-      createdAt,
-      readAt,
-    );
-  }
+  List<Object?> get props => [id, toId, fromId, msg, type, createdAt, readAt];
 
   MessageEntity copyWith({
     String? id,
     String? toId,
     String? fromId,
     String? msg,
-    String? type,
+    MessageType? type,
     DateTime? createdAt,
     bool? allowNullCreatedAt,
     DateTime? readAt,

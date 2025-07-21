@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../../challenges/presentation/widgets/group_challenge_status_card.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import '../../domain/entities/message_entity.dart';
+import '../providers/group_chat_provider.dart';
 
 class ChatMessageItemWidget extends StatelessWidget {
   final MessageEntity message;
@@ -15,20 +19,152 @@ class ChatMessageItemWidget extends StatelessWidget {
     this.senderDetails,
   });
 
+  // This helper method shows the detailed progress view in a bottom sheet.
+  void _showChallengeProgress(BuildContext context) {
+    final groupProvider = context.read<GroupChatProvider>();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return ChangeNotifierProvider.value(
+          value: groupProvider,
+          child: DraggableScrollableSheet(
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: groupProvider.activeChallenges.length,
+                  itemBuilder: (ctx, index) {
+                    return GroupChallengeStatusCard(
+                      groupProgress: groupProvider.activeChallenges[index],
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // --- Central switch for message type rendering ---
+    // This is the cleanest way to handle different message types.
+    switch (message.type) {
+      case MessageType.text:
+      case MessageType.image:
+        return _buildUserMessageBubble(context);
+
+      case MessageType.progressUpdate:
+        return _buildProgressUpdateWidget(context);
+
+      case MessageType.milestoneUnlocked:
+        return _buildMilestoneWidget(context);
+    }
+  }
+
+  // --- WIDGET BUILDERS FOR EACH MESSAGE TYPE ---
+
+  /// Builds the celebratory widget for milestone events.
+  Widget _buildMilestoneWidget(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [
+            Colors.amber.shade600,
+            Colors.orange.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 2,
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Iconsax.award, color: Colors.white, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message.msg,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the small, informational widget for progress updates.
+  Widget _buildProgressUpdateWidget(BuildContext context) {
+    final theme = Theme.of(context);
+    RegExp regExp = RegExp(r'\[(.*?)\]');
+    Match? match = regExp.firstMatch(message.msg);
+    String preText = message.msg;
+    String linkText = '';
+
+    if (match != null) {
+      preText = message.msg.substring(0, match.start);
+      linkText = match.group(0)!;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      alignment: Alignment.center,
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          children: [
+            TextSpan(text: preText),
+            if (match != null)
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: InkWell(
+                  onTap: () => _showChallengeProgress(context),
+                  child: Text(
+                    linkText,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the standard message bubble for user-sent text and images.
+  Widget _buildUserMessageBubble(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     String formattedTime = '';
     if (message.createdAt != null) {
-      final now = DateTime.now();
-      final msgDate = message.createdAt!;
-      if (now.year == msgDate.year && now.month == msgDate.month && now.day == msgDate.day) {
-        formattedTime = DateFormat('HH:mm').format(msgDate);
-      } else {
-        formattedTime = DateFormat('dd.MM HH:mm').format(msgDate);
-      }
+      formattedTime = DateFormat('HH:mm').format(message.createdAt!);
     }
 
     Widget readStatusIcon = const SizedBox.shrink();
@@ -39,13 +175,6 @@ class ChatMessageItemWidget extends StatelessWidget {
         readStatusIcon = Icon(Icons.done, size: 16, color: colorScheme.onSurfaceVariant.withOpacity(0.6));
       }
     }
-
-    final messageTextStyle = theme.textTheme.bodyLarge?.copyWith(
-      color: isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
-    );
-    final timeTextStyle = theme.textTheme.bodySmall?.copyWith(
-      color: (isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface).withOpacity(0.8),
-    );
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -61,14 +190,6 @@ class ChatMessageItemWidget extends StatelessWidget {
             bottomLeft: Radius.circular(isMe ? 18 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 18),
           ),
-          boxShadow: [
-            BoxShadow(
-              // OPTIMIERT: Verwendet die Schattenfarbe aus dem Theme
-              color: colorScheme.shadow.withOpacity(0.1),
-              blurRadius: 3,
-              offset: const Offset(0, 2),
-            )
-          ],
         ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -81,20 +202,27 @@ class ChatMessageItemWidget extends StatelessWidget {
                   senderDetails!.name,
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: colorScheme.secondary, // Beispiel für eine Akzentfarbe
+                    color: colorScheme.secondary,
                   ),
                 ),
               ),
-            if (message.type == 'text')
-              Text(message.msg, style: messageTextStyle),
-            if (message.type == 'image' && message.msg.isNotEmpty)
+            if (message.type == MessageType.text)
+              Text(message.msg, style: theme.textTheme.bodyLarge?.copyWith(
+                color: isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+              )),
+            if (message.type == MessageType.image && message.msg.isNotEmpty)
               _buildImageContent(context, message.msg),
             const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(formattedTime, style: timeTextStyle),
+                Text(
+                  formattedTime,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: (isMe ? colorScheme.onPrimaryContainer : colorScheme.onSurface).withOpacity(0.8),
+                  ),
+                ),
                 if (isMe) ...[
                   const SizedBox(width: 5),
                   readStatusIcon,
@@ -111,7 +239,7 @@ class ChatMessageItemWidget extends StatelessWidget {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
-        // Vollbildansicht-Logik
+        // Full screen view logic can be added here
       },
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -129,7 +257,7 @@ class ChatMessageItemWidget extends StatelessWidget {
                 height: 150,
                 width: 150,
                 color: theme.colorScheme.surfaceContainer,
-                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
               );
             },
             errorBuilder: (context, error, stackTrace) {
@@ -140,9 +268,12 @@ class ChatMessageItemWidget extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.broken_image, color: theme.colorScheme.onSurfaceVariant, size: 40),
+                    Icon(Icons.broken_image,
+                        color: theme.colorScheme.onSurfaceVariant, size: 40),
                     const SizedBox(height: 8),
-                    Text("Image error", style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    Text("Image error",
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
               );

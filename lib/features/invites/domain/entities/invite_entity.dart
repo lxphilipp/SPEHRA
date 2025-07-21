@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 enum InviteStatus { pending, accepted, declined }
-enum InviteContext { group, direct } // direct ist für spätere Freundes-Einladungen
+enum InviteContext { group, direct }
 
 class InviteEntity extends Equatable {
   final String id;
@@ -26,4 +26,27 @@ class InviteEntity extends Equatable {
 
   @override
   List<Object?> get props => [id, inviterId, targetId, targetTitle, context, contextId, recipients, createdAt];
+
+  /// Creates a copy of this InviteEntity but with the given fields replaced with the new values.
+  InviteEntity copyWith({
+    String? id,
+    String? inviterId,
+    String? targetId,
+    String? targetTitle,
+    InviteContext? context,
+    String? contextId,
+    Map<String, InviteStatus>? recipients,
+    DateTime? createdAt,
+  }) {
+    return InviteEntity(
+      id: id ?? this.id,
+      inviterId: inviterId ?? this.inviterId,
+      targetId: targetId ?? this.targetId,
+      targetTitle: targetTitle ?? this.targetTitle,
+      context: context ?? this.context,
+      contextId: contextId ?? this.contextId,
+      recipients: recipients ?? this.recipients,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

@@ -53,8 +53,9 @@ class ChallengeProgressRepositoryImpl implements ChallengeProgressRepository {
   }
 
   @override
-  Future<void> incrementGroupProgress(String inviteId) {
-    return remoteDataSource.incrementGroupProgress(inviteId);
+  Future<GroupChallengeProgressEntity?> incrementGroupProgress(String inviteId) async {
+    final updatedModel = await remoteDataSource.incrementGroupProgress(inviteId);
+    return updatedModel?.toEntity();
   }
 
   @override

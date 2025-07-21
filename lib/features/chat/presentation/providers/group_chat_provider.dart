@@ -6,9 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_sdg/features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
 import 'package:flutter_sdg/features/challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
+import 'package:rxdart/rxdart.dart';
 
 // Entities
+import '../../../challenges/domain/entities/challenge_entity.dart';
+import '../../../challenges/domain/entities/group_challenge_progress_entity.dart';
 import '../../../challenges/domain/repositories/challenge_repository.dart';
+import '../../../challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart';
 import '../../../invites/domain/entities/invite_entity.dart';
 import '../../../invites/domain/usecases/accept_challenge_invite_usecase.dart';
 import '../../../invites/domain/usecases/create_challenge_invite_usecase.dart';
@@ -51,6 +55,7 @@ class GroupChatProvider with ChangeNotifier {
   final AcceptChallengeInviteUseCase _acceptChallengeInviteUseCase;
   final DeclineChallengeInviteUseCase _declineChallengeInviteUseCase;
   final CreateChallengeInviteUseCase _createChallengeInviteUseCase;
+  final WatchGroupProgressByContextIdUseCase _watchGroupProgressByContextIdUseCase; // NEU
 
   final String groupId;
 
@@ -71,6 +76,7 @@ class GroupChatProvider with ChangeNotifier {
     required AcceptChallengeInviteUseCase acceptChallengeInviteUseCase,
     required DeclineChallengeInviteUseCase declineChallengeInviteUseCase,
     required GetCombinedChatItemsUseCase getCombinedChatItemsUseCase,
+    required WatchGroupProgressByContextIdUseCase watchGroupProgressByContextIdUseCase, // NEU
   })  : _watchGroupChatByIdUseCase = watchGroupChatByIdUseCase,
         _sendMessageUseCase = sendMessageUseCase,
         _uploadChatImageUseCase = uploadChatImageUseCase,
@@ -84,7 +90,8 @@ class GroupChatProvider with ChangeNotifier {
         _getChallengeByIdUseCase = getChallengeByIdUseCase,
         _acceptChallengeInviteUseCase = acceptChallengeInviteUseCase,
         _declineChallengeInviteUseCase = declineChallengeInviteUseCase,
-        _createChallengeInviteUseCase = createChallengeInviteUseCase {
+        _createChallengeInviteUseCase = createChallengeInviteUseCase,
+        _watchGroupProgressByContextIdUseCase = watchGroupProgressByContextIdUseCase { // NEU
     AppLogger.debug("GroupChatProvider for groupId: $groupId initialized.");
     _subscribeToGroupDetails();
   }
@@ -97,11 +104,15 @@ class GroupChatProvider with ChangeNotifier {
   bool _isSendingMessage = false;
   String? _error;
   File? _imagePreview;
+  List<GroupChallengeProgressEntity> _activeChallenges = [];
+  final Map<String, ChallengeEntity> _challengeDetailsForInvites = {};
+
 
   // --- Stream Subscriptions ---
   StreamSubscription<GroupChatEntity?>? _groupDetailsSubscription;
   StreamSubscription<List<ChatUserEntity>>? _memberDetailsSubscription;
   StreamSubscription? _chatItemsSubscription;
+  StreamSubscription? _challengeProgressSubscription;
 
   // --- Getter ---
   GroupChatEntity? get groupDetails => _groupDetails;
@@ -113,20 +124,38 @@ class GroupChatProvider with ChangeNotifier {
   File? get imagePreview => _imagePreview;
   String get currentUserId => _authProvider.currentUserId ?? '';
   bool get amIAdmin => groupDetails?.adminIds.contains(currentUserId) ?? false;
+  List<GroupChallengeProgressEntity> get activeChallenges => _activeChallenges;
+  ChallengeEntity? getChallengeDetailsForInvite(String challengeId) => _challengeDetailsForInvites[challengeId];
+
 
   // --- Kernlogik & Subscriptions ---
   void _subscribeToChatItems() {
     _chatItemsSubscription?.cancel();
     _chatItemsSubscription = _getCombinedChatItemsUseCase(groupId).listen((items) {
       if (!_isValidState) return;
-      if (const ListEquality().equals(_chatItems, items)) return;
-      _chatItems = items;
+      final filteredItems = items.where((item) => item is! GroupChallengeProgressEntity).toList();
+      if (const ListEquality().equals(_chatItems, filteredItems)) return;
+      _chatItems = filteredItems;
+      _fetchChallengeDetailsForInvites(filteredItems);
       notifyListeners();
     }, onError: (e) {
       if (!_isValidState) return;
       AppLogger.error("Error in combined chat items stream for group $groupId: $e");
-      _setError("Fehler beim Laden des Chats.");
+      _setError("Error loading chat.");
     });
+  }
+
+  void _fetchChallengeDetailsForInvites(List<dynamic> items) {
+    for (var item in items.whereType<InviteEntity>()) {
+      if (!_challengeDetailsForInvites.containsKey(item.targetId)) {
+        _getChallengeByIdUseCase(item.targetId).then((challenge) {
+          if (challenge != null && _isValidState) {
+            _challengeDetailsForInvites[item.targetId] = challenge;
+            notifyListeners();
+          }
+        });
+      }
+    }
   }
 
   void _subscribeToGroupDetails() {
@@ -139,11 +168,17 @@ class GroupChatProvider with ChangeNotifier {
           (newDetails) {
         if (!_isValidState) return;
         if (newDetails == null) {
-          _handleGroupNotFoundOrDeleted("Gruppe nicht gefunden oder gelöscht.");
+          _handleGroupNotFoundOrDeleted("Group not found or deleted.");
           return;
         }
         final bool hasDetailsChanged = _groupDetails != newDetails;
         final bool haveMembersChanged = !const ListEquality().equals(_groupDetails?.memberIds, newDetails.memberIds);
+
+        // HIER NEU: Separates Abo für den Challenge-Fortschritt starten
+        if (_challengeProgressSubscription == null) {
+          _subscribeToChallengeProgress();
+        }
+
         if (!hasDetailsChanged) {
           if (_isLoadingInitialData) {
             _isLoadingInitialData = false;
@@ -170,10 +205,28 @@ class GroupChatProvider with ChangeNotifier {
       onError: (e, stackTrace) {
         if (!_isValidState) return;
         AppLogger.error("GroupChatProvider: Error in group details stream for $groupId", e, stackTrace);
-        _handleGroupNotFoundOrDeleted("Fehler beim Laden der Gruppendetails.");
+        _handleGroupNotFoundOrDeleted("Error loading group details.");
       },
     );
   }
+
+  // HIER IST DIE METHODE
+  void _subscribeToChallengeProgress() {
+    _challengeProgressSubscription?.cancel();
+    _challengeProgressSubscription = _watchGroupProgressByContextIdUseCase(groupId)
+        .asStream()
+        .switchMap((stream) => stream)
+        .listen((challenges) {
+      if (!_isValidState) return;
+      if (!const ListEquality().equals(_activeChallenges, challenges)) {
+        _activeChallenges = challenges;
+        notifyListeners();
+      }
+    }, onError: (e) {
+      AppLogger.error("Error in group challenge progress stream for group $groupId: $e");
+    });
+  }
+
 
   void _subscribeToMemberDetails(List<String> memberIds) {
     AppLogger.debug("GroupChatProvider: Subscribing to member details for ${memberIds.length} members.");
@@ -201,6 +254,7 @@ class GroupChatProvider with ChangeNotifier {
     _isLoadingInitialData = false;
     _chatItemsSubscription?.cancel();
     _memberDetailsSubscription?.cancel();
+    _challengeProgressSubscription?.cancel(); // Auch hier beenden
     notifyListeners();
   }
 
@@ -226,7 +280,7 @@ class GroupChatProvider with ChangeNotifier {
     _isSendingMessage = true;
     _setError(null);
     notifyListeners();
-    final message = MessageEntity(id: '', fromId: currentUserId, toId: groupId, msg: text.trim(), type: 'text', createdAt: DateTime.now());
+    final message = MessageEntity(id: '', fromId: currentUserId, toId: groupId, msg: text.trim(), type: MessageType.text, createdAt: DateTime.now());
     try {
       await _sendMessageUseCase(message: message, contextId: groupId, isGroupMessage: true);
     } catch (e, stackTrace) {
@@ -253,7 +307,7 @@ class GroupChatProvider with ChangeNotifier {
     try {
       final imageUrl = await _uploadChatImageUseCase(imageFile: imageToSend, contextId: groupId, uploaderUserId: currentUserId);
       if (imageUrl != null) {
-        final message = MessageEntity(id: '', fromId: currentUserId, toId: groupId, msg: imageUrl, type: 'image', createdAt: DateTime.now());
+        final message = MessageEntity(id: '', fromId: currentUserId, toId: groupId, msg: imageUrl, type: MessageType.image, createdAt: DateTime.now());
         await _sendMessageUseCase(message: message, contextId: groupId, isGroupMessage: true);
       } else {
         _setError("Bild-Upload fehlgeschlagen.");

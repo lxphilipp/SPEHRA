@@ -248,7 +248,7 @@ class ChatRoomListProvider with ChangeNotifier {
           fromId: userId,
           toId: partnerUserId,
           msg: initialTextMessage,
-          type: 'text',
+          type: MessageType.text,
           createdAt: DateTime.now(),
         )
             : null,

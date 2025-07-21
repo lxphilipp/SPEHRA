@@ -26,12 +26,13 @@ class GroupChatListProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _currentUserId;
-
   String _sortCriteria = 'lastMessageTime';
   bool _isSortAscending = false; // false = descending (neueste zuerst)
 
   // --- Stream Subscriptions ---
   StreamSubscription<List<GroupChatEntity>>? _groupChatsSubscription;
+
+
 
   GroupChatListProvider({
     required GetGroupChatsStreamUseCase getGroupChatsStreamUseCase,
@@ -160,7 +161,7 @@ class GroupChatListProvider with ChangeNotifier {
         fromId: userId,
         toId: '',
         msg: initialTextMessage,
-        type: 'text',
+        type: MessageType.text,
         createdAt: DateTime.now(),
       );
     }

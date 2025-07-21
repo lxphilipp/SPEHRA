@@ -13,15 +13,19 @@ import 'package:uuid/uuid.dart';
 
 import 'app.dart';
 import 'features/challenges/data/datasources/challenge_progress_remote_datasource.dart';
+import 'features/challenges/data/datasources/configuration_remote_datasource.dart';
 import 'features/challenges/data/datasources/geolocation_service.dart';
 import 'features/challenges/data/datasources/health_service.dart';
 import 'features/challenges/data/datasources/image_picker_service.dart';
 import 'features/challenges/data/repositories/challenge_progress_repository_impl.dart';
+import 'features/challenges/data/repositories/configuration_repository_impl.dart';
 import 'features/challenges/data/repositories/device_tracking_repository_impl.dart';
 import 'features/challenges/domain/repositories/challenge_progress_repository.dart';
+import 'features/challenges/domain/repositories/configuration_repository.dart';
 import 'features/challenges/domain/repositories/device_tracking_repository.dart';
 import 'features/challenges/domain/usecases/add_participant_to_group_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
+import 'features/challenges/domain/usecases/get_game_balance_usecase.dart';
 import 'features/challenges/domain/usecases/get_llm_feedback_usecase.dart';
 import 'features/challenges/domain/usecases/refresh_steps_for_task_usecase.dart';
 import 'features/challenges/domain/usecases/search_location_usecase.dart';
@@ -31,6 +35,7 @@ import 'features/challenges/domain/usecases/toggle_checkbox_task_usecase.dart';
 import 'features/challenges/domain/usecases/update_task_progress_usecase.dart';
 import 'features/challenges/domain/usecases/verify_location_for_task_usecase.dart';
 import 'features/challenges/domain/usecases/watch_challenge_progress_usecase.dart';
+import 'features/challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart';
 import 'features/chat/domain/usecases/get_combined_chat_items_usecase.dart';
 import 'features/invites/data/datasources/invites_remote_datasource.dart';
 import 'features/invites/data/repositories/invites_repository_impl.dart';
@@ -205,6 +210,33 @@ Future<void> main() async {
         Provider<UploadProfileImageUseCase>(create: (context) => UploadProfileImageUseCase(context.read())),
         Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read())),
 
+        // CHAT (Moved up to satisfy dependency order)
+        Provider<ChatRemoteDataSource>(create: (context) => ChatRemoteDataSourceImpl(firestore: context.read(), firebaseStorage: context.read(), uuid: context.read())),
+        Provider<ChatRepository>(create: (context) => ChatRepositoryImpl(remoteDataSource: context.read())),
+        Provider<SendMessageUseCase>(create: (context) => SendMessageUseCase(context.read())),
+        Provider<GetChatUserByIdUseCase>(create: (context) => GetChatUserByIdUseCase(context.read())),
+        Provider<CreateOrGetChatRoomUseCase>(create: (context) => CreateOrGetChatRoomUseCase(context.read())),
+        Provider<GetChatRoomsStreamUseCase>(create: (context) => GetChatRoomsStreamUseCase(context.read())),
+        Provider<UpdateChatRoomWithMessageUseCase>(create: (context) => UpdateChatRoomWithMessageUseCase(context.read())),
+        Provider<CreateGroupChatUseCase>(create: (context) => CreateGroupChatUseCase(context.read())),
+        Provider<GetGroupChatsStreamUseCase>(create: (context) => GetGroupChatsStreamUseCase(context.read())),
+        Provider<UpdateGroupChatWithMessageUseCase>(create: (context) => UpdateGroupChatWithMessageUseCase(context.read())),
+        Provider<WatchGroupChatByIdUseCase>(create: (context) => WatchGroupChatByIdUseCase(context.read())),
+        Provider<UpdateGroupChatDetailsUseCase>(create: (context) => UpdateGroupChatDetailsUseCase(context.read())),
+        Provider<AddMembersToGroupUseCase>(create: (context) => AddMembersToGroupUseCase(context.read())),
+        Provider<RemoveMemberFromGroupUseCase>(create: (context) => RemoveMemberFromGroupUseCase(context.read())),
+        Provider<GetMessagesStreamUseCase>(create: (context) => GetMessagesStreamUseCase(context.read())),
+        Provider<GetGroupMessagesStreamUseCase>(create: (context) => GetGroupMessagesStreamUseCase(context.read())),
+        Provider<MarkMessageAsReadUseCase>(create: (context) => MarkMessageAsReadUseCase(context.read())),
+        Provider<DeleteMessageUseCase>(create: (context) => DeleteMessageUseCase(context.read())),
+        Provider<GetChatUsersStreamByIdsUseCase>(create: (context) => GetChatUsersStreamByIdsUseCase(context.read())),
+        Provider<FindChatUsersByNamePrefixUseCase>(create: (context) => FindChatUsersByNamePrefixUseCase(context.read())),
+        Provider<UploadChatImageUseCase>(create: (context) => UploadChatImageUseCase(context.read())),
+        Provider<DeleteGroupUseCase>(create: (context) => DeleteGroupUseCase(context.read())),
+        Provider<HideChatUseCase>(create: (context) => HideChatUseCase(context.read())),
+        Provider<SetChatClearedTimestampUseCase>(create: (context) => SetChatClearedTimestampUseCase(context.read())),
+        Provider<WatchChatRoomByIdUseCase>(create: (context) => WatchChatRoomByIdUseCase(context.read())),
+
         // CHALLENGES
         Provider<GeolocationService>(create: (_) => GeolocationService()),
         Provider<HealthService>(create: (_) => HealthService()),
@@ -215,18 +247,17 @@ Future<void> main() async {
         Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
         Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read())),
         Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
-
-        // ** KORREKTE REIHENFOLGE **
-        // 1. Zuerst die Repositories, die von nichts anderem hier abhängen
         Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
         Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
-
-        // 2. Dann die Use Cases, die von den Repositories abhängen
+        Provider<ConfigurationDataSource>(create: (_) => ConfigurationDataSourceImpl()),
+        Provider<ConfigurationRepository>(create: (context) => ConfigurationRepositoryImpl(dataSource: context.read())),
+        Provider<GetGameBalanceUseCase>(create: (context) => GetGameBalanceUseCase(context.read())),
         Provider<CompleteChallengeUseCase>(
           create: (context) => CompleteChallengeUseCase(
             userProfileRepository: context.read(),
             challengeRepository: context.read(),
             progressRepository: context.read(),
+            getGameBalanceUseCase: context.read()
           ),
         ),
         Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
@@ -234,7 +265,16 @@ Future<void> main() async {
         Provider<GetLlmFeedbackUseCase>(create: (context) => GetLlmFeedbackUseCase(context.read())),
         Provider<StartChallengeUseCase>(create: (context) => StartChallengeUseCase(context.read())),
         Provider<WatchChallengeProgressUseCase>(create: (context) => WatchChallengeProgressUseCase(context.read())),
-        Provider<UpdateTaskProgressUseCase>(create: (context) => UpdateTaskProgressUseCase(context.read())),
+        Provider<UpdateTaskProgressUseCase>(
+          create: (context) => UpdateTaskProgressUseCase(
+            progressRepository: context.read<ChallengeProgressRepository>(),
+            sendMessageUseCase: context.read<SendMessageUseCase>(),
+            getChatUserByIdUseCase: context.read<GetChatUserByIdUseCase>(),
+            userProfileRepository: context.read<UserProfileRepository>(),
+            challengeRepository: context.read<ChallengeRepository>(),
+            getGameBalanceUseCase: context.read<GetGameBalanceUseCase>(),
+          ),
+        ),
         Provider<VerifyLocationForTaskUseCase>(create: (context) => VerifyLocationForTaskUseCase(context.read<DeviceTrackingRepository>(), context.read<UpdateTaskProgressUseCase>(),),),
         Provider<ImagePickerService>(create: (_) => ImagePickerServiceImpl()),
         Provider<SelectImageForTaskUseCase>(
@@ -247,6 +287,9 @@ Future<void> main() async {
         Provider<RefreshStepsForTaskUseCase>(create: (context) => RefreshStepsForTaskUseCase(context.read(), context.read<UpdateTaskProgressUseCase>())),
         Provider<CreateGroupChallengeProgressUseCase>(create: (context) => CreateGroupChallengeProgressUseCase(context.read())),
         Provider<AddParticipantToGroupChallengeUseCase>(create: (context) => AddParticipantToGroupChallengeUseCase(context.read())),
+        Provider<WatchGroupProgressByContextIdUseCase>(
+          create: (context) => WatchGroupProgressByContextIdUseCase(context.read()),
+        ),
 
         // SDG
         Provider<SdgLocalDataSource>(create: (_) => SdgLocalDataSourceImpl()),
@@ -262,33 +305,6 @@ Future<void> main() async {
         Provider<IntroLocalDataSource>(create: (_) => IntroLocalDataSourceImpl()),
         Provider<IntroRepository>(create: (context) => IntroRepositoryImpl(localDataSource: context.read())),
         Provider<GetIntroPagesUseCase>(create: (context) => GetIntroPagesUseCase(context.read())),
-
-        // CHAT
-        Provider<ChatRemoteDataSource>(create: (context) => ChatRemoteDataSourceImpl(firestore: context.read(), firebaseStorage: context.read(), uuid: context.read())),
-        Provider<ChatRepository>(create: (context) => ChatRepositoryImpl(remoteDataSource: context.read())),
-        Provider<CreateOrGetChatRoomUseCase>(create: (context) => CreateOrGetChatRoomUseCase(context.read())),
-        Provider<GetChatRoomsStreamUseCase>(create: (context) => GetChatRoomsStreamUseCase(context.read())),
-        Provider<UpdateChatRoomWithMessageUseCase>(create: (context) => UpdateChatRoomWithMessageUseCase(context.read())),
-        Provider<CreateGroupChatUseCase>(create: (context) => CreateGroupChatUseCase(context.read())),
-        Provider<GetGroupChatsStreamUseCase>(create: (context) => GetGroupChatsStreamUseCase(context.read())),
-        Provider<UpdateGroupChatWithMessageUseCase>(create: (context) => UpdateGroupChatWithMessageUseCase(context.read())),
-        Provider<WatchGroupChatByIdUseCase>(create: (context) => WatchGroupChatByIdUseCase(context.read())),
-        Provider<UpdateGroupChatDetailsUseCase>(create: (context) => UpdateGroupChatDetailsUseCase(context.read())),
-        Provider<AddMembersToGroupUseCase>(create: (context) => AddMembersToGroupUseCase(context.read())),
-        Provider<RemoveMemberFromGroupUseCase>(create: (context) => RemoveMemberFromGroupUseCase(context.read())),
-        Provider<SendMessageUseCase>(create: (context) => SendMessageUseCase(context.read())),
-        Provider<GetMessagesStreamUseCase>(create: (context) => GetMessagesStreamUseCase(context.read())),
-        Provider<GetGroupMessagesStreamUseCase>(create: (context) => GetGroupMessagesStreamUseCase(context.read())),
-        Provider<MarkMessageAsReadUseCase>(create: (context) => MarkMessageAsReadUseCase(context.read())),
-        Provider<DeleteMessageUseCase>(create: (context) => DeleteMessageUseCase(context.read())),
-        Provider<GetChatUserByIdUseCase>(create: (context) => GetChatUserByIdUseCase(context.read())),
-        Provider<GetChatUsersStreamByIdsUseCase>(create: (context) => GetChatUsersStreamByIdsUseCase(context.read())),
-        Provider<FindChatUsersByNamePrefixUseCase>(create: (context) => FindChatUsersByNamePrefixUseCase(context.read())),
-        Provider<UploadChatImageUseCase>(create: (context) => UploadChatImageUseCase(context.read())),
-        Provider<DeleteGroupUseCase>(create: (context) => DeleteGroupUseCase(context.read())),
-        Provider<HideChatUseCase>(create: (context) => HideChatUseCase(context.read())),
-        Provider<SetChatClearedTimestampUseCase>(create: (context) => SetChatClearedTimestampUseCase(context.read())),
-        Provider<WatchChatRoomByIdUseCase>(create: (context) => WatchChatRoomByIdUseCase(context.read())),
 
         // INVITES
         Provider<InvitesRepository>(create: (context) => InvitesRepositoryImpl(remoteDataSource: InvitesRemoteDataSourceImpl(firestore: context.read()))),
@@ -361,6 +377,7 @@ Future<void> main() async {
             selectImageForTaskUseCase: context.read<SelectImageForTaskUseCase>(),
             toggleCheckboxTaskUseCase: context.read<ToggleCheckboxTaskUseCase>(),
             refreshStepsForTaskUseCase: context.read<RefreshStepsForTaskUseCase>(),
+            getGameBalanceUseCase: context.read<GetGameBalanceUseCase>(), // Added
           ),
           update: (context, auth, profile, previous) => previous!..updateDependencies(auth, profile),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../challenges/presentation/providers/challenge_provider.dart';
 import '../../domain/entities/invite_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../chat/presentation/providers/group_chat_provider.dart'; // Für die Avatare
@@ -18,10 +19,16 @@ class ChallengeInviteCardWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final currentUserId = context.watch<AuthenticationProvider>().currentUserId;
     final groupProvider = context.watch<GroupChatProvider>();
-
-    // Finde den Status des aktuellen Nutzers heraus
+    final challengeProvider = context.watch<ChallengeProvider>();
+    final balanceConfig = challengeProvider.gameBalance;
     final myStatus = invite.recipients[currentUserId] ?? InviteStatus.pending;
     final bool hasResponded = myStatus != InviteStatus.pending;
+    final challengeDetails = groupProvider.getChallengeDetailsForInvite(invite.targetId);
+
+    double maxBonusFactor = 0.0;
+    if (balanceConfig != null && balanceConfig.groupChallengeMilestones.isNotEmpty) {
+      maxBonusFactor = balanceConfig.groupChallengeMilestones.values.reduce((a, b) => a > b ? a : b);
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
@@ -46,6 +53,30 @@ class ChallengeInviteCardWidget extends StatelessWidget {
               style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Iconsax.star_1, color: theme.colorScheme.onSecondaryContainer, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    // Zeigt den Bonus an, sobald alle Daten geladen sind
+                    (challengeDetails != null && balanceConfig != null)
+                        ? "Team Bonus: Up to ${(challengeDetails.calculatePoints(balanceConfig) * maxBonusFactor).round()} extra points each!"
+                        : "Calculating team bonus...", // Fallback-Text
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSecondaryContainer),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
 
             // --- Teilnehmer-Liste ---
             _buildRecipientsList(context, groupProvider),

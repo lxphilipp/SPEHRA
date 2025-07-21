@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../../../challenges/presentation/providers/challenge_provider.dart';
 import '/features/challenges/domain/entities/challenge_entity.dart';
 import '/core/theme/sdg_color_theme.dart';
 
@@ -17,6 +19,21 @@ class ChallengePreviewCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
+    // NEW: Access the provider to get the game balance configuration.
+    final challengeProvider = context.watch<ChallengeProvider>();
+    final balance = challengeProvider.gameBalance;
+
+    // Show a loading/placeholder card if the balance config isn't available yet.
+    // This prevents errors during the initial app load.
+    if (balance == null) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 12.0),
+        child: SizedBox(
+          height: 90, // Roughly the height of the actual card
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
 
     Color categoryColor = theme.colorScheme.secondaryContainer;
     if (challenge.categories.isNotEmpty && sdgTheme != null) {
@@ -70,8 +87,8 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      // CORRECTION: Use getter
-                      challenge.calculatedDifficulty,
+                      // CORRECTION: Pass the balance object to the calculation method.
+                      challenge.calculateDifficulty(balance),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -90,8 +107,8 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        // CORRECTION: Use getter
-                        challenge.calculatedPoints.toString(),
+                        // CORRECTION: Pass the balance object to the calculation method.
+                        challenge.calculatePoints(balance).toString(),
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold
                         ),

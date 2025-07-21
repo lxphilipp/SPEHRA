@@ -15,6 +15,7 @@ class Step4TasksPage extends StatelessWidget {
     final challenge = provider.challengeInProgress;
     final tasks = challenge?.tasks ?? [];
     final feedbackData = provider.llmFeedbackData['tasks'];
+    final balance = provider.gameBalance;
 
     // Helper to get the correct icon for each task type
     IconData getIconForTask(TrackableTask task) {
@@ -76,7 +77,7 @@ class Step4TasksPage extends StatelessWidget {
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 final task = tasks[index];
-                final points = challenge!.getPointsForTaskAtIndex(index);
+                final points = challenge!.getPointsForTaskAtIndex(index, balance!);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6),
                   child: ListTile(

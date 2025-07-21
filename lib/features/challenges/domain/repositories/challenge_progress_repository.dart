@@ -9,7 +9,7 @@ abstract class ChallengeProgressRepository {
   Future<void> createGroupProgress(GroupChallengeProgressEntity groupProgress);
   Future<GroupChallengeProgressEntity?> getGroupProgress(String inviteId);
   Future<void> addParticipantToGroupProgress({required String inviteId, required String userId, required int tasksPerUser});
-  Future<void> incrementGroupProgress(String inviteId);
+  Future<GroupChallengeProgressEntity?> incrementGroupProgress(String inviteId);
   Future<void> markMilestoneAsAwarded(String inviteId, int milestone);
   Stream<List<GroupChallengeProgressEntity>> watchGroupProgressByContextId(String contextId);
 }

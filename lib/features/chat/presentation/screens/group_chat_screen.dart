@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/add_members_to_group_usecase.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/delete_group_usecase.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/get_combined_chat_items_usecase.dart'; // NEUER IMPORT
+import '../../../challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart';
 import '../../domain/usecases/remove_member_from_group_usecase.dart';
 import 'package:flutter_sdg/features/chat/domain/usecases/update_group_chat_details_usecase.dart';
 import 'package:flutter_sdg/features/invites/domain/usecases/accept_challenge_invite_usecase.dart'; // NEUER IMPORT
@@ -59,6 +60,7 @@ class GroupChatScreen extends StatelessWidget {
         acceptChallengeInviteUseCase: context.read<AcceptChallengeInviteUseCase>(),
         declineChallengeInviteUseCase: context.read<DeclineChallengeInviteUseCase>(),
         getCombinedChatItemsUseCase: context.read<GetCombinedChatItemsUseCase>(),
+        watchGroupProgressByContextIdUseCase: context.read<WatchGroupProgressByContextIdUseCase>(),
       ),
       child: Consumer<GroupChatProvider>(
         builder: (context, provider, _) {

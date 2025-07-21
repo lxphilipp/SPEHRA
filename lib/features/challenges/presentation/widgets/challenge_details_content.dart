@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 
 // Core Widgets & Logic
 import '../../../../core/theme/sdg_color_theme.dart';
+import '../../domain/entities/game_balance_entity.dart';
 import '../providers/challenge_provider.dart';
 import 'task_progress_list_item.dart'; // Our new, interactive widget
 
@@ -40,9 +41,10 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
       builder: (context, provider, child) {
         final challenge = provider.selectedChallenge;
         final theme = Theme.of(context);
+        final balance = provider.gameBalance; // Get the balance config
 
         // --- Loading and Error States ---
-        if (provider.isLoadingSelectedChallenge && challenge == null) {
+        if (provider.isLoadingSelectedChallenge || balance == null) { // Also check for balance
           return const Center(child: CircularProgressIndicator());
         }
         if (provider.selectedChallengeError != null) {
@@ -64,7 +66,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
                   children: [
                     Text(challenge.description, style: theme.textTheme.bodyLarge),
                     const SizedBox(height: 24),
-                    _buildStatsRow(context, challenge, theme),
+                    _buildStatsRow(context, challenge, theme, balance),
                     const SizedBox(height: 16),
                     if (challenge.categories.isNotEmpty)
                       _buildSdgChips(context, challenge, theme),
@@ -122,12 +124,12 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   }
 
   /// Builds the row with statistics (points & difficulty).
-  Widget _buildStatsRow(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
+  Widget _buildStatsRow(BuildContext context, ChallengeEntity challenge, ThemeData theme, GameBalanceEntity balance) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem(theme, Iconsax.star_1, '${challenge.calculatedPoints} Pts', 'Points'),
-        _buildStatItem(theme, Iconsax.diagram, challenge.calculatedDifficulty, 'Difficulty'),
+        _buildStatItem(theme, Iconsax.star_1, '${challenge.calculatePoints(balance)} Pts', 'Points'), // PASS BALANCE
+        _buildStatItem(theme, Iconsax.diagram, challenge.calculateDifficulty(balance), 'Difficulty'), // PASS BALANCE
       ],
     );
   }

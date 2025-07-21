@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
+import '../providers/challenge_provider.dart';
 import '/core/theme/sdg_color_theme.dart';
 import '../../domain/entities/challenge_entity.dart';
 // NOTE: We are removing the direct import to ChallengeDetailsScreen
@@ -22,6 +24,8 @@ class ChallengeCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
+    final challengeProvider = context.watch<ChallengeProvider>();
+    final balance = challengeProvider.gameBalance;
 
     Color circleColor = theme.colorScheme.secondaryContainer;
     if (sdgTheme != null && challenge.categories.isNotEmpty) {
@@ -80,7 +84,7 @@ class ChallengeCardWidget extends StatelessWidget {
                     Row(
                       children: [
                         Chip(
-                          label: Text(challenge.calculatedDifficulty),
+                          label: Text(challenge.calculateDifficulty(balance!)),
                           labelStyle: theme.textTheme.labelSmall,
                           visualDensity: VisualDensity.compact,
                           padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -94,7 +98,7 @@ class ChallengeCardWidget extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                         ],
-                        buildMetaInfo(Iconsax.star, '${challenge.calculatedPoints} Pts'),
+                        buildMetaInfo(Iconsax.star, '${challenge.calculatePoints(balance)} Pts'), // PASS BALANCE
                       ],
                     ),
                   ],

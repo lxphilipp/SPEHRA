@@ -69,6 +69,16 @@ class GroupChallengeStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
+            // --- NEW MILESTONE SECTION ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildMilestoneWidget(theme, 50, groupProgress.unlockedMilestones.contains(50)),
+                _buildMilestoneWidget(theme, 100, groupProgress.unlockedMilestones.contains(100)),
+              ],
+            ),
+            const SizedBox(height: 20),
+
             Text("Active Participants:", style: theme.textTheme.bodyMedium),
             const SizedBox(height: 8),
             Wrap(
@@ -91,6 +101,25 @@ class GroupChallengeStatusCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+  Widget _buildMilestoneWidget(ThemeData theme, int milestonePercentage, bool isUnlocked) {
+    return Column(
+      children: [
+        Icon(
+          isUnlocked ? Iconsax.award5 : Iconsax.award,
+          color: isUnlocked ? Colors.amber.shade600 : theme.disabledColor,
+          size: 28,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          "$milestonePercentage% Bonus",
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: isUnlocked ? Colors.amber.shade600 : theme.disabledColor,
+            fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
     );
   }
 }

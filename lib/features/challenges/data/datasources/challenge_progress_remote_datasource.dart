@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../models/challenge_progress_model.dart';
 import '../models/group_challenge_progress_model.dart';
 
@@ -10,7 +11,7 @@ abstract class ChallengeProgressRemoteDataSource {
   Future<void> createGroupProgress(GroupChallengeProgressModel groupProgress);
   Future<GroupChallengeProgressModel?> getGroupProgress(String inviteId);
   Future<void> addParticipantToGroupProgress({required String inviteId, required String userId, required int tasksPerUser});
-  Future<void> incrementGroupProgress(String inviteId);
+  Future<GroupChallengeProgressModel?> incrementGroupProgress(String inviteId);
   Future<void> markMilestoneAsAwarded({required String inviteId, required int milestone});
   Stream<List<GroupChallengeProgressModel>> watchGroupProgressByContextId(String contextId);
 }
@@ -84,9 +85,27 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
   }
 
   @override
-  Future<void> incrementGroupProgress(String inviteId) async {
+  Future<GroupChallengeProgressModel?> incrementGroupProgress(String inviteId) async {
     final docRef = _groupProgressCollection.doc(inviteId);
-    await docRef.update({'completedTasksCount': FieldValue.increment(1)});
+
+    return _firestore.runTransaction<GroupChallengeProgressModel?>((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        AppLogger.warning("Group progress document with id $inviteId not found during transaction.");
+        return null;
+      }
+
+      final data = snapshot.data() as Map<String, dynamic>;
+      final currentCount = (data['completedTasksCount'] as num?)?.toInt() ?? 0;
+      final newCount = currentCount + 1;
+
+      transaction.update(docRef, {'completedTasksCount': newCount});
+
+      final updatedData = Map<String, dynamic>.from(data);
+      updatedData['completedTasksCount'] = newCount;
+
+      return GroupChallengeProgressModel.fromMap(updatedData, snapshot.id);
+    });
   }
 
   @override

@@ -30,11 +30,7 @@ class ChatRoomModel {
       lastMessage: json['last_message'] as String?,
       lastMessageTime: (json['last_message_time'] as Timestamp?)?.toDate(),
       createdAt: (json['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
-
-      // --- NEUE FELDER AUS JSON LESEN ---
-      // 'hidden_for' ist der korrekte snake_case Name aus Firestore
       hiddenFor: List<String>.from(json['hidden_for'] ?? []),
-      // 'cleared_at' ist der korrekte snake_case Name aus Firestore
       clearedAt: json['cleared_at'] as Map<String, dynamic>? ?? {},
     );
   }

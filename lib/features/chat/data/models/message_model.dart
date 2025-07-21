@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+// WICHTIG: Importiere die Entity-Datei, um Zugriff auf das Enum zu haben
+import '../../domain/entities/message_entity.dart';
 
-class MessageModel extends Equatable{
+class MessageModel extends Equatable {
   final String id;
   final String toId;
   final String fromId;
   final String msg;
-  final String type;
+  final MessageType type;
   final DateTime? createdAt;
   final DateTime? readAt;
 
@@ -21,14 +23,16 @@ class MessageModel extends Equatable{
   });
 
   /// Erstellt ein MessageModel aus einem Firestore-Dokument.
-  /// Erwartet, dass Zeitstempel als Firestore-Timestamp gespeichert sind.
   factory MessageModel.fromJson(Map<String, dynamic> json, String docId) {
     return MessageModel(
       id: docId,
       toId: json['to_id'] as String? ?? '',
       fromId: json['from_id'] as String? ?? '',
       msg: json['msg'] as String? ?? '',
-      type: json['type'] as String? ?? 'text',
+      type: MessageType.values.firstWhere(
+            (e) => e.name == (json['type'] as String?),
+        orElse: () => MessageType.text,
+      ),
       createdAt: (json['created_at'] as Timestamp?)?.toDate(),
       readAt: (json['read_at'] as Timestamp?)?.toDate(),
     );
@@ -40,19 +44,18 @@ class MessageModel extends Equatable{
       'to_id': toId,
       'from_id': fromId,
       'msg': msg,
-      'type': type,
-      'created_at': FieldValue.serverTimestamp(), // Zeit wird vom Server gesetzt
-      'read_at': null, // Wird initial nicht gelesen
+      'type': type.name,
+      'created_at': FieldValue.serverTimestamp(),
+      'read_at': null,
     };
   }
 
-  /// Nützliche Helfer-Methode zum Kopieren und Ändern von Instanzen.
   MessageModel copyWith({
     String? id,
     String? toId,
     String? fromId,
     String? msg,
-    String? type,
+    MessageType? type,
     DateTime? createdAt,
     DateTime? readAt,
   }) {
@@ -66,6 +69,7 @@ class MessageModel extends Equatable{
       readAt: readAt ?? this.readAt,
     );
   }
+
   @override
   List<Object?> get props => [id, toId, fromId, msg, type, createdAt, readAt];
 }

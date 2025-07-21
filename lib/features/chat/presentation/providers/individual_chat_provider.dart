@@ -221,7 +221,7 @@ class IndividualChatProvider with ChangeNotifier {
       fromId: currentUserId,
       toId: chatPartner.id, // Wichtig für 1-zu-1-Chats
       msg: text.trim(),
-      type: 'text',
+      type: MessageType.text,
       createdAt: DateTime.now(), // Client-Zeit, wird in DS ggf. durch Server-Zeit ersetzt
     );
 
@@ -280,7 +280,7 @@ class IndividualChatProvider with ChangeNotifier {
           fromId: currentUserId,
           toId: chatPartner.id,
           msg: imageUrl, // Die URL ist der Inhalt der Nachricht
-          type: 'image',
+          type: MessageType.image,
           createdAt: DateTime.now(),
         );
 

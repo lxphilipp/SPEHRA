@@ -11,6 +11,7 @@ class Step5PreviewPage extends StatelessWidget {
     final provider = context.watch<ChallengeProvider>();
     final challenge = provider.challengeInProgress;
     final theme = Theme.of(context);
+    final balance = provider.gameBalance;
 
     if (challenge == null) {
       return const Center(child: Text('Error: No challenge in progress.'));
@@ -66,7 +67,7 @@ class Step5PreviewPage extends StatelessWidget {
                     context,
                     icon: Iconsax.star_1,
                     label: 'Points',
-                    value: '${challenge.calculatedPoints} Pts',
+                    value: '${challenge.calculatePoints(balance!)} Pts',
                     color: Colors.amber,
                   ),
                   const SizedBox(height: 12),
@@ -74,7 +75,7 @@ class Step5PreviewPage extends StatelessWidget {
                     context,
                     icon: Iconsax.diagram,
                     label: 'Difficulty',
-                    value: challenge.calculatedDifficulty,
+                    value: challenge.calculateDifficulty(balance),
                     color: Colors.blueAccent,
                   ),
                 ],
