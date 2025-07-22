@@ -104,10 +104,10 @@ class ChatRepositoryImpl implements ChatRepository {
         initialMessage: initialMessage != null ? _mapMessageEntityToModel(initialMessage) : null,
       );
     } on ChatDataSourceException catch (e) {
-      print("ChatRepo Error: $e"); // Logging
+      AppLogger.error("Error in createOrGetChatRoom", e);
       return null;
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler in createOrGetChatRoom: $e");
+      AppLogger.error("Unexpected error in createOrGetChatRoom", e);
       return null;
     }
   }
@@ -118,14 +118,14 @@ class ChatRepositoryImpl implements ChatRepository {
       return remoteDataSource.getChatRoomsStream(currentUserId)
           .map((models) => models.map(_mapChatRoomModelToEntity).toList())
           .handleError((error) {
-        print("ChatRepo Error in stream: $error");
+        AppLogger.error("Error in getChatRoomsStream", error);
         // Fehler im Stream weitergeben
         if (error is ChatDataSourceException) throw error;
-        throw Exception("Unbekannter Fehler im Chatraum-Stream: $error");
+        throw Exception("Unknown error in chat room stream: $error");
       });
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Chatraum-Streams: $e");
-      return Stream.error(Exception("Fehler beim Erstellen des Chatraum-Streams: $e"));
+      AppLogger.error("Unexpected error creating chat room stream", e);
+      return Stream.error(Exception("Error creating chat room stream: $e"));
     }
   }
 
@@ -134,7 +134,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.updateChatRoomWithMessage(roomId: roomId, lastMessage: lastMessage, messageType: messageType);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("Error in updateChatRoomWithMessage", e);
       rethrow;
     }
   }
@@ -151,7 +151,7 @@ class ChatRepositoryImpl implements ChatRepository {
         initialMessage: initialMessage != null ? _mapMessageEntityToModel(initialMessage) : null,
       );
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("Error in createGroupChat", e);
       return null;
     }
   }
@@ -162,13 +162,13 @@ class ChatRepositoryImpl implements ChatRepository {
       return remoteDataSource.getGroupChatsStream(currentUserId)
           .map((models) => models.map(_mapGroupChatModelToEntity).toList())
           .handleError((error) {
-        print("ChatRepo Error in stream: $error");
+        AppLogger.error("ChatRepo Error in stream: $error");
         if (error is ChatDataSourceException) throw error;
-        throw Exception("Unbekannter Fehler im Gruppenchat-Stream: $error");
+        throw Exception("Unknown error in group chat stream: $error");
       });
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Gruppenchat-Streams: $e");
-      return Stream.error(Exception("Fehler beim Erstellen des Gruppenchat-Streams: $e"));
+      AppLogger.error("ChatRepo Error: Unexpected error creating group chat stream: $e");
+      return Stream.error(Exception("Error creating group chat stream: $e"));
     }
   }
 
@@ -177,7 +177,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.updateGroupChatWithMessage(groupId: groupId, lastMessage: lastMessage, messageType: messageType);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -187,7 +187,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.updateGroupChatDetails(_mapGroupChatEntityToModel(groupChatEntity));
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -197,7 +197,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.addMembersToGroup(groupId, memberIdsToAdd);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -207,7 +207,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.removeMemberFromGroup(groupId, memberIdToRemove);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -221,7 +221,7 @@ class ChatRepositoryImpl implements ChatRepository {
         isGroupMessage: isGroupMessage,
       );
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -232,13 +232,13 @@ class ChatRepositoryImpl implements ChatRepository {
       return remoteDataSource.getMessagesStream(roomId)
           .map((models) => models.map(_mapMessageModelToEntity).toList())
           .handleError((error) {
-        print("ChatRepo Error in stream: $error");
+        AppLogger.error("ChatRepo Error in stream: $error");
         if (error is ChatDataSourceException) throw error;
-        throw Exception("Unbekannter Fehler im Nachrichten-Stream: $error");
+        throw Exception("Unknown error in message stream: $error");
       });
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Nachrichten-Streams: $e");
-      return Stream.error(Exception("Fehler beim Erstellen des Nachrichten-Streams: $e"));
+      AppLogger.error("ChatRepo Error: Unexpected error creating message stream: $e");
+      return Stream.error(Exception("Error creating message stream: $e"));
     }
   }
 
@@ -248,13 +248,13 @@ class ChatRepositoryImpl implements ChatRepository {
       return remoteDataSource.getGroupMessagesStream(groupId)
           .map((models) => models.map(_mapMessageModelToEntity).toList())
           .handleError((error) {
-        print("ChatRepo Error in stream: $error");
+        AppLogger.error("ChatRepo Error in stream: $error");
         if (error is ChatDataSourceException) throw error;
-        throw Exception("Unbekannter Fehler im Gruppennachrichten-Stream: $error");
+        throw Exception("Unknown error in group message stream: $error");
       });
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Gruppennachrichten-Streams: $e");
-      return Stream.error(Exception("Fehler beim Erstellen des Gruppennachrichten-Streams: $e"));
+      AppLogger.error("ChatRepo Error: Unexpected error creating group message stream: $e");
+      return Stream.error(Exception("Error creating group message stream: $e"));
     }
   }
 
@@ -263,7 +263,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.markMessageAsRead(contextId: contextId, messageId: messageId, isGroupMessage: isGroupMessage, readerUserId: readerUserId);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -273,7 +273,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       await remoteDataSource.deleteMessage(contextId: contextId, messageId: messageId, isGroupMessage: isGroupMessage);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       rethrow;
     }
   }
@@ -281,10 +281,9 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<ChatUserEntity?> getChatUserById(String userId) async {
     try {
-      // Die DataSource liefert bereits ChatUserEntity (nachdem sie UserModel -> ChatUserEntity gemappt hat)
       return await remoteDataSource.getChatUserById(userId);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       return null;
     }
   }
@@ -292,26 +291,24 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Stream<List<ChatUserEntity>> getChatUsersStreamByIds(List<String> userIds) {
     try {
-      // Die DataSource liefert bereits Stream<List<ChatUserEntity>>
       return remoteDataSource.getChatUsersStreamByIds(userIds)
           .handleError((error) {
-        print("ChatRepo Error in stream: $error");
+        AppLogger.error("ChatRepo Error in stream: $error");
         if (error is ChatDataSourceException) throw error;
-        throw Exception("Unbekannter Fehler im Chat-User-Stream: $error");
+        throw Exception("Unknown error in chat user stream: $error");
       });
     } catch (e) {
-      print("ChatRepo Error: Unerwarteter Fehler beim Erstellen des Chat-User-Streams: $e");
-      return Stream.error(Exception("Fehler beim Erstellen des Chat-User-Streams: $e"));
+      AppLogger.error("ChatRepo Error: Unexpected error creating chat user stream: $e");
+      return Stream.error(Exception("Error creating chat user stream: $e"));
     }
   }
 
   @override
   Future<List<ChatUserEntity>> findChatUsersByNamePrefix(String namePrefix, {List<String> excludeIds = const []}) async {
     try {
-      // Die DataSource liefert bereits List<ChatUserEntity>
       return await remoteDataSource.findChatUsersByNamePrefix(namePrefix);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       return []; // Leere Liste bei Fehler
     }
   }
@@ -321,7 +318,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       return await remoteDataSource.uploadChatImage(imageFile: imageFile, contextId: contextId, uploaderUserId: uploaderUserId);
     } catch (e) {
-      print("ChatRepo Error: $e");
+      AppLogger.error("ChatRepo Error: $e");
       return null;
     }
   }
@@ -329,7 +326,6 @@ class ChatRepositoryImpl implements ChatRepository {
   Stream<GroupChatEntity?> watchGroupChatById({required String groupId}) {
     try {
       return remoteDataSource.watchGroupChatById(groupId).map((model) {
-        // Mappe das Model zu Entity, wenn es nicht null ist
         return model != null ? _mapGroupChatModelToEntity(model) : null;
       }).handleError((error) {
         AppLogger.error("ChatRepo: Fehler im watchGroupChatById Stream für $groupId", error);

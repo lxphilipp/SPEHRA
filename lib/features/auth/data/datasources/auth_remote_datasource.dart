@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -109,7 +110,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       await firestore.collection('users').doc(userId).update(dataToUpdate);
     } catch (e) {
-      print("Fehler beim Aktualisieren der User Presence für $userId: $e");
+      AppLogger.error("Error updating user presence for $userId: $e");
       rethrow;
     }
   }

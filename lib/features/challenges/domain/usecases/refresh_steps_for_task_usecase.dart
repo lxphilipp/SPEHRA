@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../entities/trackable_task.dart';
 import '../repositories/device_tracking_repository.dart';
 import 'update_task_progress_usecase.dart';
@@ -28,7 +29,7 @@ class RefreshStepsForTaskUseCase {
 
     } catch (e) {
       // Error handling, e.g., logging
-      print("Error in RefreshStepsForTaskUseCase: $e");
+      AppLogger.error("Error in RefreshStepsForTaskUseCase: $e");
       // Optional: Re-throw exception so the Provider can catch it
       rethrow;
     }

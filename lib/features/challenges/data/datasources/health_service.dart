@@ -1,5 +1,5 @@
 import 'package:health/health.dart';
-import 'package:flutter/foundation.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class HealthService {
   final Health health = Health();
@@ -16,7 +16,7 @@ class HealthService {
       final bool requested = await health.requestAuthorization(types, permissions: permissions);
       return requested;
     } catch (e) {
-      debugPrint("Error requesting Health permissions: $e");
+      AppLogger.error("Error requesting Health permissions: $e");
       return false;
     }
   }
@@ -33,13 +33,13 @@ class HealthService {
       if (!hasPermissions) {
         final granted = await requestPermissions();
         if (!granted) {
-          debugPrint("Permissions were not granted.");
+          AppLogger.warning("Permissions were not granted.");
           return 0;
         }
       }
       return await health.getTotalStepsInInterval(midnight, now) ?? 0;
     } catch (e) {
-      debugPrint("Error retrieving step data: $e");
+      AppLogger.error("Error retrieving step data: $e");
       return 0;
     }
   }

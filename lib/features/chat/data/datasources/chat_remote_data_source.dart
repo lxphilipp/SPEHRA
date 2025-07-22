@@ -289,7 +289,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       };
       await _chatRoomsCollection.doc(roomId).update(updateData);
     } catch (e) {
-      print("ChatDataSource Error in updateChatRoomWithMessage: $e");
+      AppLogger.error("Error updating chat room $roomId", e);
       throw ChatDataSourceException("Error updating chat room $roomId", cause: e);
     }
   }
@@ -332,7 +332,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
       return groupId;
     } catch (e) {
-      print("ChatDataSource Error in createGroupChat: $e");
+      AppLogger.error("Error creating group '$name'", e);
       throw ChatDataSourceException("Error creating group '$name'", cause: e);
     }
   }
@@ -352,11 +352,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           return GroupChatModel.fromJson(data, doc.id);
         }).toList();
       }).handleError((error, stackTrace) {
-        print("ChatDataSource Error in getGroupChatsStream: $error, Stack: $stackTrace");
+        AppLogger.error("Error in getGroupChatsStream", error, stackTrace);
         throw ChatDataSourceException("Error streaming group chats", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error initializing getGroupChatsStream: $e");
+      AppLogger.error("Error initializing getGroupChatsStream", e);
       throw ChatDataSourceException("Error initializing group chat stream", cause: e);
     }
   }
@@ -374,7 +374,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       };
       await _groupChatsCollection.doc(groupId).update(updateData);
     } catch (e) {
-      print("ChatDataSource Error in updateGroupChatWithMessage: $e");
+      AppLogger.error("Error updating group chat $groupId", e);
       throw ChatDataSourceException("Error updating group chat $groupId", cause: e);
     }
   }
@@ -394,7 +394,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
       await _groupChatsCollection.doc(groupChatModel.id).update(dataToUpdate);
     } catch (e) {
-      print("ChatDataSource Error in updateGroupChatDetails: $e");
+      AppLogger.error("Error updating group details for ${groupChatModel.id}", e);
       throw ChatDataSourceException("Error updating group details for ${groupChatModel.id}", cause: e);
     }
   }
@@ -406,7 +406,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         'members': FieldValue.arrayUnion(memberIdsToAdd),
       });
     } catch (e) {
-      print("ChatDataSource Error in addMembersToGroup: $e");
+      AppLogger.error("Error adding members to group $groupId", e);
       throw ChatDataSourceException("Error adding members to group $groupId", cause: e);
     }
   }
@@ -419,7 +419,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         'admins': FieldValue.arrayRemove([memberIdToRemove]),
       });
     } catch (e) {
-      print("ChatDataSource Error in removeMemberFromGroup: $e");
+      AppLogger.error("Error removing member $memberIdToRemove from group $groupId", e);
       throw ChatDataSourceException("Error removing member $memberIdToRemove from group $groupId", cause: e);
     }
   }
@@ -496,7 +496,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
             messageType: messageToSend.type.name);
       }
     } catch (e) {
-      print("ChatDataSource Error in sendMessage: $e");
+      AppLogger.error("Error sending message in $contextId", e);
       throw ChatDataSourceException("Error sending message in $contextId", cause: e);
     }
   }
@@ -512,11 +512,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         return MessageModel.fromJson(data, doc.id);
       }).toList())
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error in getMessagesStream for room $roomId: $error, Stack: $stackTrace");
+        AppLogger.error("Error in getMessagesStream for room $roomId", error, stackTrace);
         throw ChatDataSourceException("Error streaming messages for room $roomId", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error initializing getMessagesStream for room $roomId: $e");
+      AppLogger.error("Error initializing getMessagesStream for room $roomId", e);
       throw ChatDataSourceException("Error initializing message stream for room $roomId", cause: e);
     }
   }
@@ -532,11 +532,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         return MessageModel.fromJson(data, doc.id);
       }).toList())
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error in getGroupMessagesStream for group $groupId: $error, Stack: $stackTrace");
+        AppLogger.error("Error in getGroupMessagesStream for group $groupId", error, stackTrace);
         throw ChatDataSourceException("Error streaming messages for group $groupId", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error initializing getGroupMessagesStream for group $groupId: $e");
+      AppLogger.error("Error initializing getGroupMessagesStream for group $groupId", e);
       throw ChatDataSourceException("Error initializing message stream for group $groupId", cause: e);
     }
   }
@@ -553,7 +553,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       await collectionPath.doc(contextId).collection('messages').doc(messageId)
           .update({'read_at': FieldValue.serverTimestamp()});
     } catch (e) {
-      print("ChatDataSource Error in markMessageAsRead: $e");
+      AppLogger.error("Error marking message $messageId as read in $contextId", e);
       throw ChatDataSourceException("Error marking message $messageId as read in $contextId", cause: e);
     }
   }
@@ -568,7 +568,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     try {
       await collectionPath.doc(contextId).collection('messages').doc(messageId).delete();
     } catch (e) {
-      print("ChatDataSource Error in deleteMessage: $e");
+      AppLogger.error("Error deleting message $messageId in $contextId", e);
       throw ChatDataSourceException("Error deleting message $messageId in $contextId", cause: e);
     }
   }
@@ -587,7 +587,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         return null;
       }
     } catch (e) {
-      print("ChatDataSource Error in getChatUserById: $e");
+      AppLogger.error("Error loading chat user profile: $userId", e);
       throw ChatDataSourceException("Error loading chat user profile: $userId", cause: e);
     }
   }
@@ -610,11 +610,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
             .toList();
       })
           .handleError((error, stackTrace) {
-        print("ChatDataSource Error in getChatUsersStreamByIds: $error, Stack: $stackTrace");
+        AppLogger.error("Error in getChatUsersStreamByIds", error, stackTrace);
         throw ChatDataSourceException("Error streaming chat user profiles", cause: error);
       });
     } catch (e) {
-      print("ChatDataSource Error initializing getChatUsersStreamByIds: $e");
+      AppLogger.error("Error initializing getChatUsersStreamByIds", e);
       throw ChatDataSourceException("Error initializing chat user profile stream", cause: e);
     }
   }
@@ -643,7 +643,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       })
           .toList();
     } catch (e) {
-      print("ChatDataSource Error in findChatUsersByNamePrefix: $e");
+      AppLogger.error("Error searching users by name '$namePrefix'", e);
       throw ChatDataSourceException("Error searching users by name '$namePrefix'", cause: e);
     }
   }
@@ -666,7 +666,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       String downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      print("ChatDataSource Error in uploadChatImage: $e");
+      AppLogger.error("Error uploading chat image", e);
       throw ChatDataSourceException("Error uploading chat image", cause: e);
     }
   }

@@ -1,5 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:image_picker/image_picker.dart';
+
+import '../../../../core/utils/app_logger.dart';
 
 /// An abstract contract that defines what the service must be able to do.
 /// The domain layer will only know this interface.
@@ -27,7 +30,7 @@ class ImagePickerServiceImpl implements ImagePickerService {
       return null; // User cancelled selection
     } catch (e) {
       // Error opening gallery or with permissions
-      print("ImagePickerService Error: $e");
+      AppLogger.error("ImagePickerService Error: $e");
       rethrow; // Re-throw error so the Use Case can handle it
     }
   }

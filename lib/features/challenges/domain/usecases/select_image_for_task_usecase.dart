@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:equatable/equatable.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../../data/datasources/image_picker_service.dart';
 import 'update_task_progress_usecase.dart';
 
@@ -24,7 +25,7 @@ class SelectImageForTaskUseCase {
       }
       return null;
     } catch (e) {
-      print("Error in SelectImageForTaskUseCase: $e");
+      AppLogger.error("Error in SelectImageForTaskUseCase: $e");
       return null;
     }
   }

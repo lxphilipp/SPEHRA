@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class GroupChatModel {
   final String id;
@@ -44,7 +45,7 @@ class GroupChatModel {
     } else if (json['created_at'] is int) {
       createdAt = DateTime.fromMillisecondsSinceEpoch(json['created_at']);
     } else if (!json.containsKey('created_at')) {
-      print("WARNUNG: 'created_at' fehlt in GroupChat $docId.");
+      AppLogger.warning("WARNING: 'created_at' is missing in GroupChat $docId.");
       createdAt = null;
     }
 

@@ -27,7 +27,6 @@ class SdgDetailProvider with ChangeNotifier {
     }
     // Wenn bereits für diese ID geladen und kein Fehler, nicht erneut laden (optional)
     if (_currentSdgDetail?.id == sdgId && _error == null && !_isLoading) {
-      // print("SdgDetailProvider: Details for $sdgId already loaded.");
       // return;
     }
 
