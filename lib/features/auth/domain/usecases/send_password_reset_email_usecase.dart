@@ -7,7 +7,7 @@ class SendPasswordResetEmailUseCase {
   SendPasswordResetEmailUseCase(this.repository);
 
   Future<bool> call(String email) async {
-    if (email.isEmpty /* || !isValidEmail(email) */) { // Einfache Validierung
+    if (email.isEmpty /* || !isValidEmail(email) */) { // Simple validation
       return false;
     }
     return await repository.sendPasswordResetEmail(email: email);

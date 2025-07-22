@@ -3,6 +3,7 @@
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -44,6 +45,11 @@ import 'features/invites/domain/usecases/accept_challenge_invite_usecase.dart';
 import 'features/invites/domain/usecases/create_challenge_invite_usecase.dart';
 import 'features/invites/domain/usecases/decline_challenge_invite_usecase.dart';
 import 'features/invites/domain/usecases/get_invites_for_context_usecase.dart';
+import 'features/news/data/datasources/news_remote_datasource.dart';
+import 'features/news/data/repositories/news_repository_impl.dart';
+import 'features/news/domain/repositories/news_repository.dart';
+import 'features/news/domain/usecases/fetch_un_sdg_news_usecase.dart';
+import 'features/news/presentation/provider/news_provider.dart';
 import 'firebase_options.dart';
 import 'core/utils/app_logger.dart';
 
@@ -188,6 +194,7 @@ Future<void> main() async {
         Provider<FirebaseStorage>.value(value: storage),
         Provider<Uuid>.value(value: uuid),
         Provider<FirebaseAppCheck>.value(value: appcheck),
+        Provider<http.Client>(create: (_) => http.Client()),
 
         // --- DATA & DOMAIN LAYER (By Feature) ---
         // AUTH
@@ -336,6 +343,17 @@ Future<void> main() async {
           ),
         ),
 
+        // --- NEWS FEATURE ---
+        Provider<NewsRemoteDataSource>(
+          create: (context) => NewsRemoteDataSourceImpl(client: context.read()),
+        ),
+        Provider<NewsRepository>(
+          create: (context) => NewsRepositoryImpl(remoteDataSource: context.read()),
+        ),
+        Provider<FetchUnSdgNewsUseCase>(
+          create: (context) => FetchUnSdgNewsUseCase(context.read()),
+        ),
+
 
         // --- PRESENTATION LAYER (ChangeNotifierProviders) ---
         ChangeNotifierProvider<AuthenticationProvider>(
@@ -423,7 +441,11 @@ Future<void> main() async {
             ),
             update: (context, auth, groupList, previous) => previous!..updateDependencies(auth, groupList)
         ),
-
+        ChangeNotifierProvider<NewsProvider>(
+          create: (context) => NewsProvider(
+            fetchNewsUseCase: context.read<FetchUnSdgNewsUseCase>(),
+          ),
+        ),
       ],
       child: const MyApp(),
     ),

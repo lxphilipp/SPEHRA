@@ -25,7 +25,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        // OPTIMIERT: Farben aus dem ColorScheme verwenden
         backgroundColor: isError ? theme.colorScheme.error : theme.colorScheme.primary,
       ),
     );
@@ -60,7 +59,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Holen des Themes für einfachen Zugriff auf Stile und Farben
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
@@ -72,7 +70,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           const SizedBox(height: 20),
           Text(
             'Enter your email address below and we will send you a link to reset your password.',
-            // OPTIMIERT: Text-Stil aus dem Theme beziehen
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurface,
             ),
@@ -82,11 +79,8 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           TextField(
             controller: emailController,
             style: TextStyle(color: theme.colorScheme.onSurface),
-            // OPTIMIERT: Die Dekoration kann zentral im Theme definiert werden
-            // oder hier, aber mit Theme-Farben.
             decoration: InputDecoration(
               labelText: 'Email',
-              // Eine zentralisierte InputDecoration im AppTheme wäre noch besser!
             ),
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
@@ -94,8 +88,6 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           ),
           const SizedBox(height: 30),
           ElevatedButton(
-            // OPTIMIERT: Der Stil wird jetzt vollständig vom ElevatedButtonTheme in
-            // deiner app_theme.dart gesteuert.
             onPressed: _isLoading ? null : _submitResetPasswordRequest,
             child: _isLoading
                 ? SizedBox(
@@ -103,11 +95,11 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                // Die Farbe des Ladekreises wird vom Button geerbt
+                // The color of the loading circle is inherited from the button
                 color: theme.colorScheme.onPrimary,
               ),
             )
-            // Die Textfarbe wird ebenfalls vom Button-Theme geerbt
+            // The text color is also inherited from the button theme
                 : const Text('Send Reset Email'),
           ),
         ],

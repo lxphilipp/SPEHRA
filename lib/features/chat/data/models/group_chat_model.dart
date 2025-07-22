@@ -4,11 +4,11 @@ import '../../../../core/utils/app_logger.dart';
 class GroupChatModel {
   final String id;
   final String name;
-  final String? imageUrl; // Beibehalten von oben
+  final String? imageUrl; // Retained from above
   final List<String> adminIds;
   final List<String> memberIds;
-  final String? lastMessage; // Ist nullbar
-  final DateTime? lastMessageTime; // Ist nullbar
+  final String? lastMessage; // Is nullable
+  final DateTime? lastMessageTime; // Is nullable
   final DateTime? createdAt;
 
   const GroupChatModel({
@@ -51,7 +51,7 @@ class GroupChatModel {
 
     return GroupChatModel(
       id: docId,
-      name: json['name'] as String? ?? 'Unbenannte Gruppe',
+      name: json['name'] as String? ?? 'Unnamed Group',
       imageUrl: json['image_url'] as String?,
       adminIds: List<String>.from(json['admins'] as List<dynamic>? ?? []),
       memberIds: List<String>.from(json['members'] as List<dynamic>? ?? []),
@@ -64,7 +64,7 @@ class GroupChatModel {
   Map<String, dynamic> toJsonForCreate() {
     final Map<String, dynamic> data = {
       'name': name,
-      'image_url': imageUrl, // Sicherstellen, dass der Key konsistent ist
+      'image_url': imageUrl, // Ensure the key is consistent
       'admins': adminIds,
       'members': memberIds,
       'created_at': FieldValue.serverTimestamp(),
@@ -73,11 +73,11 @@ class GroupChatModel {
     if (lastMessage != null && lastMessage!.isNotEmpty) {
       data['last_message'] = lastMessage;
       data['last_message_time'] = (lastMessageTime != null)
-          ? Timestamp.fromDate(lastMessageTime!) // Nimm die explizit gesetzte Zeit
-          : FieldValue.serverTimestamp();       // Oder lass den Server stempeln
+          ? Timestamp.fromDate(lastMessageTime!) // Take the explicitly set time
+          : FieldValue.serverTimestamp();       // Or let the server stamp it
     } else {
-      data['last_message'] = null; // Explizit null setzen, um Konsistenz zu wahren
-      data['last_message_time'] = null; // Explizit null setzen
+      data['last_message'] = null; // Explicitly set to null to maintain consistency
+      data['last_message_time'] = null; // Explicitly set to null
     }
     return data;
   }
@@ -85,17 +85,17 @@ class GroupChatModel {
   Map<String, dynamic> toJsonForUpdate() {
     final data = <String, dynamic>{};
     data['name'] = name;
-    if (imageUrl != null) { // Nur setzen, wenn ein neues Bild da ist
+    if (imageUrl != null) { // Only set if there is a new image
       data['image_url'] = imageUrl;
-    } else { // Wenn imageUrl null ist, könnte das bedeuten "Bild entfernen"
-      data['image_url'] = null; // oder FieldValue.delete() wenn du das Feld entfernen willst
+    } else { // If imageUrl is null, it could mean "remove image"
+      data['image_url'] = null; // or FieldValue.delete() if you want to remove the field
     }
     data['admins'] = adminIds;
     data['members'] = memberIds;
 
-    // Spezifische Logik für lastMessage und lastMessageTime beim Update
+    // Specific logic for lastMessage and lastMessageTime on update
     if (lastMessage != null && lastMessage!.isNotEmpty) {
-      // Wird nur aktualisiert, wenn eine neue Nachricht gesendet wird
+      // Is only updated when a new message is sent
       data['last_message'] = lastMessage;
       data['last_message_time'] = FieldValue.serverTimestamp();
     }

@@ -40,7 +40,7 @@ class AppTheme {
     );
   }
 
-  // Optional: Ein helles Theme für die Zukunft
+  // Optional: A light theme for the future
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

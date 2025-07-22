@@ -26,7 +26,7 @@ class _SignInFormState extends State<SignInForm> {
     super.dispose();
   }
 
-  // OPTIMIERT: Thematisierte Snackbar-Logik
+  // OPTIMIZED: Themed snackbar logic
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -72,14 +72,14 @@ class _SignInFormState extends State<SignInForm> {
     }
   }
 
-  // --- Deine ursprünglichen Methoden, jetzt thematisiert ---
+  // --- Your original methods, now themed ---
 
   Widget _buildSignInHeader(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
       child: Text(
         'SIGN IN',
-        // OPTIMIERT: Stil aus dem Theme
+        // OPTIMIZED: Style from the theme
         style: theme.textTheme.headlineMedium?.copyWith(
           fontFamily: 'OswaldLight',
         ),
@@ -101,7 +101,7 @@ class _SignInFormState extends State<SignInForm> {
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
       child: TextField(
         controller: emailController,
-        // OPTIMIERT: Die Dekoration verwendet jetzt das globale Theme
+        // OPTIMIZED: The decoration now uses the global theme
         decoration: const InputDecoration(
           prefixIcon: Icon(Icons.email),
           hintText: 'Email',
@@ -139,7 +139,7 @@ class _SignInFormState extends State<SignInForm> {
               builder: (context) => const ForgotPasswordScreen(),
             ));
           },
-          // OPTIMIERT: Der Stil kommt vom TextButtonTheme
+          // OPTIMIZED: The style comes from the TextButtonTheme
           child: const Text('Forgot Password?'),
         ),
       ),
@@ -153,7 +153,7 @@ class _SignInFormState extends State<SignInForm> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          // OPTIMIERT: Der Stil wurde entfernt und wird vom globalen Theme geerbt.
+          // OPTIMIZED: The style has been removed and is inherited from the global theme.
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
@@ -189,7 +189,6 @@ class _SignInFormState extends State<SignInForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Die build-Methode ruft jetzt wieder deine ursprünglichen Helper auf.
     return SingleChildScrollView(
       child: Column(
         children: [

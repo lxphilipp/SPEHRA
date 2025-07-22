@@ -23,7 +23,7 @@ class InvitesRepositoryImpl implements InvitesRepository {
     return remoteDataSource.updateRecipientStatus(
       inviteId: inviteId,
       recipientId: recipientId,
-      newStatus: newStatus.name, // Wandle Enum in String um
+      newStatus: newStatus.name,
     );
   }
 
@@ -38,8 +38,8 @@ class InvitesRepositoryImpl implements InvitesRepository {
     final model = await remoteDataSource.updateAndGetInvite(
       inviteId: inviteId,
       recipientId: recipientId,
-      newStatus: newStatus.name, // Enum in String umwandeln
+      newStatus: newStatus.name,
     );
-    return model?.toEntity(); // Model in Entity umwandeln
+    return model?.toEntity();
   }
 }

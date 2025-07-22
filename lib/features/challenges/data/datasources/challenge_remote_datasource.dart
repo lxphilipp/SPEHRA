@@ -37,7 +37,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
           .snapshots()
           .map(_processSnapshot)
           .handleError((error) {
-        AppLogger.warning("ChallengeRemoteDS: Fallback-Query wird versucht: $error");
+        AppLogger.warning("ChallengeRemoteDS: Fallback query is being attempted: $error");
         return firestore.collection('challenges').snapshots().map(_processSnapshot);
       });
     } catch (e) {
@@ -47,14 +47,14 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
   }
 
   List<ChallengeModel> _processSnapshot(QuerySnapshot snapshot) {
-    AppLogger.info("ChallengeRemoteDS: Snapshot mit ${snapshot.docs.length} Dokumenten empfangen.");
+    AppLogger.info("ChallengeRemoteDS: Snapshot with ${snapshot.docs.length} documents received.");
     final challenges = <ChallengeModel>[];
     for (var doc in snapshot.docs) {
       try {
         final challenge = ChallengeModel.fromSnapshot(doc);
         challenges.add(challenge);
       } catch (e) {
-        AppLogger.error("ChallengeRemoteDS: Fehler beim Verarbeiten von Dokument ${doc.id}: $e", e);
+        AppLogger.error("ChallengeRemoteDS: Error processing document ${doc.id}: $e", e);
       }
     }
     return challenges;
@@ -69,7 +69,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       }
       return null;
     } catch (e) {
-      AppLogger.error("ChallengeRemoteDS: Fehler bei getChallengeById $challengeId: $e", e);
+      AppLogger.error("ChallengeRemoteDS: Error at getChallengeById $challengeId: $e", e);
       throw Exception('Failed to get challenge by ID: $e');
     }
   }
@@ -80,7 +80,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       final docRef = await firestore.collection('challenges').add(challenge.toMap());
       return docRef.id;
     } catch (e) {
-      AppLogger.error("ChallengeRemoteDS: Fehler bei createChallenge: $e", e);
+      AppLogger.error("ChallengeRemoteDS: Error at createChallenge: $e", e);
       throw Exception('Failed to create challenge: $e');
     }
   }

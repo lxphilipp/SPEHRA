@@ -8,7 +8,7 @@ abstract class HomeLocalDataSource {
 }
 
 class HomeLocalDataSourceImpl implements HomeLocalDataSource {
-  final String _sdgAssetPath = 'assets/data/sdg_navigation_items.json'; // Beispielpfad
+  final String _sdgAssetPath = 'assets/data/sdg_navigation_items.json';
 
   @override
   Future<List<SdgNavigationItemModel>> getSdgNavigationItems() async {

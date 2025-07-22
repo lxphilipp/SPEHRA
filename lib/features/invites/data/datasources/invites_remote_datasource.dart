@@ -38,24 +38,19 @@ class InvitesRemoteDataSourceImpl implements InvitesRemoteDataSource {
       return snapshot.docs.map((doc) => InviteModel.fromSnapshot(doc)).toList();
     });
   }
-  // --- IMPLEMENTIERUNG DER NEUEN METHODE ---
   @override
   Future<InviteModel?> updateAndGetInvite({required String inviteId, required String recipientId, required String newStatus}) async {
     final docRef = _invitesCollection.doc(inviteId);
 
     return _firestore.runTransaction<InviteModel?>((transaction) async {
-      // 1. Dokument lesen
       final snapshot = await transaction.get(docRef);
       if (!snapshot.exists) {
-        return null; // Einladung existiert nicht
+        return null;
       }
 
-      // 2. Status aktualisieren
       transaction.update(docRef, {'recipients.$recipientId': newStatus});
 
-      // 3. Model mit den aktualisierten Daten erstellen und zurückgeben
       final data = snapshot.data() as Map<String, dynamic>;
-      // Wende die Änderung auch auf unsere lokale Kopie an, bevor wir das Model erstellen
       (data['recipients'] as Map<String, dynamic>)[recipientId] = newStatus;
 
       return InviteModel.fromMap(data, snapshot.id);

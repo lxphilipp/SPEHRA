@@ -23,7 +23,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
     super.dispose();
   }
 
-  // OPTIMIERT: Helper-Funktion für themenkonforme Snackbars
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -73,16 +72,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   Widget build(BuildContext context) {
-    // Holen des Themes für einfachen Zugriff auf Stile und Farben
     final theme = Theme.of(context);
 
-    // Helper-Funktion für ein konsistentes Input-Design
     InputDecoration buildInputDecoration(String label, IconData icon) {
       return InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: theme.colorScheme.onSurfaceVariant),
-        // Stile können zentral in `app_theme.dart` unter `inputDecorationTheme`
-        // für die ganze App definiert werden, um dies hier zu vermeiden.
       );
     }
 
@@ -95,7 +90,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
           Text(
             'Create Account',
             textAlign: TextAlign.center,
-            // OPTIMIERT: Text-Stil aus dem Theme beziehen
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onSurface,
             ),
@@ -141,7 +135,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 color: theme.colorScheme.onPrimary,
               ),
             )
-            // Textfarbe wird ebenfalls vom Button-Theme gesteuert
                 : const Text('Register'),
           ),
         ],

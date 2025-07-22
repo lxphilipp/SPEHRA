@@ -1,8 +1,8 @@
 // lib/core/theme/app_colors.dart
 import 'package:flutter/material.dart';
 
-// Die SDG-Farben bleiben als feste Konstanten erhalten.
-// Dies ist der EINZIGE Ort, an dem diese spezifischen Farbwerte definiert sind.
+// The SDG colors are kept as fixed constants.
+// This is the ONLY place where these specific color values are defined.
 const Color goal1 = Color(0xFFE5243B);
 const Color goal2 = Color(0xFFDDA63A);
 const Color goal3 = Color(0xFF4C9F38);
@@ -22,17 +22,17 @@ const Color goal16 = Color(0xFF00689D);
 const Color goal17 = Color(0xFF19486A);
 const Color defaultGoalColor = Colors.grey;
 
-/// Erzeugt das ColorScheme für das dunkle Theme.
-/// Alle Farben werden von einer einzigen "seedColor" abgeleitet,
-/// um eine harmonische und Material 3-konforme Palette zu gewährleisten.
+/// Creates the ColorScheme for the dark theme.
+/// All colors are derived from a single "seedColor",
+/// to ensure a harmonious and Material 3-compliant palette.
 final darkColorScheme = ColorScheme.fromSeed(
-  seedColor: const Color(0xFF040324), // Unser "Sphera"-Grün als Basis
+  seedColor: const Color(0xFF040324), // Our "Sphera" green as a base
   brightness: Brightness.dark,
 );
 
-/// Erzeugt das ColorScheme für das helle Theme (optional, für später).
+/// Creates the ColorScheme for the light theme (optional, for later).
 final lightColorScheme = ColorScheme.fromSeed(
   seedColor: const Color(0xFF040324),
   brightness: Brightness.light,
-  // Optional: Spezifische Farben für das helle Theme anpassen.
+  // Optional: Adjust specific colors for the light theme.
 );

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
-// Models und Entities für Chat
+// Chat models and entities
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/message_entity.dart';
 import '../models/chat_room_model.dart';
@@ -11,29 +11,29 @@ import '../models/group_chat_model.dart';
 import '../models/message_model.dart';
 import '../../domain/entities/chat_user_entity.dart';
 
-// UserModel aus dem Auth-Feature für das Parsen von User-Dokumenten
+// UserModel from the auth feature for parsing user documents
 import '../../../auth/data/models/user_model.dart';
 
 
 abstract class ChatRemoteDataSource {
-  // --- Chat Room Operations (1-zu-1 Chats) ---
+  // --- Chat Room Operations (1-on-1 chats) ---
 
-  /// Erstellt einen neuen Chatraum zwischen dem [currentUserId] und dem [partnerUserId]
-  /// oder gibt die ID eines existierenden Raums zurück.
-  /// [initialMessage] ist optional.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Creates a new chat room between the [currentUserId] and the [partnerUserId]
+  /// or returns the ID of an existing room.
+  /// [initialMessage] is optional.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<String> createOrGetChatRoom({
     required String currentUserId,
     required String partnerUserId,
     MessageModel? initialMessage,
   });
 
-  /// Streamt eine Liste von ChatRoomModels, an denen der [currentUserId] beteiligt ist.
-  /// Der Stream emittiert Fehler als [ChatDataSourceException].
+  /// Streams a list of ChatRoomModels that the [currentUserId] is a part of.
+  /// The stream emits errors as [ChatDataSourceException].
   Stream<List<ChatRoomModel>> getChatRoomsStream(String currentUserId);
 
-  /// Aktualisiert die 'last_message' und 'last_message_time' eines Chatraums.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Updates the 'last_message' and 'last_message_time' of a chat room.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> updateChatRoomWithMessage({
     required String roomId,
     required String lastMessage,
@@ -47,64 +47,64 @@ abstract class ChatRemoteDataSource {
 
   // --- Group Chat Operations ---
 
-  /// Erstellt eine neue Chat-Gruppe.
-  /// [currentUserId] wird für die Erstellung der initialMessage benötigt.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Creates a new chat group.
+  /// [currentUserId] is needed for creating the initialMessage.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<String> createGroupChat({
     required String name,
     required List<String> memberIds,
     required List<String> adminIds,
-    required String currentUserId, // Benötigt für initialMessage.fromId
+    required String currentUserId, // Needed for initialMessage.fromId
     String? imageUrl,
     MessageModel? initialMessage,
   });
 
-  /// Streamt eine Liste von GroupChatModels, in denen der [currentUserId] Mitglied ist.
-  /// Der Stream emittiert Fehler als [ChatDataSourceException].
+  /// Streams a list of GroupChatModels where the [currentUserId] is a member.
+  /// The stream emits errors as [ChatDataSourceException].
   Stream<List<GroupChatModel>> getGroupChatsStream(String currentUserId);
 
-  /// Aktualisiert die 'last_message' und 'last_message_time' einer Gruppe.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Updates the 'last_message' and 'last_message_time' of a group.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> updateGroupChatWithMessage({
     required String groupId,
     required String lastMessage,
     required String messageType,
   });
 
-  /// Aktualisiert die allgemeinen Informationen einer Gruppe.
-  /// Das [groupChatModel] sollte die aktualisierten Daten enthalten.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Updates the general information of a group.
+  /// The [groupChatModel] should contain the updated data.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> updateGroupChatDetails(GroupChatModel groupChatModel);
 
-  /// Fügt Mitglieder zu einer bestehenden Gruppe hinzu.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Adds members to an existing group.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> addMembersToGroup(String groupId, List<String> memberIdsToAdd);
 
-  /// Entfernt ein Mitglied aus einer Gruppe.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Removes a member from a group.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> removeMemberFromGroup(String groupId, String memberIdToRemove);
 
 
-  // --- Message Operations (für 1-zu-1 und Gruppen) ---
+  // --- Message Operations (for 1-on-1 and groups) ---
 
-  /// Sendet eine Nachricht.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Sends a message.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> sendMessage({
     required MessageModel message,
-    required String contextId, // roomId oder groupId
+    required String contextId, // roomId or groupId
     required bool isGroupMessage,
   });
 
-  /// Streamt Nachrichten für einen gegebenen Chatraum (1-zu-1).
-  /// Der Stream emittiert Fehler als [ChatDataSourceException].
+  /// Streams messages for a given chat room (1-on-1).
+  /// The stream emits errors as [ChatDataSourceException].
   Stream<List<MessageModel>> getMessagesStream(String roomId);
 
-  /// Streamt Nachrichten für eine gegebene Gruppe.
-  /// Der Stream emittiert Fehler als [ChatDataSourceException].
+  /// Streams messages for a given group.
+  /// The stream emits errors as [ChatDataSourceException].
   Stream<List<MessageModel>> getGroupMessagesStream(String groupId);
 
-  /// Markiert eine Nachricht als gelesen.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Marks a message as read.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> markMessageAsRead({
     required String contextId,
     required String messageId,
@@ -112,8 +112,8 @@ abstract class ChatRemoteDataSource {
     required String readerUserId,
   });
 
-  /// Löscht eine Nachricht.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Deletes a message.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<void> deleteMessage({
     required String contextId,
     required String messageId,
@@ -122,42 +122,42 @@ abstract class ChatRemoteDataSource {
 
   // --- User Related Operations for Chat ---
 
-  /// Holt eine einzelne ChatUserEntity anhand der User-ID.
-  /// Gibt null zurück, wenn der User nicht gefunden wird.
-  /// Wirft eine [ChatDataSourceException] bei anderen Fehlern.
+  /// Fetches a single ChatUserEntity by user ID.
+  /// Returns null if the user is not found.
+  /// Throws a [ChatDataSourceException] on other errors.
   Future<ChatUserEntity?> getChatUserById(String userId);
 
-  /// Streamt eine Liste von ChatUserEntities für eine Liste von User-IDs.
-  /// Der Stream emittiert Fehler als [ChatDataSourceException].
+  /// Streams a list of ChatUserEntities for a list of user IDs.
+  /// The stream emits errors as [ChatDataSourceException].
   Stream<List<ChatUserEntity>> getChatUsersStreamByIds(List<String> userIds);
 
-  /// Sucht Benutzer, deren Name mit dem [namePrefix] beginnt.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Searches for users whose name starts with the [namePrefix].
+  /// Throws a [ChatDataSourceException] on errors.
   Future<List<ChatUserEntity>> findChatUsersByNamePrefix(String namePrefix, {List<String> excludeIds});
 
   // --- Storage Operations ---
 
-  /// Lädt ein Bild in den Storage hoch.
-  /// Gibt die herunterladbare URL des Bildes zurück.
-  /// Wirft eine [ChatDataSourceException] bei Fehlern.
+  /// Uploads an image to storage.
+  /// Returns the downloadable URL of the image.
+  /// Throws a [ChatDataSourceException] on errors.
   Future<String> uploadChatImage({
     required File imageFile,
-    required String contextId, // roomId oder groupId
+    required String contextId, // roomId or groupId
     required String uploaderUserId,
   });
 
-  /// Streamt ein einzelnes GroupChatModel anhand der ID.
-  /// Emittiert null, wenn die Gruppe nicht existiert oder gelöscht wird.
+  /// Streams a single GroupChatModel by its ID.
+  /// Emits null if the group does not exist or is deleted.
   Stream<GroupChatModel?> watchGroupChatById(String groupId);
 
   Future<void> deleteGroup(String groupId);
 
 }
 
-/// Benutzerdefinierte Exception für Fehler in der Chat-Datenquelle.
+/// Custom exception for errors in the chat data source.
 class ChatDataSourceException implements Exception {
   final String message;
-  final dynamic cause; // Optionale Ursache, z.B. die ursprüngliche FirebaseException
+  final dynamic cause; // Optional cause, e.g., the original FirebaseException
 
   ChatDataSourceException(this.message, {this.cause});
 

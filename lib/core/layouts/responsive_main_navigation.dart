@@ -69,7 +69,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
             ),
           );
         } else {
-          // Desktop/Tablet Ansicht
+          // Desktop/Tablet view
           return Scaffold(
             body: Row(
               children: [
@@ -80,7 +80,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
                       ? NavigationRailLabelType.none
                       : NavigationRailLabelType.all,
                   leading: _buildRailHeader(),
-                  // HIER IST DIE ÄNDERUNG: Aufruf der neuen Methode
+                  // HERE IS THE CHANGE: Calling the new method
                   destinations: _buildDesktopDestinations(),
                 ),
                 Expanded(
@@ -97,7 +97,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     );
   }
 
-  /// Baut die Navigationsziele für die mobile Ansicht (NavigationBar).
+  /// Builds the navigation destinations for the mobile view (NavigationBar).
   List<NavigationDestination> _buildMobileDestinations() {
     return [
       const NavigationDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: 'Home'),
@@ -108,7 +108,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
     ];
   }
 
-  /// Baut die Navigationsziele für die Desktop-Ansicht (NavigationRail).
+  /// Builds the navigation destinations for the desktop view (NavigationRail).
   List<NavigationRailDestination> _buildDesktopDestinations() {
     return const [
       NavigationRailDestination(icon: Icon(Iconsax.home), selectedIcon: Icon(Iconsax.home_15), label: Text('Home')),

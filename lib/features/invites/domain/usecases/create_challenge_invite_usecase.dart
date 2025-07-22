@@ -25,7 +25,7 @@ class CreateChallengeInviteUseCase {
   Future<void> call(CreateInviteParams params) async {
     final challenge = await _getChallengeByIdUseCase(params.challengeId);
     if (challenge == null) {
-      throw Exception('Challenge für Einladung nicht gefunden');
+      throw Exception('No Challenge found for invite');
     }
 
     final recipientsMap = {
