@@ -21,9 +21,6 @@ abstract class ChallengeRemoteDataSource {
   Future<List<AddressModel>> searchLocation(String query);
 }
 
-
-// --- Implementierung ---
-
 class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
   final FirebaseFirestore firestore;
   final FirebaseAppCheck appCheck;

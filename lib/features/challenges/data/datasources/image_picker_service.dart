@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/utils/app_logger.dart';
@@ -9,7 +8,6 @@ import '../../../../core/utils/app_logger.dart';
 abstract class ImagePickerService {
   Future<File?> pickImageFromGallery();
 }
-
 
 /// The concrete implementation that uses the image_picker package.
 class ImagePickerServiceImpl implements ImagePickerService {

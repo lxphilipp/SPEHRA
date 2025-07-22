@@ -6,6 +6,7 @@ import 'package:collection/collection.dart'; // For deep list comparison
 // Core & Usecases
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
+import '../../../profile/domain/entities/user_profile_entity.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/challenge_progress_entity.dart';
 import '../../domain/entities/game_balance_entity.dart';
@@ -65,6 +66,7 @@ class ChallengeProvider with ChangeNotifier {
   // --- Internal References to other Providers ---
   late AuthenticationProvider _authProvider;
   late UserProfileProvider _userProfileProvider;
+  UserProfileEntity? _lastProcessedProfile;
 
   // --- State for Challenge List and Filtering ---
   List<ChallengeEntity> _allChallenges = [];
@@ -252,6 +254,14 @@ class ChallengeProvider with ChangeNotifier {
   void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
     _authProvider = auth;
     _userProfileProvider = profile;
+
+    final newUserProfile = profile.userProfile;
+
+    if (!const DeepCollectionEquality().equals(_lastProcessedProfile, newUserProfile)) {
+      AppLogger.debug("ChallengeProvider: UserProfile dependency changed. Notifying listeners.");
+      _lastProcessedProfile = newUserProfile;
+      notifyListeners();
+    }
   }
 
   void _initializeStreams() {

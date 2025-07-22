@@ -1,7 +1,8 @@
+// lib/app.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_sdg/features/auth/presentation/screens/sign_in_screen.dart';
-
+import 'package:flutter_sdg/auth_wrapper.dart'; // <-- Importiere die neue Datei
 import 'core/theme/app_theme.dart';
+// Deine anderen Imports bleiben unverändert
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,7 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter layouts demo',
-      home: const SignInScreen(),
+      home: const AuthWrapper(),
       theme: AppTheme.darkTheme,
     );
   }

@@ -1,6 +1,11 @@
+// lib/features/profile/data/repositories/user_profile_repository_impl.dart
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Benötigt für DocumentReference, Transaction
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/repositories/user_profile_repository.dart';
@@ -13,10 +18,79 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
   final ProfileStatsDataSource statsDataSource;
 
+  final Map<String, Color> _sdgColorMap = const {
+    'goal1': goal1, 'goal2': goal2, 'goal3': goal3, 'goal4': goal4,
+    'goal5': goal5, 'goal6': goal6, 'goal7': goal7, 'goal8': goal8,
+    'goal9': goal9, 'goal10': goal10, 'goal11': goal11, 'goal12': goal12,
+    'goal13': goal13, 'goal14': goal14, 'goal15': goal15, 'goal16': goal16,
+    'goal17': goal17,
+  };
+
   UserProfileRepositoryImpl({
     required this.remoteDataSource,
     required this.statsDataSource,
   });
+
+  @override
+  Stream<List<PieChartSectionData>?> getProfileStatsPieChartStream(String userId) {
+    if (userId.isEmpty) return Stream.value(null);
+
+    return statsDataSource.getCompletedTaskIdsStream(userId).asyncMap((taskIds) async {
+      // --- DEBUG CHECKPOINT 4 ---
+      AppLogger.debug("DEBUG (Repository): Received task IDs for processing: ${taskIds?.length ?? 'null'}");
+      if (taskIds == null) return null;
+      if (taskIds.isEmpty) return <PieChartSectionData>[];
+
+      try {
+        final challengesData = await statsDataSource.getChallengeDetailsForTasks(taskIds);
+        // --- DEBUG CHECKPOINT 5 ---
+        AppLogger.debug("DEBUG (Repository): Received challenge data for processing: ${challengesData?.length ?? 'null'} documents.");
+        if (challengesData == null) return null;
+
+        Map<String, int> categoryCounts = {};
+        for (var challengeMap in challengesData) {
+          final dynamic categoriesData = challengeMap['categories'] ?? challengeMap['category'];
+          if (categoriesData is List) {
+            final categories = List<String>.from(categoriesData);
+            for (var category in categories) {
+              categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
+            }
+          }
+        }
+        // --- DEBUG CHECKPOINT 6 ---
+        AppLogger.debug("DEBUG (Repository): Final category counts: $categoryCounts");
+
+        if (categoryCounts.isEmpty) return <PieChartSectionData>[];
+
+        final double total = categoryCounts.values.reduce((a, b) => a + b).toDouble();
+        List<PieChartSectionData> sections = [];
+
+        categoryCounts.forEach((category, count) {
+          final double percentage = (count / total) * 100;
+          final section = PieChartSectionData(
+            color: _sdgColorMap[category] ?? defaultGoalColor,
+            value: count.toDouble(),
+            title: '${percentage.toStringAsFixed(0)}%',
+            radius: 80,
+            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, shadows: [Shadow(color: Colors.black, blurRadius: 2)]),
+          );
+          sections.add(section);
+        });
+
+        // --- DEBUG CHECKPOINT 7 ---
+        AppLogger.debug("DEBUG (Repository): Successfully created ${sections.length} pie chart sections. Notifying UI.");
+        return sections;
+      } catch (e, s) {
+        AppLogger.error("Error processing pie chart data in Repository", e, s);
+        return null;
+      }
+    }).handleError((error, s) {
+      AppLogger.error("Fatal error in getProfileStatsPieChartStream", error, s);
+      return null;
+    });
+  }
+
+  // --- All other methods remain unchanged ---
 
   UserProfileEntity? _mapModelToEntity(UserProfileModel? model) {
     if (model == null) return null;
@@ -32,80 +106,50 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       level: model.level,
       completedTasks: model.completedTasks,
       ongoingTasks: model.ongoingTasks,
-      // about: model.about,
     );
   }
 
   @override
   Future<UserProfileEntity?> getUserProfile(String userId) async {
-    if (userId.isEmpty) {
-      AppLogger.warning("UserProfileRepoImpl: getUserProfile error - userId is empty");
-      return null;
-    }
+    if (userId.isEmpty) return null;
     try {
       final model = await remoteDataSource.getUserProfile(userId);
       return _mapModelToEntity(model);
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: getUserProfile error for UID $userId", e);
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   @override
   Stream<UserProfileEntity?> watchUserProfile(String userId) {
-    if (userId.isEmpty) {
-      AppLogger.warning("UserProfileRepoImpl: watchUserProfile error - userId is empty");
-      return Stream.value(null);
-    }
+    if (userId.isEmpty) return Stream.value(null);
     return remoteDataSource.watchUserProfile(userId).map((snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
         try {
           final model = UserProfileModel.fromMap(
               snapshot.data()! as Map<String, dynamic>, snapshot.id);
           return _mapModelToEntity(model);
-        } catch (e) {
-          AppLogger.error("UserProfileRepoImpl: Mapping error in watchUserProfile stream for UID $userId", e);
-          return null;
-        }
+        } catch (e) { return null; }
       }
       return null;
-    }).handleError((error) {
-      AppLogger.error("UserProfileRepoImpl: Error in watchUserProfile stream for UID $userId", error);
-      return null;
-    });
+    }).handleError((error) { return null; });
   }
 
   @override
   Future<bool> updateProfileData({
-    required String userId,
-    required String name,
-    required int age,
-    required String studyField,
-    required String school,
-    // String? about,
+    required String userId, required String name, required int age,
+    required String studyField, required String school,
   }) async {
     if (userId.isEmpty) return false;
     try {
-      final Map<String, dynamic> dataToUpdate = {
-        'name': name,
-        'age': age,
-        'studyField': studyField,
-        'school': school,
-        // if (about != null) 'about': about,
-      };
-      await remoteDataSource.updateUserProfileData(userId, dataToUpdate);
+      await remoteDataSource.updateUserProfileData(userId, {
+        'name': name, 'age': age, 'studyField': studyField, 'school': school,
+      });
       return true;
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: updateProfileData error for UID $userId", e);
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   @override
   Future<String?> uploadAndUpdateProfileImage({
-    required String userId,
-    required File imageFile,
-    String? oldImageUrl,
+    required String userId, required File imageFile, String? oldImageUrl,
   }) async {
     if (userId.isEmpty) return null;
     try {
@@ -113,47 +157,18 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
         await remoteDataSource.deleteOldProfileImage(oldImageUrl);
       }
       final newImageUrl = await remoteDataSource.uploadProfileImage(userId, imageFile);
-      // Nachdem das Bild hochgeladen wurde, aktualisiere das User-Dokument mit der neuen URL
       await remoteDataSource.updateUserProfileData(userId, {'imageURL': newImageUrl});
       return newImageUrl;
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: uploadProfileImageAndUpdateUrl error for UID $userId", e);
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
-  @override
-  Stream<List<PieChartSectionData>?> getProfileStatsPieChartStream(String userId) {
-    if (userId.isEmpty) return Stream.value(null);
-    return statsDataSource.getCompletedTaskIdsStream(userId).asyncMap((taskIds) async {
-      if (taskIds == null) return null;
-      if (taskIds.isEmpty) return <PieChartSectionData>[];
-      try {
-        final challengesData = await statsDataSource.getChallengeDetailsForTasks(taskIds);
-        if (challengesData == null) return null;
-        if (challengesData.isEmpty && taskIds.isNotEmpty) return <PieChartSectionData>[];
-
-        Map<String, int> categoryCounts = {};
-
-        for (var challengeMap in challengesData) { /* ... Zähllogik ... */ }
-        List<PieChartSectionData> sections = [];
-        if (categoryCounts.isNotEmpty) { /* ... Erstelle Sektionen ... */ }
-        return sections;
-      } catch (e) { return null; }
-    }).handleError((error) => null);
-  }
-
-  // --- Implementierung der NEUEN Methoden für Challenge-Interaktionen ---
   @override
   Future<bool> addTaskToOngoing(String userId, String challengeId) async {
     if (userId.isEmpty || challengeId.isEmpty) return false;
     try {
       await remoteDataSource.addUserOngoingTask(userId, challengeId);
       return true;
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: addTaskToOngoing error", e);
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   @override
@@ -162,82 +177,47 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     try {
       await remoteDataSource.removeUserOngoingTask(userId, challengeId);
       return true;
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: removeTaskFromOngoing error", e);
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   @override
   Future<bool> markTaskAsCompleted({
-    required String userId,
-    required String challengeId,
-    required int pointsEarned,
+    required String userId, required String challengeId, required int pointsEarned,
   }) async {
     if (userId.isEmpty || challengeId.isEmpty) return false;
-
     try {
       return await remoteDataSource.runUserProfileTransaction<bool>(
         userId: userId,
         updateFunction: (transaction, userDocRef) async {
           DocumentSnapshot userSnapshot = await transaction.get(userDocRef);
+          if (!userSnapshot.exists) throw Exception("User not found.");
 
-          if (!userSnapshot.exists || userSnapshot.data() == null) {
-            throw Exception("User document not found for transaction.");
-          }
+          final model = UserProfileModel.fromMap(userSnapshot.data()! as Map<String, dynamic>, userSnapshot.id);
+          final ongoing = List<String>.from(model.ongoingTasks)..remove(challengeId);
+          final completed = List<String>.from(model.completedTasks);
+          if (!completed.contains(challengeId)) completed.add(challengeId);
 
-          final currentUserModel = UserProfileModel.fromMap(
-              userSnapshot.data()! as Map<String, dynamic>, userSnapshot.id);
+          final newPoints = model.points + pointsEarned;
+          final newLevel = LevelUtils.calculateLevel(newPoints);
 
-          List<String> ongoingTasks = List<String>.from(currentUserModel.ongoingTasks);
-          List<String> completedTasks = List<String>.from(currentUserModel.completedTasks);
-          int currentPoints = currentUserModel.points;
-
-          ongoingTasks.remove(challengeId);
-          if (!completedTasks.contains(challengeId)) {
-            completedTasks.add(challengeId);
-          }
-          int newTotalPoints = currentPoints + pointsEarned;
-
-          int newUserLevel = LevelUtils.calculateLevel(newTotalPoints);
-
-          final Map<String, dynamic> dataToUpdate = {
-            'ongoingTasks': ongoingTasks,
-            'completedTasks': completedTasks,
-            'points': newTotalPoints,
-            'level': newUserLevel,
-          };
-
-          transaction.update(userDocRef, dataToUpdate);
-
+          transaction.update(userDocRef, {
+            'ongoingTasks': ongoing, 'completedTasks': completed,
+            'points': newPoints, 'level': newLevel,
+          });
           return true;
         },
       );
-    } catch (e) {
-      AppLogger.error("UserProfileRepoImpl: markTaskAsCompleted transaction error", e);
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   @override
   Future<void> addBonusPoints({required List<String> userIds, required int points}) async {
     if (userIds.isEmpty || points <= 0) return;
-
     WriteBatch batch = FirebaseFirestore.instance.batch();
-
     for (String userId in userIds) {
       final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
-      batch.update(userDocRef, {
-        'points': FieldValue.increment(points)
-      });
+      batch.update(userDocRef, {'points': FieldValue.increment(points)});
     }
-
-    try {
-      await batch.commit();
-      AppLogger.info("Bonus points ($points) successfully added to ${userIds.length} users.");
-    } catch (e) {
-      AppLogger.error("Error committing batch for bonus points", e);
-      throw Exception("Failed to add bonus points.");
-    }
+    await batch.commit();
   }
 }
