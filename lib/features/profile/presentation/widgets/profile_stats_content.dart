@@ -1,11 +1,14 @@
 // lib/features/profile/presentation/widgets/profile_stats_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:iconsax/iconsax.dart';
+import 'dart:math'; // For max() function
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/sdg_color_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../sdg/domain/entities/sdg_list_item_entity.dart';
+import '../../../sdg/presentation/providers/sdg_list_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/utils/level_utils.dart';
@@ -36,57 +39,130 @@ class ProfileStatsContent extends StatelessWidget {
     }
 
     final userProfile = profileProvider.userProfile;
-    final authUser = authProvider.currentUser;
-
-    if (userProfile == null || authUser == null) {
+    if (userProfile == null) {
       return Center(
-        child: Text(
-          'Please log in to view your profile.',
-          style: theme.textTheme.bodyLarge,
-        ),
+        child: Text('Please log in to view your profile.', style: theme.textTheme.bodyLarge),
       );
     }
-
     final levelData = LevelUtils.calculateLevelData(userProfile.points);
-    final SdgColorTheme? sdgTheme = theme.extension<SdgColorTheme>();
 
-    return SafeArea( child:  ListView(
-      padding: const EdgeInsets.all(20.0),
-      children: [
-        // --- NEW: Custom Header integrated into the content ---
-        _buildCustomHeader(context, userProfile, levelData),
-        const SizedBox(height: 24),
-
-        // --- Stats Cards (Points & Level) ---
-        _buildStatsCards(context, userProfile),
-        const SizedBox(height: 24),
-
-        // --- User Details Card ---
-        _buildUserDetailsCard(context, userProfile),
-        const SizedBox(height: 24),
-
-        // --- Statistics Section ---
-        Text("Your SDG Engagement", style: theme.textTheme.titleLarge),
-        const SizedBox(height: 10),
-
-        // --- PieChart ---
-        _buildPieChart(context, profileProvider),
-        const SizedBox(height: 20),
-
-        // --- SDG Color Legend ---
-        if (sdgTheme != null)
-          _buildSdgLegend(context, sdgTheme),
-
-        const SizedBox(height: 30),
-      ],
-    )
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(20.0),
+        children: [
+          _buildCustomHeader(context, userProfile, levelData),
+          const SizedBox(height: 24),
+          _buildStatsCards(context, userProfile),
+          const SizedBox(height: 24),
+          _buildUserDetailsCard(context, userProfile),
+          const SizedBox(height: 24),
+          Text("Your SDG Engagement", style: theme.textTheme.titleLarge),
+          const SizedBox(height: 16),
+          StreamBuilder<Map<String, int>?>(
+            stream: profileProvider.categoryCountsStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                return const SizedBox(height: 150, child: Center(child: CircularProgressIndicator()));
+              }
+              if (snapshot.hasError) {
+                return SizedBox(height: 100, child: Center(child: Text('Error: ${snapshot.error}')));
+              }
+              final categoryCounts = snapshot.data;
+              if (categoryCounts == null || categoryCounts.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Center(
+                      child: Text(
+                        "Complete challenges to see your SDG engagement stats here!",
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return _buildSdgEngagementList(context, categoryCounts);
+            },
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
     );
   }
+
+  Widget _buildSdgEngagementList(BuildContext context, Map<String, int> categoryCounts) {
+    final theme = Theme.of(context);
+    final sdgTheme = theme.extension<SdgColorTheme>()!;
+    final sdgListProvider = context.watch<SdgListProvider>();
+    final allSdgItems = sdgListProvider.sdgListItems;
+
+    if (allSdgItems.isEmpty) return const SizedBox.shrink();
+
+    final totalCount = categoryCounts.values.fold(0, (sum, count) => sum + count);
+    final maxCount = categoryCounts.values.reduce(max); // Find the highest value
+
+    final sortedEntries = categoryCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: sortedEntries.map((entry) {
+            final goalKey = entry.key;
+            final count = entry.value;
+            final percentage = (count / totalCount) * 100;
+            final relativeBarWidth = count / maxCount; // The bar width relative to the max value
+
+            final color = sdgTheme.colorForSdgKey(goalKey);
+            final sdgItem = allSdgItems.firstWhere(
+                  (item) => item.id == goalKey,
+              orElse: () => SdgListItemEntity(id: goalKey, title: goalKey, listImageAssetPath: ''),
+            );
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(sdgItem.title, style: theme.textTheme.bodyLarge),
+                      Text(
+                        '${percentage.toStringAsFixed(0)}%',
+                        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // This is the relative bar that replaces the progress indicator
+                  FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: relativeBarWidth,
+                    child: Container(
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // --- Other helper methods (unchanged) ---
 
   Widget _buildCustomHeader(BuildContext context, UserProfileEntity userProfile, LevelData levelData) {
     final theme = Theme.of(context);
     final authProvider = context.read<AuthenticationProvider>();
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,13 +172,13 @@ class ProfileStatsContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                userProfile.name, // <-- FIXED: Display user's name
+                userProfile.name,
                 style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
-                userProfile.email ?? '', // <-- FIXED: Display user's email
+                userProfile.email ?? '',
                 style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -144,7 +220,6 @@ class ProfileStatsContent extends StatelessWidget {
   Widget _buildStatsCards(BuildContext context, UserProfileEntity userProfile) {
     final theme = Theme.of(context);
     final levelData = LevelUtils.calculateLevelData(userProfile.points);
-
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -204,73 +279,6 @@ class ProfileStatsContent extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(child: Text(text, style: theme.textTheme.bodyLarge)),
       ],
-    );
-  }
-
-  Widget _buildPieChart(BuildContext context, UserProfileProvider profileProvider) {
-    final theme = Theme.of(context);
-    return StreamBuilder<List<PieChartSectionData>?>(
-      stream: profileProvider.pieChartDataStream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-          return const SizedBox(height: 250, child: Center(child: CircularProgressIndicator()));
-        }
-        if (snapshot.hasError) {
-          return SizedBox(height: 100, child: Center(child: Text('Error loading stats: ${snapshot.error}', style: TextStyle(color: theme.colorScheme.error))));
-        }
-        final pieData = snapshot.data;
-        if (pieData == null || pieData.isEmpty) {
-          return SizedBox(
-            height: 150,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  "Complete challenges to see your SDG engagement stats here!",
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                ),
-              ),
-            ),
-          );
-        }
-        return SizedBox(
-          height: 250,
-          child: PieChart(
-            PieChartData(
-              sections: pieData,
-              sectionsSpace: 2,
-              borderData: FlBorderData(show: false),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSdgLegend(BuildContext context, SdgColorTheme sdgTheme) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        alignment: WrapAlignment.center,
-        children: List.generate(17, (index) {
-          final goalKey = 'goal${index + 1}';
-          final color = sdgTheme.colorForSdgKey(goalKey);
-          return Tooltip(
-            message: "SDG ${index + 1}",
-            child: Chip(
-              avatar: CircleAvatar(backgroundColor: color, radius: 6),
-              label: Text(goalKey.replaceFirst('goal', ''), style: theme.textTheme.labelSmall),
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          );
-        }),
-      ),
     );
   }
 }

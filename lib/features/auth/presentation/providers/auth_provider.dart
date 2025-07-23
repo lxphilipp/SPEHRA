@@ -184,7 +184,7 @@ class AuthenticationProvider with ChangeNotifier {
   /// Called when the provider is removed from the widget tree.
   @override
   void dispose() {
-    _authStateSubscription?.cancel(); // Important: Clean up the stream subscription!
+    _authStateSubscription?.cancel();
     super.dispose();
   }
 }

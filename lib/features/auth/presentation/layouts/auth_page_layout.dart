@@ -16,11 +16,9 @@ class AuthPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Holen des Themes für den Zugriff auf Farben und Stile
     final theme = Theme.of(context);
 
     return Scaffold(
-      // OPTIMIERT: Die Hintergrundfarbe kommt jetzt aus dem ColorScheme
       backgroundColor: theme.colorScheme.surface,
       appBar: _buildAppBar(context),
       body: SafeArea(
@@ -40,7 +38,6 @@ class AuthPageLayout extends StatelessWidget {
     Widget? leadingWidget = appBarLeading;
 
     if (appBarTitleText != null && appBarTitleText!.isNotEmpty) {
-      // OPTIMIERT: Der Text-Stil wird vollständig vom AppBarTheme übernommen
       titleWidget = Text(appBarTitleText!);
     } else {
       double logoHeight = AppBar().preferredSize.height - 20.0;
@@ -50,14 +47,11 @@ class AuthPageLayout extends StatelessWidget {
           'assets/logo/sphera_logo.png',
           height: logoHeight,
           fit: BoxFit.contain,
-          // Optional: Logo-Farbe anpassen, falls es ein einfarbiges Logo ist
-          // color: theme.colorScheme.onSurface,
         ),
       );
     }
 
     if (leadingWidget == null && showBackButton && Navigator.canPop(context)) {
-      // OPTIMIERT: Die Farbe des BackButtons wird automatisch vom AppBarTheme gesteuert
       leadingWidget = BackButton(
         onPressed: () => Navigator.maybePop(context),
       );

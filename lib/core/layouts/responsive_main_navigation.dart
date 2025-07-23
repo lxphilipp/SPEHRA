@@ -24,21 +24,60 @@ class ResponsiveMainNavigation extends StatefulWidget {
 
 class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
   int _selectedIndex = 0;
+  // This now holds the dynamic configuration for our pages.
+  late List<Widget> _pages;
+  // A key to ensure the ChallengeListScreen rebuilds with the new initialTabIndex when needed.
+  int _challengeListKey = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    HomeScreen(),
-    ChallengeListScreen(),
-    CombinedChatScreen(),
-    NewsScreen(),
-    ProfileStatsScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _buildPages(); // Initial page setup
+  }
 
-  void _onDestinationSelected(int index) {
+  /// Constructs the list of main pages for the navigation.
+  ///
+  /// This method is called to rebuild the page list, especially when
+  /// navigating to a specific tab on the ChallengeListScreen.
+  void _buildPages({int challengeTabIndex = 0}) {
+    // The list of pages is now built dynamically.
+    _pages = <Widget>[
+      // Pass the navigation callback to the HomeScreen.
+      HomeScreen(navigateToPage: _navigateToPage),
+      ChallengeListScreen(
+        // The key ensures that the widget is completely rebuilt if the key changes,
+        // which allows us to reliably set a new initialTabIndex.
+        key: ValueKey(_challengeListKey),
+        initialTabIndex: challengeTabIndex,
+      ),
+      const CombinedChatScreen(),
+      const NewsScreen(),
+      const ProfileStatsScreen(),
+    ];
+  }
+
+  /// The core navigation function that handles switching pages and
+  /// passing parameters to them.
+  void _navigateToPage(int pageIndex, {int? challengeTabIndex}) {
     setState(() {
-      _selectedIndex = index;
+      // If we are specifically navigating to the challenges page (index 1)
+      // and a specific tab index is provided, we need to rebuild the pages.
+      if (pageIndex == 1 && challengeTabIndex != null) {
+        _challengeListKey++; // Changing the key forces a widget rebuild.
+        _buildPages(challengeTabIndex: challengeTabIndex);
+      }
+      _selectedIndex = pageIndex;
     });
   }
 
+  /// Callback for when a user taps on a destination in the
+  /// NavigationBar or NavigationRail.
+  void _onDestinationSelected(int index) {
+    // Standard navigation simply calls our main navigation function.
+    _navigateToPage(index);
+  }
+
+  /// Builds the header for the NavigationRail (desktop view).
   Widget _buildRailHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -57,10 +96,11 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
         final bool isMobile = constraints.maxWidth < 600;
 
         if (isMobile) {
+          // --- Mobile View ---
           return Scaffold(
             body: IndexedStack(
               index: _selectedIndex,
-              children: _pages,
+              children: _pages, // Use the stateful _pages list
             ),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _selectedIndex,
@@ -69,7 +109,7 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
             ),
           );
         } else {
-          // Desktop/Tablet view
+          // --- Desktop/Tablet View ---
           return Scaffold(
             body: Row(
               children: [
@@ -80,13 +120,12 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
                       ? NavigationRailLabelType.none
                       : NavigationRailLabelType.all,
                   leading: _buildRailHeader(),
-                  // HERE IS THE CHANGE: Calling the new method
                   destinations: _buildDesktopDestinations(),
                 ),
                 Expanded(
                   child: IndexedStack(
                     index: _selectedIndex,
-                    children: _pages,
+                    children: _pages, // Use the stateful _pages list
                   ),
                 ),
               ],

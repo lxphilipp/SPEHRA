@@ -22,7 +22,7 @@ abstract class UserProfileRepository {
     String? oldImageUrl,
   });
 
-  Stream<List<PieChartSectionData>?> getProfileStatsPieChartStream(String userId);
+  Stream<Map<String, int>?> getSdgCategoryCountsStream(String userId);
 
   Future<bool> addTaskToOngoing(String userId, String challengeId);
   Future<bool> removeTaskFromOngoing(String userId, String challengeId);

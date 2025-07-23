@@ -12,7 +12,6 @@ abstract class SdgLocalDataSource {
 }
 
 class SdgLocalDataSourceImpl implements SdgLocalDataSource {
-  // Pfad zu deiner JSON-Datei, die alle SDG-Metadaten enthält
   final String _sdgDataAssetPath = 'assets/data/all_sdg_data.json';
 
   @override
@@ -28,7 +27,6 @@ class SdgLocalDataSourceImpl implements SdgLocalDataSource {
       return models;
     } catch (e) {
       AppLogger.error('SdgLocalDataSource: Error loading SDG base data', e);
-      // Wirf eine spezifischere Exception, die das Repository fangen kann
       throw Exception('Failed to load SDG base data from asset: ${e.toString()}');
     }
   }

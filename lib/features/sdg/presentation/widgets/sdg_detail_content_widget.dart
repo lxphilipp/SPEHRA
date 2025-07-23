@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// Importiere dein LinkTextWidget (stelle sicher, dass der Pfad korrekt ist)
 import '/core/widgets/link_text.dart';
 import '../providers/sdg_detail_provider.dart';
 import '../../domain/entities/sdg_detail_entity.dart';
-// Der Import von app_colors.dart wird nicht mehr benötigt!
 
 class SdgDetailContentWidget extends StatefulWidget {
   final String sdgId;

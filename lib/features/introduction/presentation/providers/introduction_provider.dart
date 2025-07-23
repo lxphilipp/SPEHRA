@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../home/presentation/screens/home_screen.dart';
+// Import the main app layout, not just one of its screens.
+import '../../../../core/layouts/responsive_main_navigation.dart';
 import '../../domain/entities/intro_page_entity.dart';
 import '../../domain/usecases/get_intro_pages_usecase.dart';
-// Pfad zum finalen Screen anpassen
 
 class IntroductionProvider with ChangeNotifier {
   final GetIntroPagesUseCase _getIntroPagesUseCase;
@@ -14,7 +14,7 @@ class IntroductionProvider with ChangeNotifier {
 
   List<IntroPageEntity> _pages = [];
   bool _isLoading = true;
-  PageController pageController = PageController();
+  final PageController pageController = PageController();
 
   List<IntroPageEntity> get pages => _pages;
   bool get isLoading => _isLoading;
@@ -28,14 +28,18 @@ class IntroductionProvider with ChangeNotifier {
   }
 
   void nextPage(BuildContext context) {
+    // Check if the page controller is attached to a view.
+    if (!pageController.hasClients) return;
+
     if (pageController.page!.round() < _pages.length - 1) {
       pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
+      // CORRECTED: Navigate to the main responsive layout, not the HomeScreen directly.
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen())
+          MaterialPageRoute(builder: (_) => const ResponsiveMainNavigation())
       );
     }
   }

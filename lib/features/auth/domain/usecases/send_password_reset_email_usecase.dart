@@ -1,4 +1,3 @@
-// lib/features/auth/domain/usecases/send_password_reset_email_usecase.dart
 import '../repositories/auth_repository.dart';
 
 class SendPasswordResetEmailUseCase {
@@ -7,7 +6,7 @@ class SendPasswordResetEmailUseCase {
   SendPasswordResetEmailUseCase(this.repository);
 
   Future<bool> call(String email) async {
-    if (email.isEmpty /* || !isValidEmail(email) */) { // Simple validation
+    if (email.isEmpty /* || !isValidEmail(email) */) {
       return false;
     }
     return await repository.sendPasswordResetEmail(email: email);

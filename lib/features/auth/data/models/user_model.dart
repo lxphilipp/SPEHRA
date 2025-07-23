@@ -1,5 +1,4 @@
-// lib/features/auth/data/models/user_model.dart
-import 'package:cloud_firestore/cloud_firestore.dart'; // Für Timestamp
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   String? id;
@@ -71,7 +70,7 @@ class UserModel {
       lastActiveAt: parseTimestamp(map['lastActiveAt'] ?? map['last_Actived']), // Parsen von neuem 'lastActiveAt' oder altem 'last_Actived'
       pushToken: emptyToNull(map['pushToken'] ?? map['puch_Token']),
       online: map['online'] as bool?,
-      myUsers: List<String>.from(map['my_users'] as List<dynamic>? ?? []), // Korrigiert
+      myUsers: List<String>.from(map['my_users'] as List<dynamic>? ?? []),
       age: (map['age'] as num?)?.toInt(),
       studyField: map['studyField'] as String?,
       school: map['school'] as String?,
@@ -90,7 +89,7 @@ class UserModel {
       'about': about,
       'imageURL': imageURL,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
-      'lastActiveAt': lastActiveAt != null ? Timestamp.fromDate(lastActiveAt!) : null, // NEUER Feldname und Typ
+      'lastActiveAt': lastActiveAt != null ? Timestamp.fromDate(lastActiveAt!) : null,
       'pushToken': pushToken,
       'online': online,
       'my_users': myUsers,

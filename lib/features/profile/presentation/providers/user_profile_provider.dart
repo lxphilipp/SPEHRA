@@ -1,8 +1,6 @@
-// lib/features/profile/presentation/providers/user_profile_provider.dart
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 // Core & Auth
 import '../../../../core/utils/app_logger.dart';
@@ -30,14 +28,14 @@ class UserProfileProvider with ChangeNotifier {
   final WatchUserProfileUseCase _watchUserProfileUseCase;
   final UpdateProfileDataUseCase _updateProfileDataUseCase;
   final UploadProfileImageUseCase _uploadProfileImageUseCase;
-  final GetProfileStatsPieChartUseCase _getProfileStatsPieChartUseCase;
+  final GetCategoryCountsStream _getProfileStatsPieChartUseCase;
 
   // --- State ---
   UserProfileEntity? _userProfile;
   bool _isLoadingProfile = false;
   bool _isUpdatingProfile = false;
   String? _profileError;
-  Stream<List<PieChartSectionData>?> _pieChartDataStream = Stream.value(null);
+  Stream<Map<String, int>?> _categoryCountsStream = Stream.value(null);
 
   /// The provider's "memory" of the current user's ID.
   String? _currentUserId;
@@ -51,7 +49,7 @@ class UserProfileProvider with ChangeNotifier {
     required WatchUserProfileUseCase watchUserProfileUseCase,
     required UpdateProfileDataUseCase updateProfileDataUseCase,
     required UploadProfileImageUseCase uploadProfileImageUseCase,
-    required GetProfileStatsPieChartUseCase getProfileStatsPieChartUseCase,
+    required GetCategoryCountsStream getProfileStatsPieChartUseCase,
   })  : _getUserProfileUseCase = getUserProfileUseCase,
         _watchUserProfileUseCase = watchUserProfileUseCase,
         _updateProfileDataUseCase = updateProfileDataUseCase,
@@ -65,7 +63,7 @@ class UserProfileProvider with ChangeNotifier {
   bool get isLoadingProfile => _isLoadingProfile;
   bool get isUpdatingProfile => _isUpdatingProfile;
   String? get profileError => _profileError;
-  Stream<List<PieChartSectionData>?> get pieChartDataStream => _pieChartDataStream;
+  Stream<Map<String, int>?> get categoryCountsStream => _categoryCountsStream;
 
   // --- Dependency Update Method ---
 
@@ -118,7 +116,7 @@ class UserProfileProvider with ChangeNotifier {
       },
     );
 
-    _pieChartDataStream = _getProfileStatsPieChartUseCase(userId);
+    _categoryCountsStream = _getProfileStatsPieChartUseCase(userId);
     notifyListeners(); // Notify about the new stream for stats
   }
 
@@ -128,7 +126,7 @@ class UserProfileProvider with ChangeNotifier {
     _userProfile = null;
     _userProfileSubscription?.cancel();
     _userProfileSubscription = null;
-    _pieChartDataStream = Stream.value(null);
+    _categoryCountsStream = Stream.value(null);
     _isLoadingProfile = false;
     _isUpdatingProfile = false;
     _profileError = null;

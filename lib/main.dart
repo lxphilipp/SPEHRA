@@ -215,7 +215,7 @@ Future<void> main() async {
         Provider<WatchUserProfileUseCase>(create: (context) => WatchUserProfileUseCase(context.read())),
         Provider<UpdateProfileDataUseCase>(create: (context) => UpdateProfileDataUseCase(context.read())),
         Provider<UploadProfileImageUseCase>(create: (context) => UploadProfileImageUseCase(context.read())),
-        Provider<GetProfileStatsPieChartUseCase>(create: (context) => GetProfileStatsPieChartUseCase(context.read())),
+        Provider<GetCategoryCountsStream>(create: (context) => GetCategoryCountsStream(context.read())),
 
         // CHAT (Moved up to satisfy dependency order)
         Provider<ChatRemoteDataSource>(create: (context) => ChatRemoteDataSourceImpl(firestore: context.read(), firebaseStorage: context.read(), uuid: context.read())),
@@ -373,7 +373,7 @@ Future<void> main() async {
             watchUserProfileUseCase: context.read<WatchUserProfileUseCase>(),
             updateProfileDataUseCase: context.read<UpdateProfileDataUseCase>(),
             uploadProfileImageUseCase: context.read<UploadProfileImageUseCase>(),
-            getProfileStatsPieChartUseCase: context.read<GetProfileStatsPieChartUseCase>(),
+            getProfileStatsPieChartUseCase: context.read<GetCategoryCountsStream>(),
           ),
           update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/sdg_list_item_entity.dart';
-// Für Theme
 
 class SdgListItemWidget extends StatelessWidget {
   final SdgListItemEntity sdgItem;

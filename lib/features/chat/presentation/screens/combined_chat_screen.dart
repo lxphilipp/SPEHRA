@@ -90,7 +90,6 @@ class _CombinedChatScreenState extends State<CombinedChatScreen>
 
   void _onFabPressed() async {
     if (_tabController.index == 0) {
-      // Neuer privater Chat
       AppLogger.debug("CombinedChatScreen: FAB pressed for new private chat.");
       final ChatUserEntity? selectedPartner =
       await Navigator.of(context).push<ChatUserEntity>(
@@ -167,15 +166,14 @@ class _CombinedChatScreenState extends State<CombinedChatScreen>
                                 .setSortCriteria(value);
                           }
                         },
-                        // KORRIGIERTE WERTE HIER:
                         itemBuilder: (BuildContext context) =>
                         <PopupMenuEntry<String>>[
                           const PopupMenuItem<String>(
-                            value: 'lastMessageTime_desc', // Eindeutig für Neueste
+                            value: 'lastMessageTime_desc',
                             child: Text('Neueste zuerst'),
                           ),
                           const PopupMenuItem<String>(
-                            value: 'lastMessageTime_asc', // Eindeutig für Älteste
+                            value: 'lastMessageTime_asc',
                             child: Text('Älteste zuerst'),
                           ),
                         ],

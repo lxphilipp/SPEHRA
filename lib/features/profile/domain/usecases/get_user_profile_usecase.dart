@@ -6,7 +6,6 @@ class GetUserProfileUseCase {
 
   GetUserProfileUseCase(this.repository);
 
-  // Nimmt die userId als Parameter
   Future<UserProfileEntity?> call(String userId) async {
     if (userId.isEmpty) return null; // Einfache Validierung
     return await repository.getUserProfile(userId);

@@ -8,8 +8,6 @@ class UploadProfileImageUseCase {
 
   Future<String?> call(UploadProfileImageParams params) async {
     if (params.userId.isEmpty) return null;
-    // Hier könnte Logik stehen, um z.B. die Bildgröße oder den Typ zu prüfen,
-    // bevor es ans Repository geht.
     return await repository.uploadAndUpdateProfileImage(
       userId: params.userId,
       imageFile: params.imageFile,

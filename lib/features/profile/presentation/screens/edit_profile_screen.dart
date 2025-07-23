@@ -7,24 +7,22 @@ class EditProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dein altes EditProfilPage war ein StatefulWidget, aber der Screen-Wrapper
-    // kann oft ein StatelessWidget sein, wenn der State im Form-Widget liegt.
     return Scaffold(
-      backgroundColor: const Color(0xff040324), // Aus AppColors.primaryBackground holen
+      backgroundColor: const Color(0xff040324),
       appBar: AppBar(
         iconTheme: const IconThemeData(
-          color: Colors.white, // Aus AppColors.primaryText oder Theme holen
+          color: Colors.white,
         ),
         title: const Text(
           'Edit Profile',
           style: TextStyle(
-            color: Colors.white, // Aus AppColors.primaryText oder Theme holen
+            color: Colors.white,
             fontFamily: 'OswaldLight',
           ),
         ),
-        backgroundColor: const Color(0xff040324), // Aus AppColors.primaryBackground holen
+        backgroundColor: const Color(0xff040324),
       ),
-      body: const EditProfileForm(), // Hier das Formular-Widget einbetten
+      body: const EditProfileForm(),
     );
   }
 }

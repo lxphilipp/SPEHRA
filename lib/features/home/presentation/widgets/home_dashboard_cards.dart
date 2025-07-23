@@ -15,14 +15,14 @@ class DashboardCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      margin: EdgeInsets.zero, // Important for height
+      margin: EdgeInsets.zero,
       elevation: 0,
       color: color ?? theme.colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
-      child: SizedBox.expand( // Important for layout
+      child: SizedBox.expand(
         child: child,
       ),
     );

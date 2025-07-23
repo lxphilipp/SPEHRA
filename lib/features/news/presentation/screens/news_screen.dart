@@ -16,6 +16,7 @@ class NewsScreen extends StatelessWidget {
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // 1. Title, styled like the other main screens
           Padding(

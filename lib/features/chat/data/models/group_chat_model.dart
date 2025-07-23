@@ -4,11 +4,11 @@ import '../../../../core/utils/app_logger.dart';
 class GroupChatModel {
   final String id;
   final String name;
-  final String? imageUrl; // Retained from above
+  final String? imageUrl;
   final List<String> adminIds;
   final List<String> memberIds;
-  final String? lastMessage; // Is nullable
-  final DateTime? lastMessageTime; // Is nullable
+  final String? lastMessage;
+  final DateTime? lastMessageTime;
   final DateTime? createdAt;
 
   const GroupChatModel({
@@ -85,10 +85,10 @@ class GroupChatModel {
   Map<String, dynamic> toJsonForUpdate() {
     final data = <String, dynamic>{};
     data['name'] = name;
-    if (imageUrl != null) { // Only set if there is a new image
+    if (imageUrl != null) {
       data['image_url'] = imageUrl;
-    } else { // If imageUrl is null, it could mean "remove image"
-      data['image_url'] = null; // or FieldValue.delete() if you want to remove the field
+    } else {
+      data['image_url'] = null;
     }
     data['admins'] = adminIds;
     data['members'] = memberIds;

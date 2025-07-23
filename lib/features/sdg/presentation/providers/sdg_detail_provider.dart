@@ -25,15 +25,14 @@ class SdgDetailProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-    // Wenn bereits für diese ID geladen und kein Fehler, nicht erneut laden (optional)
+
     if (_currentSdgDetail?.id == sdgId && _error == null && !_isLoading) {
-      // return;
     }
 
 
     _isLoading = true;
     _error = null;
-    _currentSdgDetail = null; // Vorherige Daten löschen für klares Lade-Feedback
+    _currentSdgDetail = null;
     notifyListeners();
 
     final detail = await _getSdgDetailsByIdUseCase(sdgId);

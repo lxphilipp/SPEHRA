@@ -19,7 +19,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final sdgTheme = theme.extension<SdgColorTheme>();
-    // NEW: Access the provider to get the game balance configuration.
     final challengeProvider = context.watch<ChallengeProvider>();
     final balance = challengeProvider.gameBalance;
 
@@ -87,7 +86,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      // CORRECTION: Pass the balance object to the calculation method.
                       challenge.calculateDifficulty(balance),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -107,7 +105,6 @@ class ChallengePreviewCardWidget extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        // CORRECTION: Pass the balance object to the calculation method.
                         challenge.calculatePoints(balance).toString(),
                         style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold

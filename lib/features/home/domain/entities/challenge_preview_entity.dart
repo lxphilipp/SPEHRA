@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart' show immutable;
 class ChallengePreviewEntity {
   final String id;
   final String title;
-  final String difficulty; // oder ein Enum
+  final String difficulty;
   final int points;
-  final List<String> categories; // SDG-Goal-Keys (z.B. ["goal1", "goal5"])
+  final List<String> categories;
 
   const ChallengePreviewEntity({
     required this.id,
@@ -24,7 +24,6 @@ class ChallengePreviewEntity {
         other.title == title &&
         other.difficulty == difficulty &&
         other.points == points &&
-        // Wichtig für Listenvergleich: listEquals oder DeepCollectionEquality
         listEquals(other.categories, categories);
   }
 
@@ -34,10 +33,9 @@ class ChallengePreviewEntity {
       title.hashCode ^
       difficulty.hashCode ^
       points.hashCode ^
-      Object.hashAll(categories); // Korrekter Hash für Listen
+      Object.hashAll(categories);
 }
 
-// Hilfsfunktion für Listenvergleich (oder nutze das `collection`-Paket)
 bool listEquals<T>(List<T>? a, List<T>? b) {
   if (a == null) return b == null;
   if (b == null || a.length != b.length) return false;

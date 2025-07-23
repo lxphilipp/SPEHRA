@@ -18,75 +18,33 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
   final ProfileStatsDataSource statsDataSource;
 
-  final Map<String, Color> _sdgColorMap = const {
-    'goal1': goal1, 'goal2': goal2, 'goal3': goal3, 'goal4': goal4,
-    'goal5': goal5, 'goal6': goal6, 'goal7': goal7, 'goal8': goal8,
-    'goal9': goal9, 'goal10': goal10, 'goal11': goal11, 'goal12': goal12,
-    'goal13': goal13, 'goal14': goal14, 'goal15': goal15, 'goal16': goal16,
-    'goal17': goal17,
-  };
-
   UserProfileRepositoryImpl({
     required this.remoteDataSource,
     required this.statsDataSource,
   });
 
   @override
-  Stream<List<PieChartSectionData>?> getProfileStatsPieChartStream(String userId) {
+  Stream<Map<String, int>?> getSdgCategoryCountsStream(String userId) {
     if (userId.isEmpty) return Stream.value(null);
 
     return statsDataSource.getCompletedTaskIdsStream(userId).asyncMap((taskIds) async {
-      // --- DEBUG CHECKPOINT 4 ---
-      AppLogger.debug("DEBUG (Repository): Received task IDs for processing: ${taskIds?.length ?? 'null'}");
       if (taskIds == null) return null;
-      if (taskIds.isEmpty) return <PieChartSectionData>[];
+      if (taskIds.isEmpty) return {};
 
-      try {
-        final challengesData = await statsDataSource.getChallengeDetailsForTasks(taskIds);
-        // --- DEBUG CHECKPOINT 5 ---
-        AppLogger.debug("DEBUG (Repository): Received challenge data for processing: ${challengesData?.length ?? 'null'} documents.");
-        if (challengesData == null) return null;
+      final challengesData = await statsDataSource.getChallengeDetailsForTasks(taskIds);
+      if (challengesData == null) return null;
 
-        Map<String, int> categoryCounts = {};
-        for (var challengeMap in challengesData) {
-          final dynamic categoriesData = challengeMap['categories'] ?? challengeMap['category'];
-          if (categoriesData is List) {
-            final categories = List<String>.from(categoriesData);
-            for (var category in categories) {
-              categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
-            }
+      Map<String, int> categoryCounts = {};
+      for (var challengeMap in challengesData) {
+        final dynamic categoriesData = challengeMap['categories'] ?? challengeMap['category'];
+        if (categoriesData is List) {
+          final categories = List<String>.from(categoriesData);
+          for (var category in categories) {
+            categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
           }
         }
-        // --- DEBUG CHECKPOINT 6 ---
-        AppLogger.debug("DEBUG (Repository): Final category counts: $categoryCounts");
-
-        if (categoryCounts.isEmpty) return <PieChartSectionData>[];
-
-        final double total = categoryCounts.values.reduce((a, b) => a + b).toDouble();
-        List<PieChartSectionData> sections = [];
-
-        categoryCounts.forEach((category, count) {
-          final double percentage = (count / total) * 100;
-          final section = PieChartSectionData(
-            color: _sdgColorMap[category] ?? defaultGoalColor,
-            value: count.toDouble(),
-            title: '${percentage.toStringAsFixed(0)}%',
-            radius: 80,
-            titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, shadows: [Shadow(color: Colors.black, blurRadius: 2)]),
-          );
-          sections.add(section);
-        });
-
-        // --- DEBUG CHECKPOINT 7 ---
-        AppLogger.debug("DEBUG (Repository): Successfully created ${sections.length} pie chart sections. Notifying UI.");
-        return sections;
-      } catch (e, s) {
-        AppLogger.error("Error processing pie chart data in Repository", e, s);
-        return null;
       }
-    }).handleError((error, s) {
-      AppLogger.error("Fatal error in getProfileStatsPieChartStream", error, s);
-      return null;
+      return categoryCounts;
     });
   }
 

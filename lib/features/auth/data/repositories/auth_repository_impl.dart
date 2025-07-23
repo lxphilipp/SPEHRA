@@ -3,7 +3,7 @@ import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
-import '../models/user_model.dart'; // Stelle sicher, dass dies dein aktualisiertes UserModel ist
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -18,7 +18,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return UserEntity(
       id: firebaseUser.uid,
       email: firebaseUser.email,
-      name: userName, // Name kann hier null sein
+      name: userName,
     );
   }
 
@@ -128,8 +128,6 @@ class AuthRepositoryImpl implements AuthRepository {
         }
       }
     } finally {
-      // Der finally-Block wird IMMER ausgeführt, egal ob der try-Block
-      // erfolgreich war oder eine Exception geworfen hat.
       AppLogger.info("AuthRepo: Signing out user.");
       await remoteDataSource.signOut();
     }

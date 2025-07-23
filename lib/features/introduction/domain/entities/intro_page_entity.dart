@@ -1,20 +1,16 @@
 import 'package:equatable/equatable.dart';
 
-// Dieser Enum ist reine Logik, keine UI.
 enum IntroPageType { gradientCard, question }
 
 class IntroPageEntity extends Equatable {
   final String id;
   final IntroPageType type;
 
-  // Daten für gradientCard
   final String? title;
   final String? description;
   final String? ctaText;
-  final String? gradientStartColorHex; // Farbe als reiner Daten-String
-
-  // Daten für question
-  final String? widgetName; // Identifikator für das Widget
+  final String? gradientStartColorHex;
+  final String? widgetName;
 
   const IntroPageEntity({
     required this.id,

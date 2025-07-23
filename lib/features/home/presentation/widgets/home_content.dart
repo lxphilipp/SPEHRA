@@ -17,7 +17,12 @@ import 'home_dashboard_cards.dart';
 import 'challenge_preview_card.dart';
 
 class HomeContent extends StatelessWidget {
-  const HomeContent({super.key});
+  final void Function(int pageIndex, {int? challengeTabIndex}) navigateToPage;
+
+  const HomeContent({
+    super.key,
+    required this.navigateToPage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +60,7 @@ class HomeContent extends StatelessWidget {
 
             // --- 4. VERTIKALE Challenge-Liste ---
             _buildSectionHeader(context, "Your Ongoing Challenges", () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ChallengeListScreen(initialTabIndex: 1)));
+              navigateToPage(1, challengeTabIndex: 1);
             }),
             const SizedBox(height: 12),
             _buildChallengesList(context, homeProvider.ongoingChallengePreviews, homeProvider.isLoadingOngoingPreviews),

@@ -59,7 +59,6 @@ class SdgRepositoryImpl implements SdgRepository {
     }
     try {
       final baseDataModels = await _getOrFetchBaseData();
-      // Finde das spezifische SdgDataModel anhand der ID
       final SdgDataModel targetModel = baseDataModels.firstWhere(
               (model) => model.id == sdgId,
           orElse: () {

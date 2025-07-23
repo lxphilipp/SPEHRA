@@ -1,4 +1,3 @@
-// lib/features/home/presentation/widgets/sdg_preview_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/features/sdg/domain/entities/sdg_list_item_entity.dart';
 import 'package:flutter_sdg/features/sdg/presentation/screens/sdg_detail_screen.dart';

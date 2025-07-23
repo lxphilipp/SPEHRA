@@ -70,7 +70,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         return UserProfileModel.fromMap(doc.data()!, doc.id);
       }
       AppLogger.info("ProfileRemoteDS: User document for $userId not found");
-      return null; // Explizit null, wenn nicht gefunden
+      return null;
     } catch (e) {
       AppLogger.error("ProfileRemoteDS: getUserProfile error for $userId", e);
       throw Exception('Failed to get user profile: ${e.toString()}');

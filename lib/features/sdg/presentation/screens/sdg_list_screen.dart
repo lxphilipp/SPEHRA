@@ -11,8 +11,6 @@ class SdgListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Dein altes NewInformation hatte ein Scaffold mit AppBar.
-    // Du kannst das hier wiederverwenden oder ein generisches Layout.
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -37,17 +35,16 @@ class SdgListScreen extends StatelessWidget {
             padding: const EdgeInsets.all(12.0),
             itemCount: provider.sdgListItems.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // Anzahl der Spalten
+              crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.9, // Verhältnis von Breite zu Höhe der Kacheln
+              childAspectRatio: 0.9,
             ),
             itemBuilder: (context, index) {
               final sdgItem = provider.sdgListItems[index];
               return SdgListItemWidget(
                 sdgItem: sdgItem,
                 onTap: () {
-                  // Navigiere zum SdgDetailScreen und übergib die ID und den Titel
                   Navigator.push(
                     context,
                     MaterialPageRoute(

@@ -6,7 +6,6 @@ class WatchUserProfileUseCase {
 
   WatchUserProfileUseCase(this.repository);
 
-  // Nimmt die userId als Parameter
   Stream<UserProfileEntity?> call(String userId) {
     if (userId.isEmpty) return Stream.value(null); // Einfache Validierung
     return repository.watchUserProfile(userId);

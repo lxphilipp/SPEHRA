@@ -23,7 +23,7 @@ class IntroPageModel {
     return IntroPageModel(
       id: json['id'],
       type: IntroPageType.values.firstWhere(
-            (e) => e.name == json['type'], // .name ist sicherer als .toString()
+            (e) => e.name == json['type'],
         orElse: () => IntroPageType.gradientCard,
       ),
       title: json['title'],
