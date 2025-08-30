@@ -1,7 +1,5 @@
-// lib/features/profile/presentation/widgets/circular_profile_progress_widget.dart
-
 import 'dart:math';
-import 'package:cached_network_image/cached_network_image.dart'; // Importieren
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Eine Hilfsklasse, die dynamisch Farbverläufe für jedes Level generiert.
@@ -99,7 +97,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
   final int level;
   final double progress;
   final double size;
-  final String? userName; // Parameter für den Namen
+  final String? userName;
 
   const CircularProfileProgressWidget({
     super.key,
@@ -107,7 +105,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
     required this.level,
     required this.progress,
     this.size = 40.0,
-    this.userName, // userName im Konstruktor
+    this.userName,
   });
 
   @override

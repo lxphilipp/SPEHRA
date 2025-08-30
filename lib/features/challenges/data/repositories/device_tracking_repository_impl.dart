@@ -1,4 +1,3 @@
-// lib/features/challenges/data/repositories/device_tracking_repository_impl.dart
 import 'package:latlong2/latlong.dart';
 import '../../domain/repositories/device_tracking_repository.dart';
 import '../datasources/geolocation_service.dart';

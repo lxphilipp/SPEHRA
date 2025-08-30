@@ -1,4 +1,3 @@
-// lib/features/news/domain/entities/news_article_entity.dart
 import 'package:flutter/foundation.dart' show immutable;
 
 @immutable

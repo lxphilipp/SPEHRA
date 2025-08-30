@@ -19,6 +19,7 @@ class UserModel {
   List<String>? ongoingTasks;
   int? points;
   int? level;
+  bool? hasCompletedIntro;
 
   UserModel({
     this.id,
@@ -27,7 +28,7 @@ class UserModel {
     this.about,
     this.imageURL,
     this.createdAt,
-    this.lastActiveAt, // Verwendet das neue Feld
+    this.lastActiveAt,
     this.pushToken,
     this.online,
     this.myUsers,
@@ -38,6 +39,7 @@ class UserModel {
     this.ongoingTasks = const [],
     this.points = 0,
     this.level = 1,
+    this.hasCompletedIntro = false,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -51,10 +53,10 @@ class UserModel {
     DateTime? parseTimestamp(dynamic value) {
       if (value == null) return null;
       if (value is Timestamp) return value.toDate();
-      if (value is String) { // Für alte Daten, die Millisekunden-Strings sein könnten
+      if (value is String) {
         final asInt = int.tryParse(value);
         if (asInt != null) return DateTime.fromMillisecondsSinceEpoch(asInt);
-        return DateTime.tryParse(value); // Versucht ISO 8601
+        return DateTime.tryParse(value);
       }
       if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
       return null;
@@ -66,8 +68,8 @@ class UserModel {
       email: map['email'] as String? ?? map['eamil'] as String?,
       about: emptyToNull(map['about']),
       imageURL: emptyToNull(map['imageURL'] ?? map['image']),
-      createdAt: parseTimestamp(map['createdAt'] ?? map['created_At']), // Parsen von 'createdAt' oder 'created_At'
-      lastActiveAt: parseTimestamp(map['lastActiveAt'] ?? map['last_Actived']), // Parsen von neuem 'lastActiveAt' oder altem 'last_Actived'
+      createdAt: parseTimestamp(map['createdAt'] ?? map['created_At']),
+      lastActiveAt: parseTimestamp(map['lastActiveAt'] ?? map['last_Actived']),
       pushToken: emptyToNull(map['pushToken'] ?? map['puch_Token']),
       online: map['online'] as bool?,
       myUsers: List<String>.from(map['my_users'] as List<dynamic>? ?? []),
@@ -78,6 +80,7 @@ class UserModel {
       ongoingTasks: List<String>.from(map['ongoingTasks'] as List<dynamic>? ?? []),
       points: (map['points'] as num?)?.toInt() ?? 0,
       level: (map['level'] as num?)?.toInt() ?? 1,
+      hasCompletedIntro: map['hasCompletedIntro'] as bool? ?? false,
     );
   }
 
@@ -100,6 +103,7 @@ class UserModel {
       'ongoingTasks': ongoingTasks,
       'points': points,
       'level': level,
+      'hasCompletedIntro': hasCompletedIntro,
     };
   }
 }

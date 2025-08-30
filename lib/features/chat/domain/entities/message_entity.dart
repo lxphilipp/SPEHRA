@@ -1,5 +1,3 @@
-// lib/features/chat/domain/entities/message_entity.dart
-
 import 'package:equatable/equatable.dart';
 
 enum MessageType {

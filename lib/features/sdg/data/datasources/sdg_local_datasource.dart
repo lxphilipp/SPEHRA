@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle; // Für Asset-Zugriff
+import 'package:flutter/services.dart' show rootBundle;
 import '../../../../core/utils/app_logger.dart';
 import '../models/sdg_data_model.dart';
 

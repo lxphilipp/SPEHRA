@@ -59,18 +59,16 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
         }
 
         if (sdg == null || sdg.id != widget.sdgId) {
-          // OPTIMIERT: Verwendet jetzt einen Text-Stil aus dem Theme.
           return Center(
             child: Text(
               'Select an SDG to see details.',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant, // Eine subtile Farbe für Hinweise
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           );
         }
 
-        // Ab hier wissen wir, dass 'sdg' nicht null ist und zur widget.sdgId passt.
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -78,7 +76,7 @@ class _SdgDetailContentWidgetState extends State<SdgDetailContentWidget> {
             children: [
               Text(
                 sdg.title,
-                style: theme.textTheme.headlineMedium, // Stil direkt vom Theme
+                style: theme.textTheme.headlineMedium,
               ),
               const SizedBox(height: 16),
               if (sdg.imageAssetPath.isNotEmpty)

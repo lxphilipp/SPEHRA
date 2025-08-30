@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 // Entities
 import '../../domain/entities/message_entity.dart';
-import '../../domain/entities/chat_room_entity.dart'; // Wichtig für die Raumdetails
+import '../../domain/entities/chat_room_entity.dart';
 import '../../domain/entities/chat_user_entity.dart';
 
 // UseCases
@@ -157,7 +157,6 @@ class IndividualChatProvider with ChangeNotifier {
   }
 
 
-  // --- Alte "als gelesen markieren"-Logik (unverändert) ---
   void _markReceivedMessagesAsRead(List<MessageEntity> receivedMessages) {
     if (_isMarkingAsRead || currentUserId.isEmpty) return;
 
@@ -291,11 +290,11 @@ class IndividualChatProvider with ChangeNotifier {
         );
         AppLogger.info("IndividualChatProvider: Image message sent to ${chatPartner.name}");
       } else {
-        _error = "Bild-Upload fehlgeschlagen.";
+        _error = "Image upload failed";
       }
     } catch (e, stackTrace) {
       AppLogger.error("IndividualChatProvider: Error sending image message", e, stackTrace);
-      _error = "Bildnachricht konnte nicht gesendet werden.";
+      _error = "Image Message could not be sent.";
     } finally {
       _isSendingMessage = false;
       notifyListeners();

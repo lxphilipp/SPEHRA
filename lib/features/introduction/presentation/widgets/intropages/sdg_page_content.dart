@@ -2,21 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
 
-class SDGPageContent extends StatelessWidget {
+class SDGPageContent extends StatefulWidget {
   const SDGPageContent({super.key});
 
-  Widget _buildOptionButton(BuildContext context, String label) {
-    final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme holen
+  @override
+  State<SDGPageContent> createState() => _SDGPageContentState();
+}
 
-    return OutlinedButton(
-      // OPTIMIERT: Stil wird vom Theme abgeleitet
+class _SDGPageContentState extends State<SDGPageContent> {
+  String? _selectedOption;
+  final List<String> sdgOptions = [
+    'Never heard of them',
+    'hardly anything',
+    'a little',
+    'quite a bit',
+    "I'm an expert"
+  ];
+
+  Widget _buildOptionButton(BuildContext context, String label) {
+    final theme = Theme.of(context);
+    final bool isSelected = _selectedOption == label;
+
+    return isSelected
+        ? FilledButton(
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: () => setState(() => _selectedOption = label),
+      child: Text(label, style: const TextStyle(fontSize: 20)),
+    )
+        : OutlinedButton(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         side: BorderSide(color: theme.colorScheme.primary),
       ),
-      onPressed: () => provider.nextPage(context),
+      onPressed: () => setState(() => _selectedOption = label),
       child: Text(label, style: const TextStyle(fontSize: 20)),
     );
   }
@@ -24,55 +46,62 @@ class SDGPageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme holen
+    final theme = Theme.of(context);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => provider.nextPage(context),
-                // OPTIMIERT: Farbe aus dem Theme
-                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
-              ),
+        Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+            child: TextButton(
+              onPressed: () => provider.nextPage(context),
+              child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: RichText(
-                textAlign: TextAlign.center, // Bessere Zentrierung
-                text: TextSpan(
-                  // OPTIMIERT: Basis-Stil aus dem Theme
-                  style: theme.textTheme.headlineSmall,
-                  children: <TextSpan>[
-                    const TextSpan(text: "How much do you know about the UN's "),
-                    TextSpan(
-                      text: 'Sustainability Development Goals',
-                      // OPTIMIERT: Akzentfarbe aus dem Theme
-                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
-                    ),
-                    const TextSpan(text: ' (SDGs)?'),
-                  ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: theme.textTheme.headlineSmall,
+                    children: <TextSpan>[
+                      const TextSpan(text: "How much do you know about the UN's "),
+                      TextSpan(
+                        text: 'Sustainability Development Goals',
+                        style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
+                      ),
+                      const TextSpan(text: ' (SDGs)?'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: sdgOptions.map((option) => _buildOptionButton(context, option)).toList(),
+                ),
+              ),
+            ],
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 40.0, left: 20, right: 20),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildOptionButton(context, 'Never heard of them'),
-              _buildOptionButton(context, 'hardly anything'),
-              _buildOptionButton(context, 'a little'),
-              _buildOptionButton(context, 'quite a bit'),
-              _buildOptionButton(context, "I'm an expert"),
-            ],
+          padding: const EdgeInsets.only(bottom: 40.0, top: 20),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            ),
+            onPressed: _selectedOption != null ? () => provider.nextPage(context) : null,
+            child: const Text("Continue"),
           ),
         ),
       ],

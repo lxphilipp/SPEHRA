@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-// Import the main app layout, not just one of its screens.
+import 'package:provider/provider.dart';
 import '../../../../core/layouts/responsive_main_navigation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../profile/presentation/providers/user_profile_provider.dart';
 import '../../domain/entities/intro_page_entity.dart';
 import '../../domain/usecases/get_intro_pages_usecase.dart';
 
@@ -28,7 +30,6 @@ class IntroductionProvider with ChangeNotifier {
   }
 
   void nextPage(BuildContext context) {
-    // Check if the page controller is attached to a view.
     if (!pageController.hasClients) return;
 
     if (pageController.page!.round() < _pages.length - 1) {
@@ -37,7 +38,24 @@ class IntroductionProvider with ChangeNotifier {
         curve: Curves.easeInOut,
       );
     } else {
-      // CORRECTED: Navigate to the main responsive layout, not the HomeScreen directly.
+      // Wenn die Einführung beendet ist:
+      final profileProvider = context.read<UserProfileProvider>();
+      final authProvider = context.read<AuthenticationProvider>();
+
+      if (authProvider.isLoggedIn) {
+        final profile = profileProvider.userProfile;
+        if (profile != null) {
+          profileProvider.updateProfile(
+            name: profile.name,
+            age: profile.age,
+            studyField: profile.studyField,
+            school: profile.school,
+            hasCompletedIntro: true,
+          );
+        }
+      }
+
+      // 2. Navigiere zur Haupt-App
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const ResponsiveMainNavigation())
       );

@@ -1,5 +1,4 @@
-// KEIN import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart'; // Für listEquals
+import 'package:flutter/foundation.dart';
 
 class GroupChatEntity {
   final String id;

@@ -1,9 +1,9 @@
+// lib/features/sdg/presentation/screens/sdg_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/sdg_list_provider.dart';
-import '../widgets/sdg_list_item_widget.dart'; // Erstellen wir als Nächstes
-import 'sdg_detail_screen.dart'; // Für die Navigation
-// Für Theme
+import '../widgets/sdg_list_item_widget.dart';
+import 'sdg_detail_screen.dart';
 
 class SdgListScreen extends StatelessWidget {
   const SdgListScreen({super.key});
@@ -11,13 +11,11 @@ class SdgListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('The 17 SDGs', style: theme.appBarTheme.titleTextStyle),
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        iconTheme: theme.appBarTheme.iconTheme,
-        elevation: theme.appBarTheme.elevation,
+        title: const Text('The 17 SDGs'),
       ),
       body: Consumer<SdgListProvider>(
         builder: (context, provider, child) {
@@ -25,21 +23,24 @@ class SdgListScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (provider.error != null) {
-            return Center(child: Text('Error: ${provider.error}', style: TextStyle(color: theme.colorScheme.error)));
+            return Center(
+              child: Text('Error: ${provider.error}',
+                  style: TextStyle(color: theme.colorScheme.error)),
+            );
           }
           if (provider.sdgListItems.isEmpty) {
             return const Center(child: Text('No SDGs found.'));
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(12.0),
-            itemCount: provider.sdgListItems.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.9,
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 180.0,
+              mainAxisSpacing: 16.0,
+              crossAxisSpacing: 16.0,
+              mainAxisExtent: 160,
             ),
+            itemCount: provider.sdgListItems.length,
             itemBuilder: (context, index) {
               final sdgItem = provider.sdgListItems[index];
               return SdgListItemWidget(
@@ -50,7 +51,6 @@ class SdgListScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => SdgDetailScreen(
                         sdgId: sdgItem.id,
-                        initialTitle: sdgItem.title,
                       ),
                     ),
                   );

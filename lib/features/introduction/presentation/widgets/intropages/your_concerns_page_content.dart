@@ -14,100 +14,127 @@ class _YourConcernsPageContentState extends State<YourConcernsPageContent> {
     'Means of transportion', 'Environmental pollution', 'Food & Consumption',
     'War & Peace', 'Social Equality', 'Climate Change', 'All',
   ];
-  final Set<String> selectedTopics = {};
+  // State variable to hold the multiple selections
+  final Set<String> _selectedTopics = {};
 
   Widget _buildSelectableButton(String label) {
-    final theme = Theme.of(context); // Theme für den Zugriff auf Farben holen
-    final bool isSelected = selectedTopics.contains(label);
+    final theme = Theme.of(context);
+    // Check if the current button's label is in our set of selected topics
+    final bool isSelected = _selectedTopics.contains(label);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: OutlinedButton(
-        // OPTIMIERT: Der Stil wird jetzt dynamisch aus dem Theme abgeleitet
-        style: OutlinedButton.styleFrom(
-          // Hintergrundfarbe ändert sich je nach Zustand
-          backgroundColor: isSelected ? theme.colorScheme.primaryContainer.withOpacity(0.5) : Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          side: BorderSide(
-            color: isSelected ? theme.colorScheme.primaryContainer : theme.colorScheme.primary,
-          ),
-          foregroundColor: theme.colorScheme.onSurface, // Textfarbe für beide Zustände
-        ),
-        onPressed: () {
-          setState(() {
-            if (label == 'All') {
-              selectedTopics.clear();
-              selectedTopics.add('All');
-            } else {
-              selectedTopics.remove('All');
-              if (isSelected) {
-                selectedTopics.remove(label);
-              } else {
-                selectedTopics.add(label);
-              }
-            }
-          });
-        },
-        child: Text(label, style: const TextStyle(fontSize: 19)),
+    return isSelected
+        ? FilledButton(
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
+      onPressed: () {
+        // Update state for selection
+        setState(() {
+          // Logic to handle "All" and individual selections
+          if (label == 'All') {
+            if (isSelected) {
+              _selectedTopics.clear();
+            } else {
+              _selectedTopics.clear();
+              _selectedTopics.add('All');
+            }
+          } else {
+            _selectedTopics.remove('All'); // Deselect "All" if an individual item is tapped
+            if (isSelected) {
+              _selectedTopics.remove(label);
+            } else {
+              _selectedTopics.add(label);
+            }
+          }
+        });
+      },
+      child: Text(label, style: const TextStyle(fontSize: 19)),
+    )
+        : OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        side: BorderSide(color: theme.colorScheme.primary),
+      ),
+      onPressed: () {
+        setState(() {
+          if (label == 'All') {
+            _selectedTopics.clear();
+            _selectedTopics.add('All');
+          } else {
+            _selectedTopics.remove('All');
+            if (isSelected) {
+              _selectedTopics.remove(label);
+            } else {
+              _selectedTopics.add(label);
+            }
+          }
+        });
+      },
+      child: Text(label, style: const TextStyle(fontSize: 19)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme für den Zugriff auf Farben holen
+    final theme = Theme.of(context);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => provider.nextPage(context),
-                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
-              ),
+        Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+            child: TextButton(
+              onPressed: () => provider.nextPage(context),
+              child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  // OPTIMIERT: Basis-Stil aus dem Theme
-                  style: theme.textTheme.headlineSmall,
-                  children: <TextSpan>[
-                    const TextSpan(text: 'What thoughts on the global sustainable development of our Sphere '),
-                    TextSpan(
-                      text: 'concern',
-                      // OPTIMIERT: Akzentfarbe aus dem Theme
-                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
-                    ),
-                    const TextSpan(text: ' you most?'),
-                  ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: theme.textTheme.headlineSmall,
+                    children: <TextSpan>[
+                      const TextSpan(text: 'What thoughts on the global sustainable development of our Sphere '),
+                      TextSpan(
+                        text: 'concern',
+                        style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
+                      ),
+                      const TextSpan(text: ' you most?'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.start,
-            children: topics.map(_buildSelectableButton).toList(),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: topics.map(_buildSelectableButton).toList(),
+                ),
+              ),
+            ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 40.0, top: 20),
           child: ElevatedButton(
-            // OPTIMIERT: Der Stil wird vollständig vom globalen ElevatedButtonTheme gesteuert
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
             ),
-            onPressed: selectedTopics.isNotEmpty ? () => provider.nextPage(context) : null,
+            // Button is enabled only when the selection set is not empty
+            onPressed: _selectedTopics.isNotEmpty ? () => provider.nextPage(context) : null,
             child: const Text("Continue"),
           ),
         ),

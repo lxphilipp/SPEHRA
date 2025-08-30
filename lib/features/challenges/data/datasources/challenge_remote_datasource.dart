@@ -91,7 +91,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
     final url = Uri.parse('https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=jsonv2&limit=5');
 
     try {
-      final response = await http.get(url, headers: {'User-Agent': 'com.example.flutter_sdg'});
+      final response = await http.get(url, headers: {'User-Agent': 'de.app.sphera'});
       if (response.statusCode == 200) {
         final results = json.decode(response.body) as List;
         return results.map((data) => AddressModel.fromMap(data as Map<String, dynamic>)).toList();
@@ -131,7 +131,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       );
 
       final model = FirebaseAI.googleAI(appCheck: appCheck).generativeModel(
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.0-flash',
         generationConfig: GenerationConfig(
           responseMimeType: 'application/json',
           responseSchema: responseSchema,

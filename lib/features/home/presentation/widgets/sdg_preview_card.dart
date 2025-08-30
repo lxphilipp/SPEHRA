@@ -18,7 +18,6 @@ class SdgPreviewCard extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => SdgDetailScreen(
               sdgId: sdgItem.id,
-              initialTitle: sdgItem.title,
             ),
           ),
         );

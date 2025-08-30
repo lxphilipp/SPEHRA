@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sdg/core/widgets/feature_screen_header.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -98,68 +99,50 @@ class _ChallengeListContentState extends State<ChallengeListContent> with Single
 
     return Column(
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Challenges",
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Iconsax.filter),
-                    tooltip: "Filter",
-                    onPressed: () => _showAdaptiveFilterDialog(challengeProvider),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Iconsax.sort),
-                    tooltip: "Sort by...",
-                    onSelected: (String value) {
-                      final parts = value.split('_');
-                      final criteria = parts[0];
-                      final direction = parts[1];
-                      challengeProvider.setSortCriteria(criteria);
-                      bool shouldBeAscending = direction == 'asc';
-                      if (challengeProvider.isSortAscending != shouldBeAscending) {
-                        challengeProvider.setSortCriteria(value);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                      const PopupMenuItem<String>(
-                        value: 'createdAt_desc',
-                        child: Text('Newest first'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'createdAt_asc',
-                        child: Text('Oldest first'),
-                      ),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem<String>(
-                        value: 'points_desc',
-                        child: Text('Most points'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'points_asc',
-                        child: Text('Fewest points'),
-                      ),
-                      const PopupMenuDivider(),
-                      const PopupMenuItem<String>(
-                        value: 'difficulty_asc',
-                        child: Text('Easiest first'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'difficulty_desc',
-                        child: Text('Hardest first'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+        FeatureScreenHeader(
+          title: "Challenges",
+          actions: [
+            IconButton(
+              icon: const Icon(Iconsax.filter),
+              tooltip: "Filter",
+              onPressed: () => _showAdaptiveFilterDialog(challengeProvider),
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Iconsax.sort),
+              tooltip: "Sort by...",
+              onSelected: (String value) {
+                challengeProvider.setSortCriteria(value);
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'createdAt_desc',
+                  child: Text('Newest first'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'createdAt_asc',
+                  child: Text('Oldest first'),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem<String>(
+                  value: 'points_desc',
+                  child: Text('Most points'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'points_asc',
+                  child: Text('Fewest points'),
+                ),
+                const PopupMenuDivider(),
+                const PopupMenuItem<String>(
+                  value: 'difficulty_asc',
+                  child: Text('Easiest first'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'difficulty_desc',
+                  child: Text('Hardest first'),
+                ),
+              ],
+            ),
+          ],
         ),
 
         if (!widget.isSelectionMode)
@@ -245,7 +228,7 @@ class __FilterScreenState extends State<_FilterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Filter & Sort'),
+        title: const Text('Filter'),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),

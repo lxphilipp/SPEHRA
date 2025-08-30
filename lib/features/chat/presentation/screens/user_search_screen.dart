@@ -122,9 +122,7 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
     final canConfirmSelection = widget.multiSelectionEnabled && _selectedUserIdsInSession.isNotEmpty;
 
     return Scaffold(
-      // OPTIMIERT: AppBar und Hintergrund werden vom Theme gesteuert
       appBar: AppBar(
-        // Eine etwas andere Farbe für die AppBar ist legitim, wenn sie aus dem Theme kommt
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
         title: TextField(
           controller: _searchController,

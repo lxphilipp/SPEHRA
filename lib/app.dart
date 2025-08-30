@@ -1,4 +1,3 @@
-// lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_sdg/auth_wrapper.dart';
 import 'core/theme/app_theme.dart';

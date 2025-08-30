@@ -1,6 +1,4 @@
-// lib/features/chat/domain/repositories/chat_repository.dart
-
-import 'dart:io'; // Für File bei Bild-Uploads
+import 'dart:io';
 import '../entities/chat_room_entity.dart';
 import '../entities/group_chat_entity.dart';
 import '../entities/message_entity.dart';

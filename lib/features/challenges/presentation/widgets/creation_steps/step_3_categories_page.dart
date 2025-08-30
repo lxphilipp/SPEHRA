@@ -1,4 +1,3 @@
-// lib/features/challenges/presentation/widgets/creation_steps/step_3_categories_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../sdg/presentation/providers/sdg_list_provider.dart';
@@ -14,8 +13,6 @@ class Step3CategoriesPage extends StatefulWidget {
 }
 
 class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
-  // --- SOLUTION ---
-  // The method no longer accepts the list as a parameter.
   void _onCategoryToggled(String key) {
     // Read the provider fresh inside the method to get the latest state.
     final challengeProvider = context.read<ChallengeProvider>();
@@ -83,6 +80,7 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
                 clipBehavior: Clip.antiAlias,
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 child: ExpansionTile(
+                  shape: const Border(),
                   key: PageStorageKey(sdgItem.id),
                   onExpansionChanged: (isExpanding) {
                     if (isExpanding) {
@@ -95,8 +93,6 @@ class _Step3CategoriesPageState extends State<Step3CategoriesPage> {
                       Checkbox(
                         value: isSelected,
                         onChanged: (bool? value) {
-                          // --- SOLUTION ---
-                          // Call the corrected method without passing the stale list.
                           _onCategoryToggled(sdgItem.id);
                         },
                       ),

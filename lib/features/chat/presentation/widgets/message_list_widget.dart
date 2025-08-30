@@ -33,7 +33,7 @@ class MessageListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // Theme am Anfang holen
+    final theme = Theme.of(context);
     AppLogger.debug("MessageListWidget: Building. Message count: ${messages.length}, isLoading: $isLoading, isGroupChat: $isGroupChat, Error: $listError");
 
     if (isLoading && messages.isEmpty) {
@@ -47,7 +47,6 @@ class MessageListWidget extends StatelessWidget {
           child: Text(
             "Fehler beim Laden der Nachrichten:\n$listError",
             textAlign: TextAlign.center,
-            // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
             style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
           ),
         ),
@@ -59,7 +58,6 @@ class MessageListWidget extends StatelessWidget {
         child: Text(
           "Sende eine Nachricht, um die Unterhaltung zu beginnen!",
           textAlign: TextAlign.center,
-          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
           style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       );
@@ -84,7 +82,6 @@ class MessageListWidget extends StatelessWidget {
       return Center(
         child: Text(
           "Fehler: Benutzer-ID nicht verfügbar.",
-          // OPTIMIERT: Verwendet Text- und Farbstil aus dem Theme
           style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
         ),
       );

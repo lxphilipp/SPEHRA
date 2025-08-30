@@ -6,10 +6,8 @@ class ChatRoomModel {
   final String? lastMessage;
   final DateTime? lastMessageTime;
   final DateTime createdAt;
-
-  // --- NEUE FELDER ---
   final List<String> hiddenFor;
-  final Map<String, dynamic> clearedAt; // In Firestore speichern wir Timestamps (dynamic)
+  final Map<String, dynamic> clearedAt;
 
   const ChatRoomModel({
     required this.id,
@@ -45,20 +43,11 @@ class ChatRoomModel {
           ? Timestamp.fromDate(lastMessageTime!)
           : (lastMessage != null ? FieldValue.serverTimestamp() : null),
 
-      // --- NEUE FELDER BEIM ERSTELLEN INITIALISIEREN ---
-      'hidden_for': [], // Startet als leere Liste
-      'cleared_at': {},   // Startet als leere Map
+      'hidden_for': [],
+      'cleared_at': {},
     };
   }
 
-  // Diese Methode ist für Updates nützlich, aber wir verwenden sie gerade nicht direkt.
-  // Es ist besser, Updates gezielt mit den richtigen Feldern durchzuführen.
-  // Map<String, dynamic> toJsonForUpdate() {
-  //   return {
-  //     'last_message': lastMessage,
-  //     'last_message_time': FieldValue.serverTimestamp(),
-  //   };
-  // }
 
   /// Nützliche Helfer-Methode zum Kopieren und Ändern von Instanzen.
   ChatRoomModel copyWith({

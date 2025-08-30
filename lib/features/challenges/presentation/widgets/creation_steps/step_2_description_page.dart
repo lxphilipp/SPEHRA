@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import of the new widget
+import '../llm_feedback_widget.dart';
 
 class Step2DescriptionPage extends StatefulWidget {
   const Step2DescriptionPage({super.key});

@@ -1,5 +1,3 @@
-// lib/features/challenges/presentation/widgets/challenge_card_widget.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
@@ -7,17 +5,15 @@ import 'package:provider/provider.dart';
 import '../providers/challenge_provider.dart';
 import '/core/theme/sdg_color_theme.dart';
 import '../../domain/entities/challenge_entity.dart';
-// NOTE: We are removing the direct import to ChallengeDetailsScreen
-// import '../screens/challenge_details_screen.dart';
 
 class ChallengeCardWidget extends StatelessWidget {
   final ChallengeEntity challenge;
-  final VoidCallback onTap; // <-- 1. PARAMETER ADDED
+  final VoidCallback onTap;
 
   const ChallengeCardWidget({
     super.key,
     required this.challenge,
-    required this.onTap, // <-- 2. ADDED IN CONSTRUCTOR
+    required this.onTap,
   });
 
   @override

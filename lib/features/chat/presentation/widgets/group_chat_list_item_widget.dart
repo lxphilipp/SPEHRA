@@ -16,7 +16,6 @@ class GroupChatListItemWidget extends StatelessWidget {
     required this.onTap,
   });
 
-  // NEUE HELFER-FUNKTION FÜR DAS DATUM
   String _formatLastMessageTime(BuildContext context, DateTime? date) {
     if (date == null) return '';
 
@@ -82,7 +81,6 @@ class GroupChatListItemWidget extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        // HIER WIRD DIE NEUE FUNKTION VERWENDET
         trailing: group.lastMessageTime != null
             ? Text(
           _formatLastMessageTime(context, group.lastMessageTime),

@@ -1,5 +1,3 @@
-// lib/features/chat/presentation/widgets/chat_list_content_widget.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -40,7 +38,7 @@ class ChatListContentWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Fehler: ${provider.error}',
+                'Error: ${provider.error}',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge
                     ?.copyWith(color: theme.colorScheme.error),
@@ -49,7 +47,7 @@ class ChatListContentWidget extends StatelessWidget {
               ElevatedButton(
                 onPressed: () =>
                     context.read<ChatRoomListProvider>().forceReloadChatRooms(),
-                child: const Text("Erneut versuchen"),
+                child: const Text("Try again"),
               )
             ],
           ),
@@ -60,7 +58,7 @@ class ChatListContentWidget extends StatelessWidget {
     if (chatRooms.isEmpty) {
       return Center(
         child: Text(
-          'Noch keine Chats vorhanden.\nStarte einen neuen Chat!',
+          'No chat started yet.\nStart a new chat!',
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -114,7 +112,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
     if (dateToCompare == today) {
       return DateFormat('HH:mm').format(date); // Nur die Zeit für heute
     } else if (dateToCompare == yesterday) {
-      return 'Gestern';
+      return 'Yesterday';
     } else {
       // Für ältere Daten nur das Datum
       return DateFormat('dd.MM.yy').format(date);
@@ -142,7 +140,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
             : null,
       );
     } else {
-      title = 'Lade...';
+      title = 'Loading...';
       leading = CircleAvatar(
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
         child: const SizedBox(
@@ -153,7 +151,7 @@ class ChatRoomListItemWidget extends StatelessWidget {
       );
     }
 
-    final subtitle = room.lastMessage ?? 'Tippe, um zu chatten';
+    final subtitle = room.lastMessage ?? 'Click to start chat';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
@@ -173,7 +171,6 @@ class ChatRoomListItemWidget extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        // HIER WIRD DIE NEUE FUNKTION VERWENDET
         trailing: room.lastMessageTime != null
             ? Text(
           _formatLastMessageTime(context, room.lastMessageTime),

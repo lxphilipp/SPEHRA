@@ -7,7 +7,6 @@ abstract class HomeRemoteDataSource {
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final FirebaseFirestore _firestore;
 
-  // firestore ist jetzt ein 'required' Parameter
   HomeRemoteDataSourceImpl({required FirebaseFirestore firestore})
       : _firestore = firestore;
 

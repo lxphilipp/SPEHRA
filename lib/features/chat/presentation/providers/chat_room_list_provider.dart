@@ -1,9 +1,7 @@
-// lib/features/chat/presentation/providers/chat_room_list_provider.dart
-
 import 'dart:async';
 
-import 'package:collection/collection.dart'; // For deep list/map equality checks
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 
 // Domain & Entities
 import '../../domain/entities/chat_room_entity.dart';
@@ -43,7 +41,6 @@ class ChatRoomListProvider with ChangeNotifier {
   /// It's the single source of truth WITHIN this provider.
   String? _currentUserId;
 
-  // --- NEU: Sortier-Zustand ---
   String _sortCriteria = 'lastMessageTime';
   bool _isSortAscending = false; // false = descending (neueste zuerst)
 

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'update_task_progress_usecase.dart'; // We use our existing Use Case
+import 'update_task_progress_usecase.dart';
 
 class ToggleCheckboxTaskUseCase {
   final UpdateTaskProgressUseCase _updateTaskProgressUseCase;

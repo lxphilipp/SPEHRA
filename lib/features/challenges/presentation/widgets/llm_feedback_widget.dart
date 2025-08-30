@@ -63,7 +63,6 @@ class LlmFeedbackWidget extends StatelessWidget {
         iconColor: theme.colorScheme.error,
         child: Row(
           children: [
-            // CORRECTION: The Expanded widget around the Text was removed.
             Text("Failed to load feedback.", style: theme.textTheme.bodyMedium),
             const Spacer(), // Use a Spacer to push the button to the end.
             if (onRetry != null)
@@ -102,18 +101,16 @@ class LlmFeedbackWidget extends StatelessWidget {
 
   Widget _buildInfoContainer(ThemeData theme, {required IconData icon, required Color iconColor, required Widget child}) {
     return Container(
-      key: ValueKey(feedback ?? error ?? 'loading'), // Add a key for the AnimatedSwitcher
+      key: ValueKey(feedback ?? error ?? 'loading'),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: iconColor, size: 20),
           const SizedBox(width: 12),
-          // This Expanded is the only one needed.
           Expanded(child: child),
         ],
       ),

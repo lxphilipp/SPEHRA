@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-// Import your main layout if you have one that fits here
-// e.g. import 'package:your_project_name/features/home/presentation/layouts/responsive_main_navigation.dart';
-import '../widgets/challenge_details_content.dart'; // The main content
+import '../widgets/challenge_details_content.dart';
 
 class ChallengeDetailsScreen extends StatelessWidget {
   final String challengeId;

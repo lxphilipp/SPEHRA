@@ -1,3 +1,4 @@
+// lib/features/sdg/presentation/widgets/sdg_list_item_widget.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/sdg_list_item_entity.dart';
 
@@ -14,40 +15,41 @@ class SdgListItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Card( // Card für einen schönen Look mit Schatten etc.
-        color: theme.cardTheme.color ?? theme.colorScheme.surfaceContainerHighest,
-        elevation: theme.cardTheme.elevation ?? 2.0,
-        shape: theme.cardTheme.shape ?? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        clipBehavior: Clip.antiAlias, // Um sicherzustellen, dass das Bild die Ecken der Karte respektiert
+
+    // Use the CardTheme from the global theme for consistency.
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          // This ensures consistent vertical spacing within the card.
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              flex: 3, // Mehr Platz für das Bild
+            // 1. Constrained container for the icon.
+            // This prevents the icon from being pushed around by the text below.
+            SizedBox(
+              height: 64, // Explicitly constrain the icon's vertical space.
+              width: 64,  // Explicitly constrain the icon's horizontal space.
               child: Image.asset(
-                sdgItem.listImageAssetPath, // Pfad aus der Entity
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                const Center(child: Icon(Icons.broken_image, size: 40)),
+                sdgItem.listImageAssetPath,
+                fit: BoxFit.contain, // 'contain' ensures the icon is never cropped.
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.broken_image,
+                  size: 40,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-            Expanded(
-              flex: 1, // Weniger Platz für den Titel
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                // Optional: Hintergrundfarbe für den Titelbereich
-                // color: theme.colorScheme.surface.withOpacity(0.8),
-                child: Center(
-                  child: Text(
-                    sdgItem.title,
-                    style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurface),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+            const SizedBox(height: 12), // Consistent spacing
+            // 2. Text container with padding.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                sdgItem.title,
+                style: theme.textTheme.bodyMedium,
+                textAlign: TextAlign.center, // Centered text looks cleaner here.
+                maxLines: 2, // Allow up to two lines for longer titles.
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

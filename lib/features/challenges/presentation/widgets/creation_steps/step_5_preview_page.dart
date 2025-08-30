@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../../sdg/domain/entities/sdg_list_item_entity.dart';
+import '../../../../sdg/presentation/providers/sdg_list_provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
 
 class Step5PreviewPage extends StatelessWidget {
@@ -12,6 +14,7 @@ class Step5PreviewPage extends StatelessWidget {
     final challenge = provider.challengeInProgress;
     final theme = Theme.of(context);
     final balance = provider.gameBalance;
+    final sdgListProvider = context.watch<SdgListProvider>();
 
     if (challenge == null) {
       return const Center(child: Text('Error: No challenge in progress.'));
@@ -55,10 +58,16 @@ class Step5PreviewPage extends StatelessWidget {
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 4.0,
-                      children: challenge.categories.map((catKey) => Chip(
-                        label: Text(catKey, style: theme.textTheme.labelSmall),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      )).toList(),
+                      children: challenge.categories.map((catKey) {
+                        final sdgItem = sdgListProvider.sdgListItems.firstWhere(
+                              (item) => item.id == catKey,
+                          orElse: () => SdgListItemEntity(id: catKey, title: catKey, listImageAssetPath: ''),
+                        );
+                        return Chip(
+                          label: Text(sdgItem.title, style: theme.textTheme.labelSmall),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        );
+                      }).toList(),
                     ),
                   const Divider(height: 32),
 

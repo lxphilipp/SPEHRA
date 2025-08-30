@@ -1,12 +1,6 @@
-// lib/features/profile/data/repositories/user_profile_repository_impl.dart
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/repositories/user_profile_repository.dart';
 import '../../domain/utils/level_utils.dart';
@@ -48,8 +42,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     });
   }
 
-  // --- All other methods remain unchanged ---
-
   UserProfileEntity? _mapModelToEntity(UserProfileModel? model) {
     if (model == null) return null;
     return UserProfileEntity(
@@ -64,6 +56,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       level: model.level,
       completedTasks: model.completedTasks,
       ongoingTasks: model.ongoingTasks,
+      hasCompletedIntro: model.hasCompletedIntro, // <-- HIER AKTUALISIERT
     );
   }
 
@@ -93,16 +86,31 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
 
   @override
   Future<bool> updateProfileData({
-    required String userId, required String name, required int age,
-    required String studyField, required String school,
+    required String userId,
+    required String name,
+    required int age,
+    required String studyField,
+    required String school,
+    bool? hasCompletedIntro,
   }) async {
     if (userId.isEmpty) return false;
     try {
-      await remoteDataSource.updateUserProfileData(userId, {
-        'name': name, 'age': age, 'studyField': studyField, 'school': school,
-      });
+      final Map<String, dynamic> dataToUpdate = {
+        'name': name,
+        'age': age,
+        'studyField': studyField,
+        'school': school,
+      };
+
+      if (hasCompletedIntro != null) {
+        dataToUpdate['hasCompletedIntro'] = hasCompletedIntro;
+      }
+
+      await remoteDataSource.updateUserProfileData(userId, dataToUpdate);
       return true;
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
   }
 
   @override

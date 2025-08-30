@@ -52,10 +52,9 @@ class AcceptChallengeInviteUseCase {
 
     // 4. Prüfe die Bedingung
     if (acceptedUserIds.length == CreateGroupChallengeProgressUseCase.minParticipantsForGroupChallenge) {
-      // JA! Erstelle das zentrale Fortschrittsdokument für die Gruppe.
       await _createGroupProgressUseCase(
         inviteId: updatedInvite.id,
-        contextId: contextId, // Hinzugefügt
+        contextId: contextId,
         challenge: params.challenge,
         initialParticipantIds: acceptedUserIds,
       );
@@ -71,7 +70,7 @@ class AcceptChallengeInviteUseCase {
 }
 
 class AcceptInviteParams extends Equatable {
-  final InviteEntity invite; // Wir übergeben die ganze Einladung für mehr Kontext
+  final InviteEntity invite;
   final String userId;
   final ChallengeEntity challenge;
 

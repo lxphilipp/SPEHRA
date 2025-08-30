@@ -8,7 +8,7 @@ class InviteModel {
   final String targetTitle;
   final String context;
   final String? contextId;
-  final Map<String, String> recipients; // In Firestore speichern wir den Enum-Wert als String
+  final Map<String, String> recipients;
   final Timestamp createdAt;
 
   InviteModel({

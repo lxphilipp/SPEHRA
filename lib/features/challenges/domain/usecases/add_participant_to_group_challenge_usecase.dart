@@ -1,6 +1,4 @@
-
 import 'package:equatable/equatable.dart';
-
 import '../repositories/challenge_progress_repository.dart';
 
 class AddParticipantToGroupChallengeUseCase {

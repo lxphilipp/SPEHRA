@@ -1,4 +1,3 @@
-// lib/features/challenges/presentation/widgets/challenge_details_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';

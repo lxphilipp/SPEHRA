@@ -3,15 +3,18 @@ import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../../chat/presentation/providers/group_chat_provider.dart';
+import '../../../challenges/domain/entities/challenge_entity.dart';
 import '../../domain/entities/group_challenge_progress_entity.dart';
 
 /// A dedicated card to display the status of a group challenge.
 class GroupChallengeStatusCard extends StatelessWidget {
   final GroupChallengeProgressEntity groupProgress;
+  final ChallengeEntity? challengeDetails;
 
   const GroupChallengeStatusCard({
     super.key,
     required this.groupProgress,
+    this.challengeDetails,
   });
 
   @override
@@ -51,11 +54,18 @@ class GroupChallengeStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
+            if (challengeDetails != null)
+              Text(
+                challengeDetails!.title,
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            const SizedBox(height: 4),
+
             Text(
               isCompleted
                   ? "Fantastic! You made it as a team!"
                   : "${groupProgress.completedTasksCount} of ${groupProgress.totalTasksRequired} tasks completed.",
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             ClipRRect(
@@ -69,12 +79,15 @@ class GroupChallengeStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // --- NEW MILESTONE SECTION ---
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildMilestoneWidget(theme, 50, groupProgress.unlockedMilestones.contains(50)),
-                _buildMilestoneWidget(theme, 100, groupProgress.unlockedMilestones.contains(100)),
+                // Jedes Widget bekommt nun den gleichen Platz
+                Expanded(
+                  child: _buildMilestoneWidget(theme, 50, groupProgress.unlockedMilestones.contains(50)),
+                ),
+                Expanded(
+                  child: _buildMilestoneWidget(theme, 100, groupProgress.unlockedMilestones.contains(100)),
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -105,12 +118,16 @@ class GroupChallengeStatusCard extends StatelessWidget {
   }
   Widget _buildMilestoneWidget(ThemeData theme, int milestonePercentage, bool isUnlocked) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(
-          isUnlocked ? Iconsax.award5 : Iconsax.award,
-          color: isUnlocked ? Colors.amber.shade600 : theme.disabledColor,
-          size: 28,
-        ),
+        Column( children: [
+          Icon(
+            isUnlocked ? Iconsax.award : Iconsax.award,
+            color: isUnlocked ? Colors.amber.shade600 : theme.disabledColor,
+            size: 28,
+          ),
+        ],),
         const SizedBox(height: 4),
         Text(
           "$milestonePercentage% Bonus",

@@ -1,6 +1,6 @@
 import '../entities/address_entity.dart';
 import '../entities/challenge_entity.dart';
-import '../entities/trackable_task.dart'; // Import for task type
+import '../entities/trackable_task.dart';
 
 abstract class ChallengeRepository {
   Stream<List<ChallengeEntity>?> getAllChallengesStream();

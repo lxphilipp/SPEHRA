@@ -1,6 +1,8 @@
+// lib/features/auth/data/repositories/auth_repository_impl.dart
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/auth_failures.dart'; // <-- NEUER IMPORT
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/user_model.dart';
@@ -10,29 +12,24 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthRepositoryImpl({required this.remoteDataSource});
 
-  Future<UserEntity?> _mapFirebaseUserToUserEntity(fb_auth.User? firebaseUser, {String? nameFromRegistration}) async {
-    if (firebaseUser == null) return null;
-
-    String? userName = nameFromRegistration ?? firebaseUser.displayName;
-
-    return UserEntity(
-      id: firebaseUser.uid,
-      email: firebaseUser.email,
-      name: userName,
-    );
-  }
-
-  @override
-  Stream<UserEntity?> get authStateChanges {
-    return remoteDataSource.firebaseAuthStateChanges.asyncMap((firebaseUser) async {
-      return _mapFirebaseUserToUserEntity(firebaseUser);
-    });
-  }
-
-  @override
-  Future<UserEntity?> getCurrentUser() async {
-    final firebaseUser = await remoteDataSource.getCurrentFirebaseUser();
-    return _mapFirebaseUserToUserEntity(firebaseUser);
+  AuthFailure _handleFirebaseAuthException(fb_auth.FirebaseAuthException e) {
+    AppLogger.warning("AuthRepo: FirebaseAuthException (${e.code}): ${e.message}");
+    switch (e.code) {
+      case 'invalid-email':
+        return const InvalidEmailFailure();
+      case 'user-not-found':
+      case 'invalid-credential':
+      case 'wrong-password':
+        return const InvalidCredentialsFailure();
+      case 'email-already-in-use':
+        return const EmailInUseFailure();
+      case 'weak-password':
+        return const WeakPasswordFailure();
+      case 'network-request-failed':
+        return const NetworkFailure();
+      default:
+        return const UnknownAuthFailure();
+    }
   }
 
   @override
@@ -45,11 +42,11 @@ class AuthRepositoryImpl implements AuthRepository {
           email: email.trim(), password: password.trim());
       return _mapFirebaseUserToUserEntity(credential.user);
     } on fb_auth.FirebaseAuthException catch (e) {
-      AppLogger.error("AuthRepo: FirebaseAuthException in signIn (${e.code}): ${e.message}", e, StackTrace.current);
-      return null;
-    } catch (e, stackTrace) {
-      AppLogger.error("AuthRepo: Unerwarteter Fehler in signIn: $e", e, stackTrace);
-      return null;
+      // Wir fangen den Firebase-Fehler ab und werfen unseren eigenen, sauberen Fehler.
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      AppLogger.error("AuthRepo: Unerwarteter Fehler in signIn: $e", e);
+      throw const UnknownAuthFailure();
     }
   }
 
@@ -65,11 +62,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final firebaseUser = credential.user;
 
       if (firebaseUser == null) {
-        AppLogger.error("AuthRepo: Firebase user war null nach Registrierung.", null, StackTrace.current);
-        return null;
+        throw const UnknownAuthFailure();
       }
 
-      // Erstelle UserModel mit den neuen DateTime Feldern
       final newUserModel = UserModel(
         id: firebaseUser.uid,
         email: email.trim(),
@@ -77,29 +72,42 @@ class AuthRepositoryImpl implements AuthRepository {
         createdAt: DateTime.now(),
         lastActiveAt: DateTime.now(),
         online: true,
-        about: '',
-        imageURL: null,
-        pushToken: '',
-        myUsers: [],
-        age: null,
-        studyField: "",
-        school: "",
-        level: 1,
-        points: 0,
-        ongoingTasks: [],
-        completedTasks: [],
+        hasCompletedIntro: false,
       );
 
       await remoteDataSource.createUserDocument(newUserModel);
-
       return _mapFirebaseUserToUserEntity(firebaseUser, nameFromRegistration: name.trim());
     } on fb_auth.FirebaseAuthException catch (e) {
-      AppLogger.error("AuthRepo: FirebaseAuthException in register (${e.code}): ${e.message}", e, StackTrace.current);
-      return null;
-    } catch (e, stackTrace) {
-      AppLogger.error("AuthRepo: Unerwarteter Fehler in register: $e", e, stackTrace);
-      return null;
+      // Auch hier wird der Fehler übersetzt und geworfen.
+      throw _handleFirebaseAuthException(e);
+    } catch (e) {
+      AppLogger.error("AuthRepo: Unerwarteter Fehler in register: $e", e);
+      throw const UnknownAuthFailure();
     }
+  }
+
+  // -- Hilfsmethode (unverändert) --
+  Future<UserEntity?> _mapFirebaseUserToUserEntity(fb_auth.User? firebaseUser, {String? nameFromRegistration}) async {
+    if (firebaseUser == null) return null;
+    return UserEntity(
+      id: firebaseUser.uid,
+      email: firebaseUser.email,
+      name: nameFromRegistration ?? firebaseUser.displayName,
+    );
+  }
+
+  // -- Restliche Methoden (unverändert) --
+  @override
+  Stream<UserEntity?> get authStateChanges {
+    return remoteDataSource.firebaseAuthStateChanges.asyncMap((firebaseUser) async {
+      return _mapFirebaseUserToUserEntity(firebaseUser);
+    });
+  }
+
+  @override
+  Future<UserEntity?> getCurrentUser() async {
+    final firebaseUser = await remoteDataSource.getCurrentFirebaseUser();
+    return _mapFirebaseUserToUserEntity(firebaseUser);
   }
 
   @override
@@ -107,29 +115,24 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.sendPasswordResetEmail(email: email.trim());
       return true;
-    } catch (e, stackTrace) {
-      AppLogger.error("AuthRepo: Fehler in sendPasswordResetEmail: $e", e, stackTrace);
+    } catch (e) {
       return false;
     }
   }
 
   @override
   Future<void> signOut() async {
-    try {
-      final currentUser = await remoteDataSource.getCurrentFirebaseUser();
-      if (currentUser != null) {
-        try {
-          await remoteDataSource.updateUserPresence(
-            userId: currentUser.uid,
-            isOnline: false,
-          );
-        } catch (e, stackTrace) {
-          AppLogger.error("AuthRepo: Fehler beim Aktualisieren der Präsenz vor dem Ausloggen.", e, stackTrace);
-        }
+    final currentUser = await remoteDataSource.getCurrentFirebaseUser();
+    if (currentUser != null) {
+      try {
+        await remoteDataSource.updateUserPresence(
+          userId: currentUser.uid,
+          isOnline: false,
+        );
+      } catch (e) {
+        AppLogger.error("AuthRepo: Fehler beim Aktualisieren der Präsenz vor dem Ausloggen.", e);
       }
-    } finally {
-      AppLogger.info("AuthRepo: Signing out user.");
-      await remoteDataSource.signOut();
     }
+    await remoteDataSource.signOut();
   }
 }

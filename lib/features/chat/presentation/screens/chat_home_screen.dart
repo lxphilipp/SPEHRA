@@ -1,5 +1,3 @@
-// lib/features/chat/presentation/screens/chat_home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -62,7 +60,6 @@ class ChatHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Gibt jetzt nur noch die Inhalts-Liste zurück
     return ChatListContentWidget(
       onChatRoomTap: (tappedRoomId, tappedChatPartner) {
         _navigateToChat(context, tappedRoomId, tappedChatPartner);

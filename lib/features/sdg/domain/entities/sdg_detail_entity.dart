@@ -18,7 +18,6 @@ class SdgDetailEntity {
     this.mainTextContent,
   });
 
-  // Wichtig für Vergleiche und Nutzung in Collections
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -41,7 +40,6 @@ class SdgDetailEntity {
     mainTextContent,
   );
 
-  // copyWith ist nützlich, wenn du später unveränderliche Zustandsaktualisierungen machst
   SdgDetailEntity copyWith({
     String? id,
     String? title,
@@ -49,7 +47,7 @@ class SdgDetailEntity {
     List<String>? descriptionPoints,
     List<String>? externalLinks,
     String? mainTextContent,
-    bool clearMainTextContent = false, // Um mainTextContent explizit auf null zu setzen
+    bool clearMainTextContent = false,
   }) {
     return SdgDetailEntity(
       id: id ?? this.id,

@@ -8,7 +8,7 @@ class ChatRoomEntity extends Equatable {
   final DateTime? lastMessageTime;
 
   final List<String> hiddenFor;
-  final Map<String, DateTime> clearedAt; // In der Entity verwenden wir saubere DateTime-Objekte
+  final Map<String, DateTime> clearedAt;
 
   const ChatRoomEntity({
     required this.id,

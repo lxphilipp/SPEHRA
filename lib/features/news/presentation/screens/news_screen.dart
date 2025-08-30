@@ -1,7 +1,9 @@
-// lib/features/news/presentation/screens/news_screen.dart
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../../core/widgets/feature_screen_header.dart';
 import '../../domain/entities/news_article_entity.dart';
 import '../provider/news_provider.dart';
 
@@ -10,66 +12,80 @@ class NewsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final provider = context.watch<NewsProvider>();
 
-    return SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // 1. Title, styled like the other main screens
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-            child: Text(
-              "News",
-              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Use the consistent header widget
+            FeatureScreenHeader(
+              title: "News",
+              actions: [
+                // Use PopupMenuButton exactly like in the Chat screen
+                PopupMenuButton<String>(
+                  icon: const Icon(Iconsax.sort),
+                  tooltip: "Sort by...",
+                  onSelected: (String value) {
+                    provider.setSortCriteria(value);
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'pubDate_desc', // Value for newest first
+                      child: Text('Newest first'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'pubDate_asc', // Value for oldest first
+                      child: Text('Oldest first'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          // 2. The main content, expanded to fill the remaining space
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            // 2. The main content (remains unchanged)
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (provider.error != null) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        provider.error!,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.error),
+                  if (provider.error != null) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(provider.error!),
                       ),
+                    );
+                  }
+
+                  final articles = provider.articles;
+                  if (articles.isEmpty) {
+                    return const Center(child: Text('No news articles found.'));
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () => provider.fetchNews(),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: articles.length,
+                      itemBuilder: (context, index) {
+                        return _NewsListItem(article: articles[index]);
+                      },
                     ),
                   );
-                }
-
-                if (provider.articles.isEmpty) {
-                  return const Center(child: Text('No news articles found.'));
-                }
-
-                return RefreshIndicator(
-                  onRefresh: () => provider.fetchNews(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    itemCount: provider.articles.length,
-                    itemBuilder: (context, index) {
-                      return _NewsListItem(article: provider.articles[index]);
-                    },
-                  ),
-                );
-              },
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
+// _NewsListItem Widget remains unchanged
 class _NewsListItem extends StatelessWidget {
   final NewsArticleEntity article;
 
@@ -100,7 +116,8 @@ class _NewsListItem extends StatelessWidget {
                 width: double.infinity,
                 fit: BoxFit.cover,
                 headers: const {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36',
+                  'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36',
                 },
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
@@ -128,12 +145,14 @@ class _NewsListItem extends StatelessWidget {
                 children: [
                   Text(
                     article.title,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     article.summary,
-                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),

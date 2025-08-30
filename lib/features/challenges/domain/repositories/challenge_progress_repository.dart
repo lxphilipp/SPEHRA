@@ -5,7 +5,7 @@ import '../entities/task_progress_entity.dart';
 abstract class ChallengeProgressRepository {
   Stream<ChallengeProgressEntity?> watchChallengeProgress(String progressId);
   Future<void> createChallengeProgress(ChallengeProgressEntity progress);
-  Future<void> updateTaskState(String progressId, String taskIndex, TaskProgressEntity newState);
+  Future<void> updateTaskState(String progressId, String taskId, TaskProgressEntity newState);
   Future<void> createGroupProgress(GroupChallengeProgressEntity groupProgress);
   Future<GroupChallengeProgressEntity?> getGroupProgress(String inviteId);
   Future<void> addParticipantToGroupProgress({required String inviteId, required String userId, required int tasksPerUser});

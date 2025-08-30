@@ -8,45 +8,51 @@ class IntroductionPageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme für den Zugriff auf Stile holen
+    final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              // OPTIMIERT: Basis-Stil aus dem Theme
-              style: theme.textTheme.headlineMedium,
-              children: <TextSpan>[
-                const TextSpan(text: 'Hi,\nmy name is '),
-                TextSpan(
-                  text: 'Sphera',
-                  // OPTIMIERT: Akzentfarbe aus dem ColorScheme
-                  style: TextStyle(
-                      color: theme.colorScheme.primary,
-                      fontStyle: FontStyle.italic),
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: theme.textTheme.headlineMedium,
+                    children: <TextSpan>[
+                      const TextSpan(text: 'Hi,\nmy name is '),
+                      TextSpan(
+                        text: 'Sphera',
+                        style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontStyle: FontStyle.italic),
+                      ),
+                      const TextSpan(
+                          text: ',\nI will try to help you reach\nyour sustainability goals.'),
+                    ],
+                  ),
                 ),
-                const TextSpan(
-                    text: ',\nI will try to help you reach\nyour sustainability goals.'),
               ],
             ),
           ),
-          TextButton(
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 40.0),
+          child: TextButton(
             onPressed: () => provider.nextPage(context),
             child: Text(
               'Continue',
-              // OPTIMIERT: Stil aus dem Theme ableiten
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontFamily: 'OswaldRegular',
                 color: theme.colorScheme.primary,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

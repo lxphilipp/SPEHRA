@@ -1,26 +1,17 @@
-// lib/features/profile/presentation/screens/edit_profile_screen.dart
 import 'package:flutter/material.dart';
-import '../widgets/edit_profile_form.dart'; // Das neue Formular-Widget
+import '../widgets/edit_profile_form.dart';
 
 class EditProfileScreen extends StatelessWidget {
   const EditProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xff040324),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'OswaldLight',
-          ),
-        ),
-        backgroundColor: const Color(0xff040324),
+        title: const Text('Edit Profile'),
       ),
       body: const EditProfileForm(),
     );

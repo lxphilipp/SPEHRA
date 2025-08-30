@@ -1,4 +1,3 @@
-// lib/features/challenges/presentation/screens/challenge_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../widgets/challenge_list_content.dart';

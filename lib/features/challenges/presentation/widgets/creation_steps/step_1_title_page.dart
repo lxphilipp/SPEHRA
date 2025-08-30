@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
-import '../llm_feedback_widget.dart'; // Import of the new widget
+import '../llm_feedback_widget.dart';
 
 class Step1TitlePage extends StatefulWidget {
   const Step1TitlePage({super.key});
@@ -29,7 +29,6 @@ class _Step1TitlePageState extends State<Step1TitlePage> {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<ChallengeProvider>();
-    // We use `context.watch` here so the widget rebuilds when the feedback changes.
     final feedbackData = context.watch<ChallengeProvider>().llmFeedbackData['title'];
 
     return Padding(

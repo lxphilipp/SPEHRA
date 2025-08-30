@@ -12,7 +12,7 @@ class CreateOrGetChatRoomUseCase {
     MessageEntity? initialMessage,
   }) async {
     return await repository.createOrGetChatRoom(
-      currentUserId, // Positionale Übergabe an Repository-Methode
+      currentUserId,
       partnerUserId,
       initialMessage: initialMessage,
     );

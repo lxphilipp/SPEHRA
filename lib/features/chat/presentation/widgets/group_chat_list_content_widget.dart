@@ -51,7 +51,7 @@ class GroupChatListContentWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Fehler: ${provider.error}',
+                'Error: ${provider.error}',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyLarge
                     ?.copyWith(color: theme.colorScheme.error),
@@ -60,10 +60,10 @@ class GroupChatListContentWidget extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   AppLogger.info(
-                      "GroupChatListContentWidget: 'Erneut versuchen' tapped.");
+                      "GroupChatListContentWidget: 'Try again' tapped.");
                   provider.forceReloadGroupChats();
                 },
-                child: const Text("Erneut versuchen"),
+                child: const Text("Try again"),
               )
             ],
           ),
@@ -74,7 +74,7 @@ class GroupChatListContentWidget extends StatelessWidget {
     if (provider.sortedGroupChats.isEmpty) {
       return Center(
         child: Text(
-          'Keine Gruppenchats vorhanden.\nErstelle eine neue Gruppe oder trete einer bei!',
+          'No group chats started yet.\n Join or create a new group chat!',
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -82,7 +82,6 @@ class GroupChatListContentWidget extends StatelessWidget {
       );
     }
 
-    // HIER die sortierte Liste verwenden
     final groupChats = provider.sortedGroupChats;
 
     return ListView.builder(

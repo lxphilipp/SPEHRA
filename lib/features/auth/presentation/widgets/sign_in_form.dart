@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_sdg/features/auth/presentation/screens/registration_screen.dart';
 import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_screen.dart';
-import '../../../../core/layouts/responsive_main_navigation.dart';
-import '../../../introduction/presentation/screens/introduction_main_screen.dart';
+import '../../../../auth_wrapper.dart';
 import '../providers/auth_provider.dart';
 
 class SignInForm extends StatefulWidget {
@@ -26,7 +24,6 @@ class _SignInFormState extends State<SignInForm> {
     super.dispose();
   }
 
-  // OPTIMIZED: Themed snackbar logic
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -47,32 +44,32 @@ class _SignInFormState extends State<SignInForm> {
       _showSnackbar('Please enter email and password.', isError: true);
       return;
     }
-
-    setState(() { _isLoading = true; });
-    final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
-    bool loginSuccess = await authProvider.performSignIn(email, password);
-
-    if (mounted) {
-      setState(() { _isLoading = false; });
-    } else {
+    final bool isEmailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
+    if (!isEmailValid) {
+      _showSnackbar('Please enter a valid email address.', isError: true);
       return;
     }
 
-    if (loginSuccess) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final isNewUser = user.metadata.creationTime == user.metadata.lastSignInTime;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => isNewUser ? const IntroductionMainScreen() : const ResponsiveMainNavigation()),
-        );
-      }
+    setState(() { _isLoading = true; });
+    final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
+
+    final String? errorMessage = await authProvider.performSignIn(email, password);
+
+    if (!mounted) return;
+
+    setState(() { _isLoading = false; });
+
+    // Check the result
+    if (errorMessage == null) {
+      // Success! Navigate. The AuthWrapper will handle the rest.
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
+      );
     } else {
-      final errorMsg = authProvider.errorMessage ?? 'Login failed. Please check your credentials.';
-      _showSnackbar(errorMsg, isError: true);
+      // Failure! Show the returned message.
+      _showSnackbar(errorMessage, isError: true);
     }
   }
-
-  // --- Your original methods, now themed ---
 
   Widget _buildSignInHeader(BuildContext context) {
     final theme = Theme.of(context);
@@ -101,7 +98,6 @@ class _SignInFormState extends State<SignInForm> {
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
       child: TextField(
         controller: emailController,
-        // OPTIMIZED: The decoration now uses the global theme
         decoration: const InputDecoration(
           prefixIcon: Icon(Icons.email),
           hintText: 'Email',
@@ -139,7 +135,6 @@ class _SignInFormState extends State<SignInForm> {
               builder: (context) => const ForgotPasswordScreen(),
             ));
           },
-          // OPTIMIZED: The style comes from the TextButtonTheme
           child: const Text('Forgot Password?'),
         ),
       ),
@@ -153,7 +148,6 @@ class _SignInFormState extends State<SignInForm> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          // OPTIMIZED: The style has been removed and is inherited from the global theme.
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),

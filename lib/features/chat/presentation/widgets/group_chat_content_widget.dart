@@ -1,3 +1,5 @@
+// lib/features/chat/presentation/widgets/group_chat_content_widget.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -99,7 +101,11 @@ class _GroupChatContentWidgetState extends State<GroupChatContentWidget> {
                   invite: item,
                 );
               } else if (item is GroupChallengeProgressEntity) {
-                return GroupChallengeStatusCard(groupProgress: item);
+                final challengeDetails = chatProvider.getChallengeDetailsForActiveChallenge(item.challengeId);
+                return GroupChallengeStatusCard(
+                  groupProgress: item,
+                  challengeDetails: challengeDetails,
+                );
               }
 
               // Fallback for any other type

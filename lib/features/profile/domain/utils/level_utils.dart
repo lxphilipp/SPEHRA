@@ -1,4 +1,3 @@
-// lib/features/profile/domain/utils/level_utils.dart
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 
@@ -41,8 +40,7 @@ class LevelUtils {
     }
 
     int level = 1;
-    // Wir suchen so lange nach dem richtigen Level, bis die benötigten XP
-    // für das nächste Level höher sind als die aktuellen Punkte des Nutzers.
+
     while (true) {
       final xpForNextLevel = getXPForLevel(level + 1);
       if (xpForNextLevel > totalPoints) {
@@ -71,7 +69,7 @@ class LevelUtils {
 
     return LevelData(
       level: currentLevel,
-      progress: progress.clamp(0.0, 1.0), // Stellt sicher, dass der Wert zwischen 0 und 1 liegt
+      progress: progress.clamp(0.0, 1.0),
       pointsForNextLevel: pointsForNextLevel,
       startPointsOfCurrentLevel: startPointsOfCurrentLevel,
     );

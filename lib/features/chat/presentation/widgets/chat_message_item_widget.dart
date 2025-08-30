@@ -35,12 +35,20 @@ class ChatMessageItemWidget extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: groupProvider.activeChallenges.length,
-                  itemBuilder: (ctx, index) {
-                    return GroupChallengeStatusCard(
-                      groupProgress: groupProvider.activeChallenges[index],
+                child: Consumer<GroupChatProvider>(
+                  builder: (context, provider, child) {
+                    final activeChallenges = provider.activeChallenges;
+                    return ListView.builder(
+                      controller: scrollController,
+                      itemCount: activeChallenges.length,
+                      itemBuilder: (ctx, index) {
+                        final progress = activeChallenges[index];
+                        final details = provider.getChallengeDetailsForActiveChallenge(progress.challengeId);
+                        return GroupChallengeStatusCard(
+                          groupProgress: progress,
+                          challengeDetails: details,
+                        );
+                      },
                     );
                   },
                 ),

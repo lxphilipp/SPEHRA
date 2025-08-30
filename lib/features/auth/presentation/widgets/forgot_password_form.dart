@@ -95,11 +95,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                // The color of the loading circle is inherited from the button
                 color: theme.colorScheme.onPrimary,
               ),
             )
-            // The text color is also inherited from the button theme
                 : const Text('Send Reset Email'),
           ),
         ],

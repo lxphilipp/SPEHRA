@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
+import '../../../challenges/domain/entities/challenge_entity.dart';
+import '../../../challenges/domain/entities/game_balance_entity.dart';
 import '../../../challenges/presentation/providers/challenge_provider.dart';
 import '../../domain/entities/invite_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../chat/presentation/providers/group_chat_provider.dart'; // Für die Avatare
+import '../../../chat/presentation/providers/group_chat_provider.dart';
 
 class ChallengeInviteCardWidget extends StatelessWidget {
   final InviteEntity invite;
@@ -25,11 +27,6 @@ class ChallengeInviteCardWidget extends StatelessWidget {
     final bool hasResponded = myStatus != InviteStatus.pending;
     final challengeDetails = groupProvider.getChallengeDetailsForInvite(invite.targetId);
 
-    double maxBonusFactor = 0.0;
-    if (balanceConfig != null && balanceConfig.groupChallengeMilestones.isNotEmpty) {
-      maxBonusFactor = balanceConfig.groupChallengeMilestones.values.reduce((a, b) => a > b ? a : b);
-    }
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       elevation: 4.0,
@@ -44,7 +41,7 @@ class ChallengeInviteCardWidget extends StatelessWidget {
           children: [
             // --- Header ---
             Text(
-              "NEUE GRUPPEN-CHALLENGE",
+              "NEW GROUP CHALLENGE",
               style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary),
             ),
             const SizedBox(height: 8),
@@ -54,44 +51,28 @@ class ChallengeInviteCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Iconsax.star_1, color: theme.colorScheme.onSecondaryContainer, size: 16),
-                  const SizedBox(width: 8),
-                  Text(
-                    // Zeigt den Bonus an, sobald alle Daten geladen sind
-                    (challengeDetails != null && balanceConfig != null)
-                        ? "Team Bonus: Up to ${(challengeDetails.calculatePoints(balanceConfig) * maxBonusFactor).round()} extra points each!"
-                        : "Calculating team bonus...", // Fallback-Text
-                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSecondaryContainer),
-                  ),
-                ],
-              ),
-            ),
+            // --- NEW, IMPROVED BONUS SECTION ---
+            if (challengeDetails != null && balanceConfig != null)
+              _buildBonusSection(context, theme, challengeDetails, balanceConfig)
+            else
+              _buildBonusLoadingIndicator(context, theme),
 
             const SizedBox(height: 20),
 
-            // --- Teilnehmer-Liste ---
+            // --- Participant List ---
             _buildRecipientsList(context, groupProvider),
             const SizedBox(height: 20),
 
-            // --- Aktions-Buttons ---
-            if (!hasResponded) // Zeige Buttons nur an, wenn der Nutzer noch nicht reagiert hat
+            // --- Action Buttons ---
+            if (!hasResponded) // Only show buttons if the user has not responded yet
               _buildActionButtons(context),
-            if (hasResponded) // Zeige den eigenen Status an, nachdem reagiert wurde
+            if (hasResponded) // Show the user's status after they have responded
               Center(
                 child: Chip(
                   avatar: myStatus == InviteStatus.accepted
                       ? const Icon(Iconsax.tick_circle, color: Colors.green)
                       : const Icon(Iconsax.close_circle, color: Colors.red),
-                  label: Text(myStatus == InviteStatus.accepted ? 'Du machst mit!' : 'Du hast abgelehnt'),
+                  label: Text(myStatus == InviteStatus.accepted ? 'You are in!' : 'You declined'),
                 ),
               ),
           ],
@@ -100,7 +81,81 @@ class ChallengeInviteCardWidget extends StatelessWidget {
     );
   }
 
-  // Baut die Liste der Avatare der Teilnehmer
+  // --- NEW HELPER WIDGETS ---
+
+  /// Builds the new bonus section that clearly lists the milestones.
+  Widget _buildBonusSection(BuildContext context, ThemeData theme, ChallengeEntity challenge, GameBalanceEntity balance) {
+    final basePoints = challenge.calculatePoints(balance);
+    // Sort milestones by percentage for a logical display
+    final milestones = balance.groupChallengeMilestones.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "TEAM BONUS",
+            style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSecondaryContainer, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Reach milestones to unlock bonus points for everyone:",
+            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSecondaryContainer),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: milestones.map((milestone) {
+              final percentage = milestone.key;
+              final bonusFactor = milestone.value;
+              final bonusPoints = (basePoints * bonusFactor).round();
+              return Chip(
+                avatar: Icon(Iconsax.award, color: Colors.amber.shade700, size: 16),
+                label: Text(
+                  "$percentage% = +$bonusPoints Pts",
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSecondaryContainer,
+                  ),
+                ),
+                backgroundColor: theme.colorScheme.surface,
+                visualDensity: VisualDensity.compact,
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows a loading indicator while the bonus info is being calculated.
+  Widget _buildBonusLoadingIndicator(BuildContext context, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+          const SizedBox(width: 12),
+          Text(
+            "Calculating team bonus...",
+            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSecondaryContainer),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Builds the list of participant avatars
   Widget _buildRecipientsList(BuildContext context, GroupChatProvider provider) {
     final acceptedUsers = invite.recipients.entries
         .where((entry) => entry.value == InviteStatus.accepted)
@@ -108,16 +163,16 @@ class ChallengeInviteCardWidget extends StatelessWidget {
         .toList();
 
     if (acceptedUsers.isEmpty) {
-      return const Text("Sei der Erste, der mitmacht!");
+      return const Text("Be the first to join!");
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Dabei sind (${acceptedUsers.length}):"),
+        Text("Joined (${acceptedUsers.length}):"),
         const SizedBox(height: 8),
         Wrap(
-          spacing: -8.0, // Lässt die Avatare überlappen
+          spacing: -8.0, // Overlap the avatars
           children: acceptedUsers.map((userId) {
             final userDetails = provider.getMemberDetail(userId);
             return CircleAvatar(
@@ -141,7 +196,7 @@ class ChallengeInviteCardWidget extends StatelessWidget {
         Expanded(
           child: ElevatedButton.icon(
             icon: const Icon(Iconsax.cup),
-            label: const Text("Mitmachen!"),
+            label: const Text("Accept!"),
             onPressed: () {
               provider.acceptChallengeInvite(invite);
             },
@@ -149,7 +204,7 @@ class ChallengeInviteCardWidget extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         OutlinedButton(
-          child: const Text("Ablehnen"),
+          child: const Text("Decline"),
           onPressed: () {
             provider.declineChallengeInvite(invite);
           },

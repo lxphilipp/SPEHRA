@@ -32,8 +32,6 @@ class GroupChatListProvider with ChangeNotifier {
   // --- Stream Subscriptions ---
   StreamSubscription<List<GroupChatEntity>>? _groupChatsSubscription;
 
-
-
   GroupChatListProvider({
     required GetGroupChatsStreamUseCase getGroupChatsStreamUseCase,
     required CreateGroupChatUseCase createGroupChatUseCase,
@@ -91,6 +89,7 @@ class GroupChatListProvider with ChangeNotifier {
       }
     }
   }
+
 
   void _subscribeToGroupChats(String userId) {
     _isLoading = true;

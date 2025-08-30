@@ -16,7 +16,6 @@ class IndividualChatInfoScreen extends StatelessWidget {
     final ChatUserEntity partner = provider.chatPartner;
 
     return Scaffold(
-      // OPTIMIERT: AppBar und Hintergrund werden vom Theme gesteuert
       appBar: AppBar(
         title: Text(partner.name),
       ),
@@ -28,7 +27,6 @@ class IndividualChatInfoScreen extends StatelessWidget {
               const SizedBox(height: 20),
               CircleAvatar(
                 radius: 60,
-                // OPTIMIERT: Hintergrundfarbe aus dem ColorScheme
                 backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 backgroundImage: (partner.imageUrl != null && partner.imageUrl!.isNotEmpty)
                     ? NetworkImage(partner.imageUrl!)
@@ -43,21 +41,18 @@ class IndividualChatInfoScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 partner.name,
-                // OPTIMIERT: Text-Stil aus dem Theme
                 style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 30),
-              const Divider(), // OPTIMIERT: Farbe kommt vom Theme
+              const Divider(),
 
               // --- Aktionen ---
               ListTile(
-                // OPTIMIERT: Farbe für "warnende" Aktionen (z.B. tertiary color)
                 leading: Icon(Iconsax.message_remove, color: theme.colorScheme.tertiary),
                 title: Text("Clear Chat History", style: TextStyle(color: theme.colorScheme.tertiary)),
                 onTap: () => _showClearHistoryDialog(context, provider),
               ),
               ListTile(
-                // OPTIMIERT: Fehlerfarbe für "destruktive" Aktionen
                 leading: Icon(Iconsax.trash, color: theme.colorScheme.error),
                 title: Text("Delete Chat", style: TextStyle(color: theme.colorScheme.error)),
                 onTap: () => _showDeleteChatDialog(context, provider),
@@ -108,7 +103,6 @@ class IndividualChatInfoScreen extends StatelessWidget {
         actions: [
           TextButton(child: const Text("Cancel"), onPressed: () => Navigator.of(ctx).pop()),
           TextButton(
-            // OPTIMIERT: Verwendet Fehlerfarbe aus dem Theme
             style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
             child: const Text("Delete"),
             onPressed: () async {

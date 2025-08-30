@@ -27,7 +27,6 @@ class GroupSettingsScreen extends StatelessWidget {
     final bool amIAdmin = provider.amIAdmin;
 
     return Scaffold(
-      // OPTIMIERT: AppBar und Hintergrundfarbe werden vom Theme gesteuert
       appBar: AppBar(
         title: const Text("Group Info"),
       ),
@@ -37,7 +36,6 @@ class GroupSettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- Gruppenkopf ---
               Center(
                 child: Column(
                   children: [
@@ -56,7 +54,6 @@ class GroupSettingsScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // OPTIMIERT: Text-Stil aus dem Theme
                         Text(
                           group.name,
                           style: theme.textTheme.headlineSmall,
@@ -76,7 +73,7 @@ class GroupSettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Divider(), // OPTIMIERT: Farbe kommt vom Theme
+              const Divider(),
               const SizedBox(height: 16),
 
               // --- Mitgliederliste ---
@@ -104,7 +101,6 @@ class GroupSettingsScreen extends StatelessWidget {
                   final isMemberAdmin = group.adminIds.contains(memberId);
 
                   return Card(
-                    // OPTIMIERT: Farbe kommt vom CardTheme
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       leading: CircleAvatar(
@@ -127,15 +123,15 @@ class GroupSettingsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               const Divider(),
 
-              if (amIAdmin) // 'amIAdmin' ist bereits in deinem GroupChatProvider definiert
+              if (amIAdmin)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Iconsax.cup, color: theme.colorScheme.primary),
                   title: Text(
-                    "Neue Gruppen-Challenge starten",
+                    "Start new group challenge",
                     style: TextStyle(color: theme.colorScheme.primary),
                   ),
-                  onTap: () => _startChallengeSelection(context), // Wir lagern die Logik aus
+                  onTap: () => _startChallengeSelection(context),
                 ),
 
               // --- Aktionen ---
@@ -291,7 +287,7 @@ class GroupSettingsScreen extends StatelessWidget {
 
       // 4. (Optional) Gib dem Admin Feedback und schließe den Einstellungs-Screen.
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Challenge-Einladung wurde an die Gruppe gesendet!')),
+        const SnackBar(content: Text('Sent invite to group!')),
       );
       Navigator.of(context).pop();
     }

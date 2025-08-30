@@ -25,7 +25,6 @@ class MessageInputWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        // OPTIMIERT: Verwendet eine semantische Container-Farbe aus dem Theme.
         color: theme.colorScheme.surfaceContainer,
       ),
       child: SafeArea(
@@ -33,7 +32,6 @@ class MessageInputWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             IconButton(
-              // OPTIMIERT: Die Farbe wird jetzt vom IconTheme geerbt. Kein Fallback nötig.
               icon: const Icon(Icons.photo_camera_outlined),
               onPressed: isSending ? null : onPickImagePressed,
               tooltip: "Select Image",
@@ -42,10 +40,8 @@ class MessageInputWidget extends StatelessWidget {
               child: TextField(
                 focusNode: focusNode,
                 controller: controller,
-                // OPTIMIERT: Der Text-Stil wird vom globalen Theme geerbt.
                 decoration: InputDecoration(
                   hintText: "Write Messages...",
-                  // OPTIMIERT: Der hintStyle erbt ebenfalls vom globalen Theme.
                   border: InputBorder.none,
                   filled: false,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 10.0),

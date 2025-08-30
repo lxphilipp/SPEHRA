@@ -1,7 +1,7 @@
 // lib/features/chat/presentation/providers/group_chat_provider.dart
 
-import 'dart:async';
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_sdg/features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
@@ -103,6 +103,7 @@ class GroupChatProvider with ChangeNotifier {
   File? _imagePreview;
   List<GroupChallengeProgressEntity> _activeChallenges = [];
   final Map<String, ChallengeEntity> _challengeDetailsForInvites = {};
+  final Map<String, ChallengeEntity> _challengeDetailsForActiveChallenges = {};
 
 
   // --- Stream Subscriptions ---
@@ -123,6 +124,7 @@ class GroupChatProvider with ChangeNotifier {
   bool get amIAdmin => groupDetails?.adminIds.contains(currentUserId) ?? false;
   List<GroupChallengeProgressEntity> get activeChallenges => _activeChallenges;
   ChallengeEntity? getChallengeDetailsForInvite(String challengeId) => _challengeDetailsForInvites[challengeId];
+  ChallengeEntity? getChallengeDetailsForActiveChallenge(String challengeId) => _challengeDetailsForActiveChallenges[challengeId];
 
 
   // --- Kernlogik & Subscriptions ---
@@ -217,6 +219,7 @@ class GroupChatProvider with ChangeNotifier {
       if (!_isValidState) return;
       if (!const ListEquality().equals(_activeChallenges, challenges)) {
         _activeChallenges = challenges;
+        _fetchChallengeDetailsForActiveChallenges(challenges);
         notifyListeners();
       }
     }, onError: (e) {
@@ -241,6 +244,18 @@ class GroupChatProvider with ChangeNotifier {
         AppLogger.error("Error loading member details for group $groupId", e, stackTrace);
       },
     );
+  }
+  void _fetchChallengeDetailsForActiveChallenges(List<GroupChallengeProgressEntity> challenges) {
+    for (var progress in challenges) {
+      if (!_challengeDetailsForActiveChallenges.containsKey(progress.challengeId)) {
+        _getChallengeByIdUseCase(progress.challengeId).then((challenge) {
+          if (challenge != null && _isValidState) {
+            _challengeDetailsForActiveChallenges[progress.challengeId] = challenge;
+            notifyListeners();
+          }
+        });
+      }
+    }
   }
 
   void _handleGroupNotFoundOrDeleted(String errorMessage) {

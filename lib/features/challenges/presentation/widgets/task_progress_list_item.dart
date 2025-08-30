@@ -81,8 +81,8 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       elevation: isCompleted ? 0 : 2,
-      color: isCompleted ? theme.colorScheme.surfaceContainerHighest : theme.cardColor,
-      clipBehavior: Clip.antiAlias, // Important for rounded corners on the map
+      color: theme.colorScheme.surfaceContainerHighest,
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -148,10 +148,9 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
   Widget _buildContextualContent(ThemeData theme) {
     final task = widget.taskDefinition;
 
-    // --- MAP FOR LOCATION VISIT TASK ---
     if (task is LocationVisitTask) {
       return Container(
-        height: 150,
+        height: 200,
         color: theme.colorScheme.surfaceContainer,
         child: FlutterMap(
           options: MapOptions(
@@ -181,7 +180,7 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
             RichAttributionWidget(
               attributions: [
                 TextSourceAttribution(
-                  '© OpenStreetMap contributors',
+                  'OpenStreetMap contributors',
                   onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
                 ),
               ],

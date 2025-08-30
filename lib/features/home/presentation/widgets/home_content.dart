@@ -5,7 +5,6 @@ import 'package:iconsax/iconsax.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../challenges/domain/entities/challenge_entity.dart';
 import '../../../challenges/presentation/screens/challenge_details_screen.dart';
-import '../../../challenges/presentation/screens/challenge_list_screen.dart';
 import '../../../profile/domain/entities/user_profile_entity.dart';
 import '../../../profile/domain/utils/level_utils.dart';
 import '../../../profile/presentation/providers/user_profile_provider.dart';
@@ -53,8 +52,6 @@ class HomeContent extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const SdgListScreen()));
             }),
             const SizedBox(height: 12),
-            // The carousel will now respect the ListView's padding.
-            // We need to adjust its internal structure slightly.
             _buildSdgCarousel(context, homeProvider),
             const SizedBox(height: 24),
 

@@ -1,11 +1,10 @@
-// features/auth/presentation/providers/auth_provider.dart
-
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 
 // Domain-Layer Imports
 import '../../domain/entities/user_entity.dart';
+import '../../domain/entities/auth_failures.dart';
 import '../../domain/usecases/get_auth_state_changes_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/sign_in_user_usecase.dart';
@@ -122,33 +121,45 @@ class AuthenticationProvider with ChangeNotifier {
 
   // --- Public methods for actions ---
   // These methods are called from the UI to trigger actions.
-
   /// Performs a user sign-in.
-  Future<bool> performSignIn(String email, String password) async {
-    _setLoading(true);
+  /// Returns null on success, or an error message string on failure.
+  Future<String?> performSignIn(String email, String password) async {
+    // _setLoading(true); // <-- DIESE ZEILE ENTFERNEN
     _clearError();
     try {
       final userEntity = await _signInUserUseCase(SignInParams(email: email, password: password));
-      // The authStateChanges stream will handle the rest (updating the user).
-      return userEntity != null;
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
+      if (userEntity != null) {
+        return null; // Erfolg
+      }
+      return "An unknown error occurred."; // Sollte nicht erreicht werden
+    } on AuthFailure catch (e) {
+      _setErrorMessage(e.message);
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
+      return e.message;
     } catch (e) {
-      _setErrorMessage("Login failed: ${e.toString()}");
-      _setLoading(false);
-      return false;
+      final unexpectedError = "An unexpected error occurred.";
+      _setErrorMessage(unexpectedError);
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
+      return unexpectedError;
     }
   }
 
   /// Performs a user registration.
   Future<bool> performRegistration({required String email, required String password, required String name}) async {
-    _setLoading(true);
+    // _setLoading(true); // <-- DIESE ZEILE ENTFERNEN
     _clearError();
     try {
       final userEntity = await _registerUserUseCase(RegisterParams(email: email, password: password, name: name));
-      // The authStateChanges stream will handle the rest.
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
       return userEntity != null;
+    } on AuthFailure catch (e) {
+      _setErrorMessage(e.message);
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
+      return false;
     } catch (e) {
-      _setErrorMessage("Registration failed: ${e.toString()}");
-      _setLoading(false);
+      _setErrorMessage("Ein unerwarteter Fehler ist aufgetreten.");
+      // _setLoading(false); // <-- DIESE ZEILE ENTFERNEN
       return false;
     }
   }
@@ -174,9 +185,10 @@ class AuthenticationProvider with ChangeNotifier {
     _clearError();
     try {
       await _signOutUserUseCase();
-      // The authStateChanges stream will set the user to `null`.
+      _updateCurrentUser(null);
     } catch (e) {
       _setErrorMessage("Error during sign out: ${e.toString()}");
+    } finally {
       _setLoading(false);
     }
   }

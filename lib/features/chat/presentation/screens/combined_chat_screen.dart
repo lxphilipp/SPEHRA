@@ -1,10 +1,6 @@
-// lib/features/chat/presentation/screens/combined_chat_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
-
-// Screens und Provider importieren
 import 'package:flutter_sdg/features/chat/presentation/screens/chat_home_screen.dart';
 import 'package:flutter_sdg/features/chat/presentation/screens/create_group_screen.dart';
 import 'package:flutter_sdg/features/chat/presentation/screens/user_search_screen.dart';
@@ -12,6 +8,7 @@ import 'package:flutter_sdg/features/chat/presentation/screens/individual_chat_s
 import 'package:flutter_sdg/features/chat/presentation/widgets/group_chat_list_content_widget.dart';
 
 // Entities und Provider für die Logik
+import '../../../../core/widgets/feature_screen_header.dart';
 import '../../domain/entities/chat_user_entity.dart';
 import '../providers/chat_room_list_provider.dart';
 import '../providers/group_chat_list_provider.dart';
@@ -140,48 +137,31 @@ class _CombinedChatScreenState extends State<CombinedChatScreen>
         backgroundColor: theme.scaffoldBackgroundColor,
         body: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Chats",
-                    style: theme.textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      PopupMenuButton<String>(
-                        icon: const Icon(Iconsax.sort),
-                        tooltip: "Sortieren nach...",
-                        onSelected: (String value) {
-                          if (_tabController.index == 0) {
-                            context
-                                .read<ChatRoomListProvider>()
-                                .setSortCriteria(value);
-                          } else {
-                            context
-                                .read<GroupChatListProvider>()
-                                .setSortCriteria(value);
-                          }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'lastMessageTime_desc',
-                            child: Text('Neueste zuerst'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'lastMessageTime_asc',
-                            child: Text('Älteste zuerst'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            FeatureScreenHeader(
+              title: "Chats",
+              actions: [
+                PopupMenuButton<String>(
+                  icon: const Icon(Iconsax.sort),
+                  tooltip: "Sort by...",
+                  onSelected: (String value) {
+                    if (_tabController.index == 0) {
+                      context.read<ChatRoomListProvider>().setSortCriteria(value);
+                    } else {
+                      context.read<GroupChatListProvider>().setSortCriteria(value);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'lastMessageTime_desc',
+                      child: Text('Newest first'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'lastMessageTime_asc',
+                      child: Text('Oldest first'),
+                    ),
+                  ],
+                ),
+              ],
             ),
             TabBar(
               controller: _tabController,

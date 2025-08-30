@@ -33,9 +33,6 @@ class SdgDataModel {
     );
   }
 
-  // Kein toMap, da wir es wahrscheinlich nur aus einer JSON-Datei lesen werden.
-  // Wenn du es auch generieren und speichern müsstest, wäre toMap nötig.
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

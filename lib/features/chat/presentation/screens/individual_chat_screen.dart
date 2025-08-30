@@ -53,7 +53,6 @@ class IndividualChatScreen extends StatelessWidget {
         setChatClearedTimestampUseCase: context.read<SetChatClearedTimestampUseCase>(),
       ),
       child: Scaffold(
-        // OPTIMIERT: Hintergrundfarbe und AppBar-Stile werden jetzt vollständig vom Theme gesteuert.
         appBar: AppBar(
           title: Text(chatPartner.name),
           actions: [

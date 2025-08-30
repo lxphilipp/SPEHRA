@@ -67,6 +67,7 @@ class ChallengeProvider with ChangeNotifier {
   late AuthenticationProvider _authProvider;
   late UserProfileProvider _userProfileProvider;
   UserProfileEntity? _lastProcessedProfile;
+  String? _currentUserId;
 
   // --- State for Challenge List and Filtering ---
   List<ChallengeEntity> _allChallenges = [];
@@ -152,13 +153,13 @@ class ChallengeProvider with ChangeNotifier {
         _selectImageForTaskUseCase = selectImageForTaskUseCase,
         _getGameBalanceUseCase = getGameBalanceUseCase { // NEW
     _initializeStreams();
-    _loadGameBalance(); // NEW: Load balance config on startup
+    _loadGameBalance();
   }
 
   // --- Getters for the UI ---
   bool isVerifyingTask(int index) => _verifyingTaskIndex == index;
-  GameBalanceEntity? get gameBalance => _gameBalance; // NEW: Expose the balance config
-  bool get isLoading => _isLoadingBalance || _allChallenges.isEmpty; // isLoading now considers balance loading
+  GameBalanceEntity? get gameBalance => _gameBalance;
+  bool get isLoading => _isLoadingBalance || _allChallenges.isEmpty;
 
   // List and Filter State
   ChallengeFilterState get filterState => _filterState;
@@ -190,16 +191,20 @@ class ChallengeProvider with ChangeNotifier {
   /// Returns the filtered and sorted list of challenges.
   /// The UI should always use this getter.
   List<ChallengeEntity> get filteredChallenges {
-    if (_gameBalance == null) return []; // Return empty if balance is not loaded yet
+    if (_gameBalance == null) return [];
 
     List<ChallengeEntity> filtered = List.from(_allChallenges);
 
     // Filtering logic remains the same
-    if (_filterState.searchText.isNotEmpty) { /* ... */ }
+    if (_filterState.searchText.isNotEmpty) {
+      filtered = filtered.where((c) => c.title.toLowerCase().contains(_filterState.searchText.toLowerCase())).toList();
+    }
     if (_filterState.selectedDifficulties.isNotEmpty) {
       filtered = filtered.where((c) => _filterState.selectedDifficulties.contains(c.calculateDifficulty(_gameBalance!))).toList();
     }
-    if (_filterState.selectedSdgKeys.isNotEmpty) { /* ... */ }
+    if (_filterState.selectedSdgKeys.isNotEmpty) {
+      filtered = filtered.where((c) => c.categories.any((catKey) => _filterState.selectedSdgKeys.contains(catKey))).toList();
+    }
 
     // Sorting logic now passes the balance config
     filtered.sort((a, b) {
@@ -255,8 +260,21 @@ class ChallengeProvider with ChangeNotifier {
     _authProvider = auth;
     _userProfileProvider = profile;
 
-    final newUserProfile = profile.userProfile;
+    final newUserId = auth.currentUserId;
 
+    if (newUserId != _currentUserId) {
+      _currentUserId = newUserId;
+      if (newUserId != null) {
+        _initializeStreams();
+        AppLogger.debug("ChallengeProvider: User logged in, initializing streams.");
+      } else {
+        _allChallengesSubscription?.cancel();
+        _allChallenges = [];
+        AppLogger.debug("ChallengeProvider: User logged out, clearing challenges data.");
+      }
+    }
+
+    final newUserProfile = profile.userProfile;
     if (!const DeepCollectionEquality().equals(_lastProcessedProfile, newUserProfile)) {
       AppLogger.debug("ChallengeProvider: UserProfile dependency changed. Notifying listeners.");
       _lastProcessedProfile = newUserProfile;
@@ -285,37 +303,36 @@ class ChallengeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setSortCriteria(String newCriteria) {
+  void setSortCriteria(String newSortValue) {
+    final parts = newSortValue.split('_');
+    final newCriteria = parts[0];
+    final newDirectionIsAsc = (parts.length > 1 && parts[1] == 'asc');
+
     if (_sortCriteria == newCriteria) {
       _isSortAscending = !_isSortAscending;
     } else {
       _sortCriteria = newCriteria;
-      _isSortAscending = (newCriteria == 'difficulty' || newCriteria == 'points');
+      _isSortAscending = newDirectionIsAsc;
     }
     notifyListeners();
   }
 
-// In: lib/features/challenges/presentation/providers/challenge_provider.dart
 
   Future<void> fetchChallengeDetails(String challengeId) async {
-    // OPTIMAL SOLUTION: Check if the correct challenge is already being loaded.
-    // Prevents unnecessary loading when clicking back and forth quickly.
+
     if (_isLoadingSelectedChallenge && _selectedChallenge?.id == challengeId) {
       return;
     }
 
-    // 1. IMMEDIATELY clear the old state and activate loading state.
     _isLoadingSelectedChallenge = true;
     _selectedChallenge = null; // <-- The crucial step!
     _selectedChallengeError = null;
     _currentChallengeProgress = null;
     _challengeProgressSubscription?.cancel();
-    notifyListeners(); // Immediately instruct UI to show a loading spinner instead of old data.
+    notifyListeners();
 
-    // 2. Now load the new data.
     final newChallenge = await _getChallengeByIdUseCase(challengeId);
 
-    // 3. After loading, set the new state.
     _selectedChallenge = newChallenge;
 
     if (_selectedChallenge == null) {
@@ -325,7 +342,6 @@ class ChallengeProvider with ChangeNotifier {
       return;
     }
 
-    // 4. Start the progress stream for the new challenge.
     final userId = _authProvider.currentUserId;
     if (userId != null) {
       final progressId = '${userId}_${_selectedChallenge!.id}';
@@ -368,7 +384,7 @@ class ChallengeProvider with ChangeNotifier {
     _isFetchingFeedback = true;
     notifyListeners();
 
-    _debounce = Timer(const Duration(milliseconds: 1200), () async {
+    _debounce = Timer(const Duration(milliseconds: 200), () async {
       try {
         final challengeData = _challengeInProgress!;
         final feedbackJsonString = await _getLlmFeedbackUseCase(
@@ -555,7 +571,6 @@ class ChallengeProvider with ChangeNotifier {
       return false;
     }
 
-    // Core logic check: Are all tasks completed?
     if (_currentChallengeProgress == null ||
         !_currentChallengeProgress!.taskStates.values.every((task) => task.isCompleted)) {
       _userChallengeStatusError = "You have not completed all tasks yet!";

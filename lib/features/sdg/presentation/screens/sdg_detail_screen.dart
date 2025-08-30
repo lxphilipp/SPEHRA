@@ -3,12 +3,10 @@ import '../widgets/sdg_detail_content_widget.dart';
 
 class SdgDetailScreen extends StatelessWidget {
   final String sdgId;
-  final String? initialTitle;
 
   const SdgDetailScreen({
     super.key,
     required this.sdgId,
-    this.initialTitle,
   });
 
   @override
@@ -17,7 +15,7 @@ class SdgDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(initialTitle ?? 'SDG Detail', style: theme.appBarTheme.titleTextStyle),
+        title: Text('SDG in Detail', style: theme.appBarTheme.titleTextStyle),
         backgroundColor: theme.appBarTheme.backgroundColor,
         iconTheme: theme.appBarTheme.iconTheme,
         elevation: theme.appBarTheme.elevation,

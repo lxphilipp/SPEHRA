@@ -1,4 +1,3 @@
-// lib/features/challenges/domain/repositories/device_tracking_repository.dart
 import 'package:latlong2/latlong.dart';
 
 /// An abstract contract for all device-specific tracking functions.

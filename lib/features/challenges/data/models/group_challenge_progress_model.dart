@@ -5,7 +5,7 @@ import '../../domain/entities/group_challenge_progress_entity.dart';
 class GroupChallengeProgressModel {
   final String id;
   final String challengeId;
-  final String contextId; // Added
+  final String contextId;
   final List<String> participantIds;
   final int totalTasksRequired;
   final int completedTasksCount;
@@ -29,7 +29,7 @@ class GroupChallengeProgressModel {
     return GroupChallengeProgressModel(
       id: snap.id,
       challengeId: data['challengeId'] ?? '',
-      contextId: data['contextId'] ?? '', // Added
+      contextId: data['contextId'] ?? '',
       participantIds: List<String>.from(data['participantIds'] ?? []),
       totalTasksRequired: data['totalTasksRequired'] ?? 0,
       completedTasksCount: data['completedTasksCount'] ?? 0,
@@ -69,7 +69,7 @@ class GroupChallengeProgressModel {
     return GroupChallengeProgressModel(
       id: entity.id,
       challengeId: entity.challengeId,
-      contextId: entity.contextId, // Added
+      contextId: entity.contextId,
       participantIds: entity.participantIds,
       totalTasksRequired: entity.totalTasksRequired,
       completedTasksCount: entity.completedTasksCount,

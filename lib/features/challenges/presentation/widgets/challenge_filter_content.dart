@@ -167,7 +167,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
         const SizedBox(height: 24),
 
         // 4. Date Range
-        Text('Creation Date', style: theme.textTheme.titleMedium),
+        Text('Date Range', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         InkWell(
           onTap: _pickDateRange,

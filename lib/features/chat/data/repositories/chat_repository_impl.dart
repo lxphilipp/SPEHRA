@@ -19,7 +19,6 @@ class ChatRepositoryImpl implements ChatRepository {
 
   // --- Mapping Hilfsmethoden (Model zu Entity) ---
   ChatRoomEntity _mapChatRoomModelToEntity(ChatRoomModel model) {
-    // Wandle die Map<String, dynamic> (mit Timestamps) in eine Map<String, DateTime> um
     final clearedAtMap = <String, DateTime>{};
     model.clearedAt.forEach((key, value) {
       if (value is Timestamp) {
@@ -64,14 +63,13 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   MessageModel _mapMessageEntityToModel(MessageEntity entity) {
-    // Wird benötigt, wenn Entities an die DataSource übergeben werden
     return MessageModel(
       id: entity.id, // ID kann hier leer sein, wenn sie von der DS generiert wird
       toId: entity.toId,
       fromId: entity.fromId,
       msg: entity.msg,
       type: entity.type,
-      createdAt: entity.createdAt, // DS wird dies ggf. neu setzen
+      createdAt: entity.createdAt,
       readAt: entity.readAt,
     );
   }

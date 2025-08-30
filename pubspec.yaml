@@ -132,11 +132,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-  fonts:
-    - family: OswaldLight
-      fonts:
-        - asset: assets/fonts/Oswald-Light.ttf
-    - family: OswaldRegular
-      fonts:
-        - asset: assets/fonts/Oswald-Regular.ttf
-  

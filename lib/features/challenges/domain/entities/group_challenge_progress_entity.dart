@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 class GroupChallengeProgressEntity extends Equatable {
   final String id;
   final String challengeId;
-  final String contextId; // Added
+  final String contextId;
   final List<String> participantIds;
   final int totalTasksRequired;
   final int completedTasksCount;
@@ -14,7 +14,7 @@ class GroupChallengeProgressEntity extends Equatable {
   const GroupChallengeProgressEntity({
     required this.id,
     required this.challengeId,
-    required this.contextId, // Added
+    required this.contextId,
     required this.participantIds,
     required this.totalTasksRequired,
     required this.completedTasksCount,
@@ -26,7 +26,7 @@ class GroupChallengeProgressEntity extends Equatable {
   List<Object?> get props => [
         id,
         challengeId,
-        contextId, // Added
+        contextId,
         participantIds,
         totalTasksRequired,
         completedTasksCount,

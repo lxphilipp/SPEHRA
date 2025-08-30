@@ -1,6 +1,6 @@
 import 'package:rxdart/rxdart.dart';
 import '../../../challenges/domain/entities/group_challenge_progress_entity.dart';
-import '../../../challenges/domain/repositories/challenge_progress_repository.dart'; // <-- NEUER IMPORT
+import '../../../challenges/domain/repositories/challenge_progress_repository.dart';
 import '../../../invites/domain/entities/invite_entity.dart';
 import '../../../invites/domain/usecases/get_invites_for_context_usecase.dart';
 import '../entities/message_entity.dart';

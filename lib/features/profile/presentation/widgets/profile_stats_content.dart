@@ -1,10 +1,8 @@
-// lib/features/profile/presentation/widgets/profile_stats_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
-import 'dart:math'; // For max() function
-
-import '../../../../core/theme/app_colors.dart';
+import 'dart:math';
+import '../../../../auth_wrapper.dart';
 import '../../../../core/theme/sdg_color_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../sdg/domain/entities/sdg_list_item_entity.dart';
@@ -22,8 +20,6 @@ class ProfileStatsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final profileProvider = context.watch<UserProfileProvider>();
-    final authProvider = context.watch<AuthenticationProvider>();
-
     if (profileProvider.isLoadingProfile && profileProvider.userProfile == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -129,7 +125,18 @@ class ProfileStatsContent extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(sdgItem.title, style: theme.textTheme.bodyLarge),
+                      Row(
+                        children: [
+                          Image.asset(
+                            sdgItem.listImageAssetPath,
+                            width: 24,
+                            height: 24,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Iconsax.global, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(sdgItem.title, style: theme.textTheme.bodySmall),
+                        ],
+                      ),
                       Text(
                         '${percentage.toStringAsFixed(0)}%',
                         style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -158,11 +165,8 @@ class ProfileStatsContent extends StatelessWidget {
     );
   }
 
-  // --- Other helper methods (unchanged) ---
-
   Widget _buildCustomHeader(BuildContext context, UserProfileEntity userProfile, LevelData levelData) {
     final theme = Theme.of(context);
-    final authProvider = context.read<AuthenticationProvider>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,13 +191,24 @@ class ProfileStatsContent extends StatelessWidget {
         ),
         PopupMenuButton<String>(
           icon: const Icon(Iconsax.menu_1),
-          onSelected: (value) {
+          onSelected: (value) async {
+            // Store the context-dependent objects before any async operations.
+            final authProvider = context.read<AuthenticationProvider>();
+            final navigator = Navigator.of(context);
+
             if (value == 'edit') {
-              Navigator.of(context).push(
+              navigator.push(
                 MaterialPageRoute(builder: (_) => const EditProfileScreen()),
               );
             } else if (value == 'logout') {
-              authProvider.performSignOut();
+              await authProvider.performSignOut();
+
+              if (navigator.mounted) {
+                navigator.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthWrapper()),
+                      (Route<dynamic> route) => false,
+                );
+              }
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -277,7 +292,7 @@ class ProfileStatsContent extends StatelessWidget {
       children: [
         Icon(icon, color: theme.colorScheme.onSurfaceVariant, size: 20),
         const SizedBox(width: 16),
-        Expanded(child: Text(text, style: theme.textTheme.bodyLarge)),
+        Expanded(child: Text(text, style: theme.textTheme.bodyMedium)),
       ],
     );
   }

@@ -16,7 +16,6 @@ class SearchResultList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Using a Material widget to ensure proper styling for the ListTiles.
     return Material(
       elevation: 4,
       borderRadius: BorderRadius.circular(8),

@@ -9,11 +9,6 @@ import 'intropages/sdg_page_content.dart';
 import 'intropages/transport_page_content.dart';
 import 'intropages/your_concerns_page_content.dart';
 
-// Platzhalter-Widgets, die du durch deine echten umgebauten Content-Widgets ersetzt.
-// Beispiel:
-// import 'question_widgets/diet_page_content.dart';
-
-
 typedef WidgetBuilderFunc = Widget Function();
 
 class IntroWidgetFactory {

@@ -8,7 +8,6 @@ import '../models/sdg_data_model.dart';
 class SdgRepositoryImpl implements SdgRepository {
   final SdgLocalDataSource localDataSource;
 
-  // Optional: Ein einfacher Cache für die Basis-SDG-Daten, um die JSON nicht jedes Mal neu zu parsen.
   List<SdgDataModel>? _cachedSdgBaseData;
 
   SdgRepositoryImpl({required this.localDataSource});
@@ -76,7 +75,7 @@ class SdgRepositoryImpl implements SdgRepository {
       return _mapModelToDetailEntity(targetModel, textContent);
     } catch (e) {
       AppLogger.error("SdgRepositoryImpl: Error in getSdgDetailById for '$sdgId'", e);
-      return null; // Allgemeiner Fehler signalisieren
+      return null;
     }
   }
 }

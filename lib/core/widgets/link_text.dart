@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/link.dart';
-// Importiere dein AppTheme, wenn du spezifische Link-Textstile definieren willst
-// import 'package:dein_projekt_name/core/theme/app_theme.dart';
 
-class LinkTextWidget extends StatelessWidget { // Umbenannt für Klarheit
+class LinkTextWidget extends StatelessWidget {
   final String url;
-  final String? displayText; // Optional, um einen anderen Text als die URL anzuzeigen
+  final String? displayText;
   const LinkTextWidget({
     super.key,
     required this.url,
@@ -20,16 +18,16 @@ class LinkTextWidget extends StatelessWidget { // Umbenannt für Klarheit
     if (uri == null) {
       return Text(
         'Invalid URL',
-        style: TextStyle(color: theme.colorScheme.error), // Fehlerfarbe aus Theme
+        style: TextStyle(color: theme.colorScheme.error)
       );
     }
-    final TextStyle linkStyle = theme.textTheme.bodyMedium?.copyWith( // Basisstil
-      color: theme.colorScheme.primary, // Typische Link-Farbe (oft primär oder eine Akzentfarbe)
+    final TextStyle linkStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.primary,
       decoration: TextDecoration.underline,
-      decorationColor: theme.colorScheme.primary, // Unterstreichung in gleicher Farbe
-      fontFamily: 'OswaldLight', // Behalte deine Schriftart bei, wenn gewünscht
+      decorationColor: theme.colorScheme.primary,
+      fontFamily: 'OswaldLight',
     ) ??
-        const TextStyle( // Fallback, falls bodyMedium null ist
+        const TextStyle(
           color: Colors.blue,
           decoration: TextDecoration.underline,
           fontFamily: 'OswaldLight',
@@ -41,13 +39,13 @@ class LinkTextWidget extends StatelessWidget { // Umbenannt für Klarheit
       builder: (BuildContext ctx, FollowLink? openLink) {
         return TextButton(
           style: TextButton.styleFrom(
-            padding: EdgeInsets.zero, // Entferne Standard-Padding vom TextButton
-            minimumSize: Size.zero,   // Entferne Mindestgröße
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Mache Klickbereich kleiner
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           onPressed: openLink,
           child: Text(
-            displayText ?? url, // Zeige displayText oder die URL
+            displayText ?? url,
             style: linkStyle,
           ),
         );

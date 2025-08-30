@@ -2,21 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/introduction_provider.dart';
 
-class SchoolPageContent extends StatelessWidget {
+class SchoolPageContent extends StatefulWidget {
   const SchoolPageContent({super.key});
 
-  Widget _buildOptionButton(BuildContext context, String label) {
-    final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme holen
+  @override
+  State<SchoolPageContent> createState() => _SchoolPageContentState();
+}
 
-    return OutlinedButton(
-      // OPTIMIERT: Stil wird vom Theme abgeleitet
+class _SchoolPageContentState extends State<SchoolPageContent> {
+  String? _selectedOption;
+  final List<String> schoolOptions = ['60%', '74%', '90%', '87%'];
+
+  Widget _buildOptionButton(BuildContext context, String label) {
+    final theme = Theme.of(context);
+    final bool isSelected = _selectedOption == label;
+
+    return isSelected
+        ? FilledButton(
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: () => setState(() => _selectedOption = label),
+      child: Text(label, style: const TextStyle(fontSize: 22)),
+    )
+        : OutlinedButton(
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         side: BorderSide(color: theme.colorScheme.primary),
       ),
-      onPressed: () => provider.nextPage(context),
+      onPressed: () => setState(() => _selectedOption = label),
       child: Text(label, style: const TextStyle(fontSize: 22)),
     );
   }
@@ -24,54 +40,62 @@ class SchoolPageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<IntroductionProvider>();
-    final theme = Theme.of(context); // Theme holen
+    final theme = Theme.of(context);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => provider.nextPage(context),
-                // OPTIMIERT: Farbe aus dem Theme
-                child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
-              ),
+        Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0, right: 16.0),
+            child: TextButton(
+              onPressed: () => provider.nextPage(context),
+              child: Text('skip', style: TextStyle(color: theme.colorScheme.primary)),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: RichText(
-                textAlign: TextAlign.center, // Bessere Zentrierung
-                text: TextSpan(
-                  // OPTIMIERT: Basis-Stil aus dem Theme
-                  style: theme.textTheme.headlineSmall,
-                  children: <TextSpan>[
-                    const TextSpan(text: 'How many children do you think '),
-                    TextSpan(
-                      text: 'finish',
-                      // OPTIMIERT: Akzentfarbe aus dem Theme
-                      style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
-                    ),
-                    const TextSpan(text: ' primary school?'),
-                  ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: theme.textTheme.headlineSmall,
+                    children: <TextSpan>[
+                      const TextSpan(text: 'How many children do you think '),
+                      TextSpan(
+                        text: 'finish',
+                        style: TextStyle(color: theme.colorScheme.primary, fontStyle: FontStyle.italic),
+                      ),
+                      const TextSpan(text: ' primary school?'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: schoolOptions.map((option) => _buildOptionButton(context, option)).toList(),
+                ),
+              ),
+            ],
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 40.0, left: 20, right: 20),
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildOptionButton(context, '60%'),
-              _buildOptionButton(context, '74%'),
-              _buildOptionButton(context, '90%'),
-              _buildOptionButton(context, '87%'),
-            ],
+          padding: const EdgeInsets.only(bottom: 40.0, top: 20),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            ),
+            onPressed: _selectedOption != null ? () => provider.nextPage(context) : null,
+            child: const Text("Continue"),
           ),
         ),
       ],

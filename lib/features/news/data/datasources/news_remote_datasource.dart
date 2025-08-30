@@ -3,7 +3,7 @@ import 'package:dart_rss/dart_rss.dart';
 import '../../../../core/utils/app_logger.dart';
 
 abstract class NewsRemoteDataSource {
-  Future<RssFeed?> fetchUnSdgRssFeed(); // Return type is from the new package
+  Future<RssFeed?> fetchUnSdgRssFeed();
 }
 
 class NewsRemoteDataSourceImpl implements NewsRemoteDataSource {

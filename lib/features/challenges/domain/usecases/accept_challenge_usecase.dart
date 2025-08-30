@@ -4,7 +4,7 @@ import '/features/profile/domain/repositories/user_profile_repository.dart';
 
 class AcceptChallengeUseCase {
   final UserProfileRepository userProfileRepository;
-  AcceptChallengeUseCase({required this.userProfileRepository /*, required this.challengeRepository */});
+  AcceptChallengeUseCase({required this.userProfileRepository});
 
   Future<bool> call(UserTaskParams params) async {
     if (params.userId.isEmpty || params.challengeId.isEmpty) return false;

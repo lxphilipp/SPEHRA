@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
-import '../entities/trackable_task.dart'; // Important: Import of new tasks
+import '../entities/trackable_task.dart';
 import '../repositories/challenge_repository.dart';
 
 /// This Use Case encapsulates the logic for creating a new Challenge.

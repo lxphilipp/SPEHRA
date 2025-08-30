@@ -14,7 +14,7 @@ class UpdateProfileDataUseCase {
       age: params.age,
       studyField: params.studyField,
       school: params.school,
-      // about: params.about,
+      hasCompletedIntro: params.hasCompletedIntro,
     );
   }
 }
@@ -25,6 +25,7 @@ class UpdateProfileDataParams {
   final int age;
   final String studyField;
   final String school;
+  final bool? hasCompletedIntro;
 
   UpdateProfileDataParams({
     required this.userId,
@@ -32,5 +33,6 @@ class UpdateProfileDataParams {
     required this.age,
     required this.studyField,
     required this.school,
+    this.hasCompletedIntro,
   });
 }

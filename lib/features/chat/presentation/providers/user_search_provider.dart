@@ -1,5 +1,3 @@
-// lib/features/chat/presentation/providers/user_search_provider.dart
-
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';

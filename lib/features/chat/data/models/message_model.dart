@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-// WICHTIG: Importiere die Entity-Datei, um Zugriff auf das Enum zu haben
 import '../../domain/entities/message_entity.dart';
 
 class MessageModel extends Equatable {

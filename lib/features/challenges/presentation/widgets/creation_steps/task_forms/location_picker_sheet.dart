@@ -1,4 +1,3 @@
-// lib/features/challenges/presentation/widgets/creation_steps/task_forms/location_picker_sheet.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -52,7 +51,7 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
     final completer = Completer<List<AddressEntity>>();
 
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+    _debounceTimer = Timer(const Duration(milliseconds: 800), () async {
       try {
         await context.read<ChallengeProvider>().searchLocation(query);
         final provider = context.read<ChallengeProvider>();

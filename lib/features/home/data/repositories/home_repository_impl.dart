@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart'; // Für DocumentSnapshot
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/challenge_preview_entity.dart';
 import '../../domain/entities/sdg_navigation_item_entity.dart';
@@ -47,7 +47,6 @@ class HomeRepositoryImpl implements HomeRepository {
     }
   }
 
-  // In HomeRepositoryImpl
   @override
   Stream<List<ChallengePreviewEntity>?> getChallengesPreviewByIds({
     required List<String> challengeIds,

@@ -1,6 +1,5 @@
-import 'dart:io'; // Für File
+import 'dart:io';
 import '../entities/user_profile_entity.dart';
-import 'package:fl_chart/fl_chart.dart'; // Für PieChartSectionData
 
 abstract class UserProfileRepository {
 
@@ -14,6 +13,7 @@ abstract class UserProfileRepository {
     required int age,
     required String studyField,
     required String school,
+    bool? hasCompletedIntro,
   });
 
   Future<String?> uploadAndUpdateProfileImage({

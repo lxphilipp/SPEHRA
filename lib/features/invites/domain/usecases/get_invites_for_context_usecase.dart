@@ -9,8 +9,6 @@ class GetInvitesForContextUseCase {
   GetInvitesForContextUseCase(this._repository);
 
   Stream<List<InviteEntity>> call(String contextId) {
-    // Aktuell leitet dieser Use Case die Anfrage nur weiter.
-    // In Zukunft könnte hier aber Filter- oder Transformationslogik stehen.
     return _repository.getInvitesForContext(contextId);
   }
 }

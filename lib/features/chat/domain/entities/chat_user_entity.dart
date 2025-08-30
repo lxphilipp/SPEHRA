@@ -1,5 +1,4 @@
-// lib/features/chat/domain/entities/chat_user_entity.dart
-import 'package:flutter/foundation.dart'; // Für @immutable
+import 'package:flutter/foundation.dart';
 
 @immutable
 class ChatUserEntity {

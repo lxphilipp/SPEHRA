@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../../../../core/utils/app_logger.dart';
-import '../models/user_profile_model.dart'; // Dein Profil-Modell
+import '../models/user_profile_model.dart';
 
 // --- Interface Definition ---
 abstract class ProfileRemoteDataSource {
