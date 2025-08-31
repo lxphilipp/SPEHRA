@@ -8,11 +8,20 @@ import '../../domain/repositories/challenge_repository.dart';
 import '../datasources/challenge_remote_datasource.dart';
 import '../models/challenge_model.dart';
 
+/// Implementation of the [ChallengeRepository] interface.
+///
+/// This class interacts with the [ChallengeRemoteDataSource] to fetch and manage
+/// challenge data.
 class ChallengeRepositoryImpl implements ChallengeRepository {
+  /// The remote data source for challenges.
   final ChallengeRemoteDataSource remoteDataSource;
 
+  /// Creates a [ChallengeRepositoryImpl].
+  ///
+  /// Requires a [remoteDataSource] to interact with the remote server.
   ChallengeRepositoryImpl({required this.remoteDataSource});
 
+  /// Maps a [ChallengeModel] to a [ChallengeEntity].
   ChallengeEntity _mapModelToEntity(ChallengeModel model) {
     return model.toEntity();
   }

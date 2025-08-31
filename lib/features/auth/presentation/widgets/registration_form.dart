@@ -2,17 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
+/// A form widget for user registration.
+///
+/// Allows users to input their name, email, and password to create a new account.
+/// Handles input validation, communicates with [AuthenticationProvider] for registration logic,
+/// and displays appropriate feedback to the user via Snackbars.
 class RegistrationForm extends StatefulWidget {
+  /// Creates a [RegistrationForm].
   const RegistrationForm({super.key});
 
   @override
   State<RegistrationForm> createState() => _RegistrationFormState();
 }
 
+/// State for the [RegistrationForm] widget.
 class _RegistrationFormState extends State<RegistrationForm> {
+  /// Controller for the name input field.
   final TextEditingController nameController = TextEditingController();
+  /// Controller for the email input field.
   final TextEditingController emailController = TextEditingController();
+  /// Controller for the password input field.
   final TextEditingController passwordController = TextEditingController();
+  /// Indicates whether a registration operation is currently in progress.
   bool _isLoading = false;
 
   @override
@@ -23,6 +34,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
     super.dispose();
   }
 
+  /// Displays a [SnackBar] with the given [message].
+  ///
+  /// The SnackBar's background color is determined by the [isError] flag.
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -34,6 +48,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
     );
   }
 
+  /// Handles the registration process when the user submits the form.
+  ///
+  /// Validates the input fields, calls the [AuthenticationProvider] to perform registration,
+  /// and updates the UI based on the result.
   Future<void> _handleRegistration() async {
     if (_isLoading) return;
     final String name = nameController.text.trim();
@@ -74,6 +92,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    /// Builds an [InputDecoration] for the text fields in the form.
+    ///
+    /// [label] is the text to display as the label.
+    /// [icon] is the icon to display as a prefix.
     InputDecoration buildInputDecoration(String label, IconData icon) {
       return InputDecoration(
         labelText: label,

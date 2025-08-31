@@ -8,7 +8,4 @@ abstract class DeviceTrackingRepository {
 
   /// Checks if the user is at a specific location.
   Future<bool> isUserAtLocation(LatLng targetLocation, double radiusInMeters);
-
-// Here you could add more methods in the future, e.g., for image uploads.
-// Future<String> uploadChallengeProofImage(File image);
 }

@@ -6,7 +6,13 @@ import '../../../domain/entities/trackable_task.dart';
 import '../../../presentation/providers/challenge_provider.dart';
 import '../llm_feedback_widget.dart';
 
+/// A widget representing the fourth step in challenge creation, focusing on adding tasks.
+///
+/// This page allows users to add various types of [TrackableTask]s to the challenge
+/// they are creating. It displays a list of currently added tasks and provides
+/// a button to add new ones via a [TaskSelectionDialog].
 class Step4TasksPage extends StatelessWidget {
+  /// Creates a [Step4TasksPage] widget.
   const Step4TasksPage({super.key});
 
   @override
@@ -17,7 +23,9 @@ class Step4TasksPage extends StatelessWidget {
     final feedbackData = provider.llmFeedbackData['tasks'];
     final balance = provider.gameBalance;
 
-    // Helper to get the correct icon for each task type
+    /// Helper function to determine the appropriate icon for a given [TrackableTask].
+    ///
+    /// Returns an [IconData] based on the specific type of the task.
     IconData getIconForTask(TrackableTask task) {
       if (task is CheckboxTask) return Iconsax.task_square;
       if (task is StepCounterTask) return Iconsax.ruler;

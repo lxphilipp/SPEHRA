@@ -11,19 +11,36 @@ import '../repositories/challenge_repository.dart';
 import 'get_game_balance_usecase.dart';
 
 /// Handles updating the progress of a single task.
+///
 /// If the task is part of a group challenge, this use case is also responsible for:
 /// 1. Incrementing the total group progress.
 /// 2. Checking if any team milestones have been reached.
 /// 3. Distributing team bonuses IMMEDIATELY and RETROACTIVELY to all members if a milestone is unlocked.
 /// 4. Sending appropriate system messages to the group chat.
 class UpdateTaskProgressUseCase implements UseCase<void, UpdateTaskProgressParams> {
+  /// The repository for managing challenge progress.
   final ChallengeProgressRepository _progressRepository;
+
+  /// The repository for managing user profiles.
   final UserProfileRepository _userProfileRepository;
+
+  /// The repository for managing challenges.
   final ChallengeRepository _challengeRepository;
+
+  /// The use case for sending messages.
   final SendMessageUseCase _sendMessageUseCase;
+
+  /// The use case for getting a chat user by their ID.
   final GetChatUserByIdUseCase _getChatUserByIdUseCase;
+
+  /// The use case for getting the game balance.
   final GetGameBalanceUseCase _getGameBalanceUseCase;
 
+  /// Creates an [UpdateTaskProgressUseCase].
+  ///
+  /// Requires instances of [ChallengeProgressRepository], [UserProfileRepository],
+  /// [ChallengeRepository], [SendMessageUseCase], [GetChatUserByIdUseCase], and
+  /// [GetGameBalanceUseCase].
   UpdateTaskProgressUseCase({
     required ChallengeProgressRepository progressRepository,
     required UserProfileRepository userProfileRepository,
@@ -38,6 +55,10 @@ class UpdateTaskProgressUseCase implements UseCase<void, UpdateTaskProgressParam
         _getChatUserByIdUseCase = getChatUserByIdUseCase,
         _getGameBalanceUseCase = getGameBalanceUseCase;
 
+  /// Executes the use case to update task progress.
+  ///
+  /// Takes [UpdateTaskProgressParams] as input, which specify the task to update
+  /// and its new state.
   @override
   Future<void> call(UpdateTaskProgressParams params) async {
     // Step 1: Update the individual task state
@@ -107,11 +128,22 @@ class UpdateTaskProgressUseCase implements UseCase<void, UpdateTaskProgressParam
 
 /// Parameters needed to update the progress of a specific task.
 class UpdateTaskProgressParams extends Equatable {
+  /// The ID of the challenge progress.
   final String progressId;
+
+  /// The index of the task to update.
   final int taskIndex;
+
+  /// The new progress value for the task.
   final dynamic newValue;
+
+  /// Whether the task is completed.
   final bool isCompleted;
 
+  /// Creates an [UpdateTaskProgressParams].
+  ///
+  /// Requires [progressId], [taskIndex], and [isCompleted].
+  /// [newValue] is optional.
   const UpdateTaskProgressParams({
     required this.progressId,
     required this.taskIndex,

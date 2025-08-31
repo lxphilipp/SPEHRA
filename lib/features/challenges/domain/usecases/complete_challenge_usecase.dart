@@ -6,12 +6,24 @@ import '../repositories/challenge_progress_repository.dart';
 import '../repositories/challenge_repository.dart';
 import 'get_game_balance_usecase.dart';
 
+/// {@template complete_challenge_usecase}
+/// Use case for completing a challenge.
+///
+/// This use case handles the logic for marking a challenge as completed,
+/// awarding points to the user, and distributing bonus points if applicable
+/// for group challenges.
+/// {@endtemplate}
 class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams> {
+  /// The user profile repository.
   final UserProfileRepository _userProfileRepository;
+  /// The challenge repository.
   final ChallengeRepository _challengeRepository;
+  /// The challenge progress repository.
   final ChallengeProgressRepository _progressRepository;
+  /// The use case for getting the game balance.
   final GetGameBalanceUseCase _getGameBalanceUseCase;
 
+  /// {@macro complete_challenge_usecase}
   CompleteChallengeUseCase({
     required UserProfileRepository userProfileRepository,
     required ChallengeRepository challengeRepository,
@@ -22,6 +34,12 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
         _progressRepository = progressRepository,
         _getGameBalanceUseCase = getGameBalanceUseCase;
 
+  /// Executes the use case to complete a challenge.
+  ///
+  /// Takes [CompleteChallengeParams] as input, which contains the user ID
+  /// and challenge ID.
+  ///
+  /// Returns `true` if the challenge was completed successfully, `false` otherwise.
   @override
   Future<bool> call(CompleteChallengeParams params) async {
     try {
@@ -86,10 +104,16 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
   }
 }
 
+/// {@template complete_challenge_params}
+/// Parameters for the [CompleteChallengeUseCase].
+/// {@endtemplate}
 class CompleteChallengeParams extends Equatable {
+  /// The ID of the user completing the challenge.
   final String userId;
+  /// The ID of the challenge being completed.
   final String challengeId;
 
+  /// {@macro complete_challenge_params}
   const CompleteChallengeParams({
     required this.userId,
     required this.challengeId,

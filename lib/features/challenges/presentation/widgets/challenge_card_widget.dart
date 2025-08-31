@@ -6,10 +6,21 @@ import '../providers/challenge_provider.dart';
 import '/core/theme/sdg_color_theme.dart';
 import '../../domain/entities/challenge_entity.dart';
 
+/// A widget that displays a challenge in a card format.
+///
+/// This widget shows information about a [ChallengeEntity], including its title,
+/// difficulty, creation date, and points. It also displays a colored circle
+/// based on the challenge's category.
 class ChallengeCardWidget extends StatelessWidget {
+  /// The challenge to display.
   final ChallengeEntity challenge;
+
+  /// Called when the card is tapped.
   final VoidCallback onTap;
 
+  /// Creates a [ChallengeCardWidget].
+  ///
+  /// Requires a [challenge] to display and an [onTap] callback.
   const ChallengeCardWidget({
     super.key,
     required this.challenge,

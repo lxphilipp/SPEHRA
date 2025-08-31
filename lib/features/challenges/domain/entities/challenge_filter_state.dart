@@ -1,12 +1,27 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+/// Represents the state of the challenge filter.
+///
+/// This class holds the current filter values for searching and filtering
+/// challenges.
 class ChallengeFilterState extends Equatable {
+  /// The current search text.
   final String searchText;
+
+  /// The set of selected SDG keys.
   final Set<String> selectedSdgKeys;
+
+  /// The set of selected difficulties.
   final Set<String> selectedDifficulties;
+
+  /// The selected date range for filtering challenges.
   final DateTimeRange? dateRange;
 
+  /// Creates a [ChallengeFilterState].
+  ///
+  /// Defaults to empty search text, no selected SDG keys, no selected
+  /// difficulties, and no date range.
   const ChallengeFilterState({
     this.searchText = '',
     this.selectedSdgKeys = const {},
@@ -14,6 +29,8 @@ class ChallengeFilterState extends Equatable {
     this.dateRange,
   });
 
+  /// Creates a copy of this [ChallengeFilterState] but with the given fields
+  /// replaced with the new values.
   ChallengeFilterState copyWith({
     String? searchText,
     Set<String>? selectedSdgKeys,

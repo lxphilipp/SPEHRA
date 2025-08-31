@@ -7,9 +7,17 @@ import '../models/challenge_progress_model.dart';
 import '../models/group_challenge_progress_model.dart';
 import '../models/task_progress_modell.dart';
 
+/// Implements the [ChallengeProgressRepository] interface.
+///
+/// This repository is responsible for handling challenge progress data
+/// by interacting with a remote data source.
 class ChallengeProgressRepositoryImpl implements ChallengeProgressRepository {
+  /// The remote data source for challenge progress.
   final ChallengeProgressRemoteDataSource remoteDataSource;
 
+  /// Creates an instance of [ChallengeProgressRepositoryImpl].
+  ///
+  /// Requires a [ChallengeProgressRemoteDataSource] to interact with.
   ChallengeProgressRepositoryImpl({required this.remoteDataSource});
 
   @override

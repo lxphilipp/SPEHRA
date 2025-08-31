@@ -14,9 +14,18 @@ import '../../../profile/presentation/providers/user_profile_provider.dart';
 import '../../../sdg/domain/entities/sdg_list_item_entity.dart';
 import '../../../sdg/presentation/providers/sdg_list_provider.dart';
 
+/// A widget that displays the detailed content of a specific challenge.
+///
+/// It fetches and shows information suchs as the challenge title, description,
+/// SDG categories, points, difficulty, tasks, and action buttons
+/// (e.g., accept, complete, cancel challenge).
 class ChallengeDetailsContent extends StatefulWidget {
+  /// The unique identifier of the challenge to display.
   final String challengeId;
 
+  /// Creates a [ChallengeDetailsContent] widget.
+  ///
+  /// Requires a [challengeId] to fetch and display the relevant challenge details.
   const ChallengeDetailsContent({
     super.key,
     required this.challengeId,
@@ -26,7 +35,14 @@ class ChallengeDetailsContent extends StatefulWidget {
   State<ChallengeDetailsContent> createState() => _ChallengeDetailsContentState();
 }
 
+/// The state class for the [ChallengeDetailsContent] widget.
+///
+/// Handles the lifecycle and UI building for displaying challenge details.
+/// It uses a [ChallengeProvider] to fetch and manage challenge data.
 class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
+  /// Initializes the state.
+  ///
+  /// Fetches the challenge details after the first frame is rendered.
   @override
   void initState() {
     super.initState();
@@ -36,6 +52,10 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     });
   }
 
+  /// Builds the widget tree for displaying challenge details.
+  ///
+  /// It consumes [ChallengeProvider] to get the challenge data and
+  /// displays loading, error, or content based on the provider's state.
   @override
   Widget build(BuildContext context) {
     return Consumer<ChallengeProvider>(
@@ -101,6 +121,10 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
 
   // --- WIDGET BUILDER METHODS ---
 
+  /// Builds the header section of the challenge details page.
+  ///
+  /// Displays the SDG icon and title of the challenge.
+  /// The background color is determined by the first SDG category of the challenge.
   Widget _buildHeader(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     final sdgTheme = theme.extension<SdgColorTheme>();
     final sdgListProvider = context.read<SdgListProvider>();
@@ -134,6 +158,10 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
+  /// Builds a section displaying SDG category chips for the challenge.
+  ///
+  /// Each chip represents an SDG category associated with the challenge
+  /// and includes an icon and label.
   Widget _buildSdgChips(BuildContext context, ChallengeEntity challenge, ThemeData theme) {
     final sdgListProvider = context.read<SdgListProvider>();
 
@@ -163,6 +191,9 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
+  /// Builds a row displaying statistics about the challenge, such as points and difficulty.
+  ///
+  /// Returns an empty SizedBox if game balance is not available.
   Widget _buildStatsRow(BuildContext context, ChallengeEntity challenge, ThemeData theme, GameBalanceEntity? balance) {
     if (balance == null) return const SizedBox.shrink();
     return Row(
@@ -174,6 +205,7 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
+  /// Builds a single statistic item with an icon, value, and label.
   Widget _buildStatItem(ThemeData theme, IconData icon, String value, String label) {
     return Column(
       children: [
@@ -185,6 +217,9 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
+  /// Builds the list of tasks for the current challenge.
+  ///
+  /// Each task is represented by a [TaskProgressListItem].
   Widget _buildTaskList(BuildContext context, ChallengeProvider provider, ChallengeEntity challenge) {
     return ListView.builder(
       shrinkWrap: true,
@@ -206,6 +241,12 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
     );
   }
 
+  /// Builds the action buttons for the challenge based on its current state
+  /// (e.g., completed, ongoing, or available to accept).
+  ///
+  /// - If completed, shows a "Completed!" chip.
+  /// - If ongoing, shows "Complete Challenge" and "Cancel" buttons.
+  /// - Otherwise, shows an "Accept Challenge" button.
   Widget _buildActionButtons(BuildContext context, ChallengeProvider provider) {
     final userProfile = context.watch<UserProfileProvider>().userProfile;
     final challenge = provider.selectedChallenge!;

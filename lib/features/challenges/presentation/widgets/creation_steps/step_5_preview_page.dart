@@ -1,3 +1,9 @@
+/// Manages the fifth step in challenge creation, which is the preview page.
+///
+/// This widget displays a summary of the challenge being created, including its
+/// title, description, categories, calculated points and difficulty, and a list
+/// of tasks. It allows the user to review all the information before publishing
+/// the challenge.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
@@ -5,7 +11,12 @@ import '../../../../sdg/domain/entities/sdg_list_item_entity.dart';
 import '../../../../sdg/presentation/providers/sdg_list_provider.dart';
 import '../../../presentation/providers/challenge_provider.dart';
 
+/// A StatelessWidget that displays the preview of the challenge being created.
+///
+/// It uses a [ChallengeProvider] to access the challenge data and a
+/// [SdgListProvider] to display SDG category information.
 class Step5PreviewPage extends StatelessWidget {
+  /// Creates a [Step5PreviewPage] widget.
   const Step5PreviewPage({super.key});
 
   @override
@@ -108,6 +119,9 @@ class Step5PreviewPage extends StatelessWidget {
     );
   }
 
+  /// Builds a row to display a statistic with an icon, label, and value.
+  ///
+  /// Used to display challenge points and difficulty.
   Widget _buildStatRow(BuildContext context, {required IconData icon, required String label, required String value, required Color color}) {
     final theme = Theme.of(context);
     return Row(

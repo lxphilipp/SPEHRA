@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
+/// A form that allows users to request a password reset email.
+///
+/// This widget provides a text field for the user to enter their email address
+/// and a button to submit the request. It interacts with the
+/// [AuthenticationProvider] to handle the password reset logic.
 class ForgotPasswordForm extends StatefulWidget {
+  /// Creates a [ForgotPasswordForm].
   const ForgotPasswordForm({super.key});
 
   @override
@@ -19,6 +25,9 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     super.dispose();
   }
 
+  /// Displays a snackbar with the given [message].
+  ///
+  /// If [isError] is true, the snackbar will have an error background color.
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -30,6 +39,11 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     );
   }
 
+  /// Submits the password reset request.
+  ///
+  /// Validates the email input, then calls the [AuthenticationProvider]
+  /// to send the password reset email. Shows appropriate feedback to the user
+  /// via snackbars.
   Future<void> _submitResetPasswordRequest() async {
     if (_isLoading) return;
     final String email = emailController.text.trim();
@@ -79,7 +93,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
           TextField(
             controller: emailController,
             style: TextStyle(color: theme.colorScheme.onSurface),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Email',
             ),
             keyboardType: TextInputType.emailAddress,

@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/challenge_filter_state.dart';
 
+/// A widget that displays filtering options for challenges.
+///
+/// This widget allows users to filter challenges based on search text,
+/// difficulty, SDG categories, and date range.
 class ChallengeFilterContent extends StatefulWidget {
+  /// The initial state of the filter.
   final ChallengeFilterState initialState;
+
+  /// Callback invoked when the filter state changes.
   final ValueChanged<ChallengeFilterState> onStateChanged;
 
+  /// Creates a [ChallengeFilterContent] widget.
   const ChallengeFilterContent({
     super.key,
     required this.initialState,
@@ -16,15 +24,23 @@ class ChallengeFilterContent extends StatefulWidget {
   State<ChallengeFilterContent> createState() => _ChallengeFilterContentState();
 }
 
+/// The state for the [ChallengeFilterContent] widget.
 class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
+  /// The current state of the filter.
   late ChallengeFilterState _currentFilterState;
+
+  /// Controller for the search text field.
   late final TextEditingController _searchController;
 
-  // Data for filter options
+  /// Data for filter options: list of available difficulties.
   final List<String> _difficulties = ["Easy", "Normal", "Advanced", "Experienced"];
+
+  /// Data for filter options: mapping of SDG keys to their display names.
   final Map<String, String> _sdgData = {
     for (var i = 1; i <= 17; i++) 'goal$i': 'SDG $i'
   };
+
+  /// Data for filter options: mapping of SDG keys to their image asset paths.
   final Map<String, String> _sdgImagePaths = {
     for (var i = 1; i <= 17; i++) 'goal$i': 'assets/icons/17_SDG_Icons/$i.png'
   };
@@ -42,6 +58,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
     super.dispose();
   }
 
+  /// Updates the current filter state and notifies the parent widget.
   void _updateState(ChallengeFilterState newState) {
     if (!mounted) return;
     setState(() {
@@ -50,6 +67,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
     widget.onStateChanged(_currentFilterState);
   }
 
+  /// Shows a date range picker and updates the filter state with the selected range.
   void _pickDateRange() async {
     final newDateRange = await showDateRangePicker(
       context: context,
@@ -62,6 +80,7 @@ class _ChallengeFilterContentState extends State<ChallengeFilterContent> {
     }
   }
 
+  /// Shows a dialog to add new SDG categories to the filter.
   void _showAddSdgDialog() {
     final availableOptions = _sdgData.keys.where((key) => !_currentFilterState.selectedSdgKeys.contains(key)).toList();
 

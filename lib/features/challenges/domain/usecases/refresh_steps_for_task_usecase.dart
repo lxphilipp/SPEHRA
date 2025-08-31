@@ -30,7 +30,6 @@ class RefreshStepsForTaskUseCase {
     } catch (e) {
       // Error handling, e.g., logging
       AppLogger.error("Error in RefreshStepsForTaskUseCase: $e");
-      // Optional: Re-throw exception so the Provider can catch it
       rethrow;
     }
   }

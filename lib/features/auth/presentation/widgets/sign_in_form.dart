@@ -5,16 +5,26 @@ import 'package:flutter_sdg/features/auth/presentation/screens/forget_password_s
 import '../../../../auth_wrapper.dart';
 import '../providers/auth_provider.dart';
 
+/// A form widget for user sign-in.
+///
+/// This widget provides fields for email and password input, along with
+/// buttons for signing in, navigating to the registration screen, and
+/// navigating to the forgot password screen.
 class SignInForm extends StatefulWidget {
+  /// Creates a [SignInForm].
   const SignInForm({super.key});
 
   @override
   State<SignInForm> createState() => _SignInFormState();
 }
 
+/// The state for the [SignInForm] widget.
 class _SignInFormState extends State<SignInForm> {
+  /// Controls the email input field.
   final TextEditingController emailController = TextEditingController();
+  /// Controls the password input field.
   final TextEditingController passwordController = TextEditingController();
+  /// Indicates whether a sign-in operation is in progress.
   bool _isLoading = false;
 
   @override
@@ -24,6 +34,9 @@ class _SignInFormState extends State<SignInForm> {
     super.dispose();
   }
 
+  /// Shows a snackbar with the given [message].
+  ///
+  /// The snackbar's background color is determined by the [isError] flag.
   void _showSnackbar(String message, {bool isError = false}) {
     if (!mounted) return;
     final theme = Theme.of(context);
@@ -35,6 +48,12 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Handles the login process when the user attempts to sign in.
+  ///
+  /// Validates the email and password fields, then calls the
+  /// [AuthenticationProvider] to perform the sign-in operation.
+  /// Navigates to the [AuthWrapper] on success, or shows an error
+  /// message on failure.
   Future<void> _handleLogin() async {
     if (_isLoading) return;
     final String email = emailController.text.trim();
@@ -71,6 +90,7 @@ class _SignInFormState extends State<SignInForm> {
     }
   }
 
+  /// Builds the header text for the sign-in form.
   Widget _buildSignInHeader(BuildContext context) {
     final theme = Theme.of(context);
     return Center(
@@ -84,6 +104,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the logo image for the sign-in form.
   Widget _buildLogo() {
     return Padding(
       padding: const EdgeInsets.only(top: 20),
@@ -93,6 +114,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the email input text field.
   Widget _buildEmailTextField(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -108,6 +130,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the password input text field.
   Widget _buildPasswordTextField(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -124,6 +147,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the "Forgot Password?" button.
   Widget _buildForgotPasswordButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
@@ -141,6 +165,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the login button.
   Widget _buildLoginButton(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
@@ -167,6 +192,7 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
+  /// Builds the "Create Account" button.
   Widget _buildCreateAccountButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 20, right: 20),

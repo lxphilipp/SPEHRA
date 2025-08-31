@@ -10,23 +10,58 @@ import 'dart:convert';
 
 // --- Interface Definition ---
 
+/// Abstract class for remote data operations related to challenges.
 abstract class ChallengeRemoteDataSource {
+  /// Retrieves a stream of all challenges.
+  ///
+  /// Returns a [Stream] of a list of [ChallengeModel].
   Stream<List<ChallengeModel>> getAllChallengesStream();
+
+  /// Fetches a specific challenge by its ID.
+  ///
+  /// Returns a [Future] that completes with a [ChallengeModel] if found,
+  /// otherwise null.
   Future<ChallengeModel?> getChallengeById(String challengeId);
+
+  /// Creates a new challenge.
+  ///
+  /// Takes a [ChallengeModel] as input and returns a [Future] that completes
+  /// with the ID of the newly created challenge.
   Future<String> createChallenge(ChallengeModel challenge);
+
+  /// Fetches feedback from a Large Language Model (LLM) for a specific step
+  /// in the challenge creation process.
+  ///
+  /// Takes the [step] name and the [challengeJson] data as input.
+  /// Returns a [Future] that completes with a JSON string containing
+  /// the LLM feedback, or null if an error occurs.
   Future<String?> fetchLlmFeedback({
     required String step,
     required Map<String, dynamic> challengeJson,
   });
+
+  /// Searches for locations based on a query string using Nominatim API.
+  ///
+  /// Takes a [query] string as input.
+  /// Returns a [Future] that completes with a list of [AddressModel] matching
+  /// the query.
   Future<List<AddressModel>> searchLocation(String query);
 }
 
+/// Implementation of [ChallengeRemoteDataSource] using Firebase Firestore
+/// and other remote services.
 class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
+  /// The Firebase Firestore instance.
   final FirebaseFirestore firestore;
+  /// The Firebase App Check instance.
   final FirebaseAppCheck appCheck;
 
+  /// Cache for SDG context data to avoid repeated loading.
   List<Map<String, dynamic>>? _sdgContextCache;
 
+  /// Creates an instance of [ChallengeRemoteDataSourceImpl].
+  ///
+  /// Requires [firestore] and [appCheck] instances.
   ChallengeRemoteDataSourceImpl({required this.firestore, required this.appCheck});
 
   @override
@@ -38,6 +73,8 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
           .map(_processSnapshot)
           .handleError((error) {
         AppLogger.warning("ChallengeRemoteDS: Fallback query is being attempted: $error");
+        // Attempt fallback with a slightly different collection path,
+        // which might indicate a typo or an older schema.
         return firestore.collection('challenges').snapshots().map(_processSnapshot);
       });
     } catch (e) {
@@ -46,6 +83,9 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
     }
   }
 
+  /// Processes a [QuerySnapshot] from Firestore into a list of [ChallengeModel].
+  ///
+  /// Logs errors for individual document processing failures.
   List<ChallengeModel> _processSnapshot(QuerySnapshot snapshot) {
     AppLogger.info("ChallengeRemoteDS: Snapshot with ${snapshot.docs.length} documents received.");
     final challenges = <ChallengeModel>[];
@@ -103,13 +143,17 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
     }
   }
 
+  /// Loads and caches SDG context data from a local JSON asset.
+  ///
+  /// This data is used to provide context to the LLM for feedback generation.
+  /// The data is loaded once and then cached in [_sdgContextCache].
   Future<List<Map<String, dynamic>>> _getSdgContext() async {
     _sdgContextCache ??= await rootBundle.loadString('assets/data/all_sdg_data.json').then((jsonStr) {
       final List<dynamic> allSdgs = json.decode(jsonStr);
       return allSdgs.map((sdg) => {
         'id': sdg['id'],
         'title': sdg['title'],
-        'description': (sdg['descriptionPoints'] as List).first,
+        'description': (sdg['descriptionPoints'] as List).first, // Takes the first description point
       }).toList();
     });
     return _sdgContextCache!;
@@ -131,15 +175,16 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       );
 
       final model = FirebaseAI.googleAI(appCheck: appCheck).generativeModel(
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.0-flash', // Specifies the LLM model to use
         generationConfig: GenerationConfig(
-          responseMimeType: 'application/json',
-          responseSchema: responseSchema,
+          responseMimeType: 'application/json', // Expects JSON output
+          responseSchema: responseSchema, // Enforces the defined schema for the output
         ),
       );
 
+      // Prepare the context for the LLM prompt
       final promptContext = {
-        "target_language": challengeJson['language'] ?? 'en',
+        "target_language": challengeJson['language'] ?? 'en', // Defaults to English if no language is specified
         "current_step": step,
         "challenge_data": {
           "title": challengeJson['title'],
@@ -149,17 +194,19 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
         }
       };
 
+      // Conditionally add SDG definitions to the context for relevant steps
       if (step == 'description' || step == 'categories' || step == 'tasks') {
         promptContext['sdg_definitions'] = await _getSdgContext();
       }
 
+      // Construct the structured prompt for the LLM
       final structuredPrompt = {
         "system_instructions": {
           "persona": "You are 'Sphera', a friendly, motivating, and slightly playful coach for a sustainability app. Your primary language for instructions is English, but your final output to the user (the JSON values) MUST be in the 'target_language' specified in the context.",
           "task": "Your task is to evaluate user-submitted data for a new challenge they are creating. You must provide structured feedback by generating a JSON object that strictly adheres to the provided schema. Be positive and encouraging, even when providing constructive criticism."
         },
         "context": promptContext,
-        "examples": [
+        "examples": [ // Provide examples to guide the LLM's response style and format
           {
             "input": {
               "challenge_data": {
@@ -203,7 +250,7 @@ class ChallengeRemoteDataSourceImpl implements ChallengeRemoteDataSource {
       final content = [Content.text(promptString)];
       final response = await model.generateContent(content);
 
-      return response.text;
+      return response.text; // Returns the raw JSON string from the LLM
 
     } catch (e) {
       AppLogger.error("LLM DataSource Error", e);

@@ -3,17 +3,36 @@ import 'package:equatable/equatable.dart';
 import 'game_balance_entity.dart';
 import 'trackable_task.dart';
 
+/// Represents a challenge in the application.
 class ChallengeEntity extends Equatable {
+  /// The unique identifier of the challenge.
   final String id;
+
+  /// The title of the challenge.
   final String title;
+
+  /// A description of the challenge.
   final String description;
+
+  /// A list of categories the challenge belongs to.
   final List<String> categories;
+
+  /// The ID of the author who created the challenge.
   final String authorId;
+
+  /// The date and time when the challenge was created.
   final DateTime? createdAt;
+
+  /// A list of tasks associated with the challenge.
   final List<TrackableTask> tasks;
+
+  /// Optional feedback from an LLM regarding the challenge.
   final Map<String, String>? llmFeedback;
+
+  /// The duration of the challenge in days.
   final int? durationInDays;
 
+  /// Creates a [ChallengeEntity].
   const ChallengeEntity({
     required this.id,
     required this.title,
@@ -26,6 +45,7 @@ class ChallengeEntity extends Equatable {
     this.durationInDays,
   });
 
+  /// Calculates the total points for the challenge based on the provided [balance].
   int calculatePoints(GameBalanceEntity balance) {
     final provableTaskCount = tasks.where((task) => task is! CheckboxTask).length;
     final maxAllowedCheckboxPoints = provableTaskCount * balance.unlockedCheckboxPointsPerProvableTask;
@@ -47,6 +67,7 @@ class ChallengeEntity extends Equatable {
     return min(totalPoints, balance.maxTotalPoints);
   }
 
+  /// Calculates the difficulty of the challenge based on its points and the provided [balance].
   String calculateDifficulty(GameBalanceEntity balance) {
     final points = calculatePoints(balance);
     String difficulty = "Easy"; // Default
@@ -59,6 +80,9 @@ class ChallengeEntity extends Equatable {
     return difficulty;
   }
 
+  /// Calculates the points for a specific task at the given [index] based on the provided [balance].
+  ///
+  /// Returns 0 if the index is out of bounds.
   int getPointsForTaskAtIndex(int index, GameBalanceEntity balance) {
     if (index < 0 || index >= tasks.length) {
       return 0;

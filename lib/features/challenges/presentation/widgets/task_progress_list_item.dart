@@ -1,4 +1,3 @@
-// lib/features/challenges/presentation/widgets/task_progress_list_item.dart
 import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
@@ -140,7 +139,6 @@ class _TaskProgressListItemState extends State<TaskProgressListItem> {
         ),
       );
     }
-    // Subtitle for images is now handled in _buildContextualContent
     return null;
   }
 

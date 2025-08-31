@@ -3,16 +3,27 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/challenge_entity.dart';
 import '../../domain/entities/trackable_task.dart';
 
+/// Represents the data model for a challenge, extending [Equatable] for value equality.
+/// This model is used for interacting with Firestore and converting to/from [ChallengeEntity].
 class ChallengeModel extends Equatable {
+  /// The unique identifier of the challenge.
   final String? id;
+  /// The title of the challenge.
   final String title;
+  /// A description of the challenge.
   final String description;
+  /// A list of categories the challenge belongs to.
   final List<String> categories;
+  /// The identifier of the author of the challenge.
   final String authorId;
+  /// The timestamp when the challenge was created.
   final Timestamp? createdAt;
+  /// A list of tasks associated with the challenge, stored as maps.
   final List<Map<String, dynamic>> tasks;
+  /// Optional feedback from an LLM related to the challenge.
   final Map<String, String>? llmFeedback;
 
+  /// Creates a [ChallengeModel] instance.
   const ChallengeModel({
     this.id,
     required this.title,
@@ -24,6 +35,7 @@ class ChallengeModel extends Equatable {
     this.llmFeedback,
   });
 
+  /// Creates a [ChallengeModel] instance from a Firestore [DocumentSnapshot].
   factory ChallengeModel.fromSnapshot(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
     return ChallengeModel(
@@ -38,6 +50,7 @@ class ChallengeModel extends Equatable {
     );
   }
 
+  /// Converts this [ChallengeModel] instance to a [Map] for Firestore storage.
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -50,6 +63,7 @@ class ChallengeModel extends Equatable {
     };
   }
 
+  /// Creates a [ChallengeModel] instance from a [ChallengeEntity].
   factory ChallengeModel.fromEntity(ChallengeEntity entity) {
     return ChallengeModel(
       id: entity.id,
@@ -63,6 +77,7 @@ class ChallengeModel extends Equatable {
     );
   }
 
+  /// Converts this [ChallengeModel] instance to a [ChallengeEntity].
   ChallengeEntity toEntity() {
     return ChallengeEntity(
       id: id ?? '',
@@ -82,6 +97,9 @@ class ChallengeModel extends Equatable {
 
 // --- Helper functions for Task conversion (unchanged) ---
 
+/// Converts a [Map] representation of a task to a [TrackableTask] instance.
+///
+/// Throws an [Exception] if the task type is unknown.
 TrackableTask _mapToTask(Map<String, dynamic> map) {
   final type = map['type'];
   switch (type) {
@@ -104,6 +122,9 @@ TrackableTask _mapToTask(Map<String, dynamic> map) {
   }
 }
 
+/// Converts a [TrackableTask] instance to a [Map] representation.
+///
+/// Throws an [Exception] if the task type is unknown.
 Map<String, dynamic> _taskToMap(TrackableTask task) {
   if (task is CheckboxTask) {
     return {'type': 'checkbox', 'description': task.description};

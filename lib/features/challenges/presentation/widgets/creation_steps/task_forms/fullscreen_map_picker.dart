@@ -7,10 +7,21 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../providers/challenge_provider.dart';
 import 'search_result_list_widget.dart';
 
+/// A widget that displays a fullscreen map for picking a location.
+///
+/// Allows users to search for a location and select a point on the map.
+/// Displays a circle around the picked location based on [initialRadius].
 class FullscreenMapPicker extends StatefulWidget {
+  /// The initial center point of the map.
   final LatLng initialCenter;
+
+  /// The initial radius in meters to display as a circle around the picked location.
   final double initialRadius;
 
+  /// Creates a [FullscreenMapPicker] widget.
+  ///
+  /// [initialCenter] is the starting point for the map view.
+  /// [initialRadius] defines the size of the visual circle marker.
   const FullscreenMapPicker({
     super.key,
     required this.initialCenter,
@@ -21,15 +32,24 @@ class FullscreenMapPicker extends StatefulWidget {
   State<FullscreenMapPicker> createState() => _FullscreenMapPickerState();
 }
 
+/// The state for the [FullscreenMapPicker] widget.
+///
+/// Manages the map controller, search functionality, and the currently picked location.
 class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
+  /// Controller to interact with the map.
   final MapController _mapController = MapController();
+
+  /// Controller for the search input field.
   final TextEditingController _searchController = TextEditingController();
+
+  /// The currently selected geographical coordinates.
   late LatLng _pickedLocation;
 
   @override
   void initState() {
     super.initState();
     _pickedLocation = widget.initialCenter;
+    // Clears any previous location search results after the first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ChallengeProvider>().clearLocationSearch();
     });
@@ -78,6 +98,7 @@ class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
               initialCenter: widget.initialCenter,
               initialZoom: 15.0,
               onMapEvent: (event) {
+                // Updates the picked location when the map is moved.
                 if (event is MapEventMove) {
                   setState(() => _pickedLocation = event.camera.center);
                 }
@@ -111,12 +132,13 @@ class _FullscreenMapPickerState extends State<FullscreenMapPicker> {
               ),
             ],
           ),
+          // A central marker indicating the point of selection.
           const Center(
             child: IgnorePointer(
               child: Icon(Icons.location_pin, size: 50, color: Colors.red),
             ),
           ),
-          // The search results are displayed in a neat, expandable sheet
+          // Displays search results in a draggable sheet if available.
           if (provider.locationSearchResults.isNotEmpty)
             DraggableScrollableSheet(
               initialChildSize: 0.3,
