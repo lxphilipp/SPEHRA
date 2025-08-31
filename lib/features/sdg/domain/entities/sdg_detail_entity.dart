@@ -1,14 +1,27 @@
 import 'package:flutter/foundation.dart' show immutable, listEquals;
 
+/// Represents the detailed information for a Sustainable Development Goal (SDG).
 @immutable
 class SdgDetailEntity {
-  final String id; // Eindeutiger Bezeichner, z.B. "goal1", "goal2", ...
-  final String title; // Der offizielle Titel des SDG, z.B. "No Poverty"
-  final String imageAssetPath; // Pfad zum großen Bild des SDG (z.B. aus 'assets/icons/sdg_named/')
-  final List<String> descriptionPoints; // Kernpunkte der Beschreibung als einzelne Strings
-  final List<String> externalLinks; // Liste von URLs zu weiterführenden Informationen
-  final String? mainTextContent; // Der ausführliche Textinhalt (aus den alten SDG_X.txt Dateien)
+  /// Unique identifier, e.g., "goal1", "goal2", ...
+  final String id;
 
+  /// The official title of the SDG, e.g., "No Poverty".
+  final String title;
+
+  /// Path to the large image of the SDG (e.g., from 'assets/icons/sdg_named/').
+  final String imageAssetPath;
+
+  /// Key points of the description as individual strings.
+  final List<String> descriptionPoints;
+
+  /// List of URLs to further information.
+  final List<String> externalLinks;
+
+  /// The detailed text content (from the old SDG_X.txt files).
+  final String? mainTextContent;
+
+  /// Creates an instance of [SdgDetailEntity].
   const SdgDetailEntity({
     required this.id,
     required this.title,
@@ -35,11 +48,13 @@ class SdgDetailEntity {
     id,
     title,
     imageAssetPath,
-    Object.hashAll(descriptionPoints), // Korrekter Hash für Listen
-    Object.hashAll(externalLinks),   // Korrekter Hash für Listen
+    Object.hashAll(descriptionPoints), // Correct hash code generation for lists
+    Object.hashAll(externalLinks),   // Correct hash code generation for lists
     mainTextContent,
   );
 
+  /// Creates a copy of this [SdgDetailEntity] but with the given fields
+  /// replaced with the new values.
   SdgDetailEntity copyWith({
     String? id,
     String? title,

@@ -12,7 +12,6 @@ import '../../domain/usecases/get_messages_stream_usecase.dart';
 import '../../domain/usecases/send_message_usecase.dart';
 import '../../domain/usecases/mark_message_as_read_usecase.dart';
 import '../../domain/usecases/upload_chat_image_usecase.dart';
-// --- NEUE USECASES ---
 import '../../domain/usecases/watch_chat_room_by_id_usecase.dart';
 import '../../domain/usecases/hide_chat_usecase.dart';
 import '../../domain/usecases/set_chat_cleared_timestamp_usecase.dart';
@@ -23,6 +22,11 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 // Core
 import '../../../../core/utils/app_logger.dart';
 
+/// Manages the state for an individual chat screen.
+///
+/// This provider handles loading messages, sending new messages (text and image),
+/// marking messages as read, hiding chats, clearing chat history, and managing
+/// the real-time updates for chat room details and messages.
 class IndividualChatProvider with ChangeNotifier {
   // --- UseCases ---
   final GetMessagesStreamUseCase _getMessagesStreamUseCase;
@@ -35,24 +39,40 @@ class IndividualChatProvider with ChangeNotifier {
   final AuthenticationProvider _authProvider;
 
   // --- Provider-Zustand ---
+  /// The ID of the current chat room.
   final String roomId;
+  /// The entity representing the chat partner.
   final ChatUserEntity chatPartner;
 
+  /// Details of the current chat room, updated in real-time.
   ChatRoomEntity? _roomDetails;
-  List<MessageEntity> _allMessages = []; // Speichert ALLE Nachrichten vom Stream
-  List<MessageEntity> _visibleMessages = []; // Speichert die GEFILTERTEN Nachrichten für die UI
+  /// Stores ALL messages loaded from the stream, before any filtering.
+  List<MessageEntity> _allMessages = [];
+  /// Stores the messages that are currently visible in the UI after filtering (e.g., by `clearedAt` timestamp).
+  List<MessageEntity> _visibleMessages = [];
 
+  /// Indicates if initial data is being loaded.
   bool _isLoading = true;
+  /// Indicates if a message is currently being sent.
   bool _isSendingMessage = false;
+  /// Stores any error message that occurred.
   String? _error;
+  /// Stores a preview of an image selected by the user for sending.
   File? _imagePreview;
+  /// Flag to prevent concurrent marking of messages as read.
   bool _isMarkingAsRead = false;
 
   // --- Stream Subscriptions ---
+  /// Subscription to the real-time updates of chat room details.
   StreamSubscription<ChatRoomEntity?>? _roomDetailsSubscription;
+  /// Subscription to the real-time updates of messages in the chat room.
   StreamSubscription<List<MessageEntity>>? _messagesSubscription;
 
   // --- Konstruktor ---
+  /// Creates an instance of [IndividualChatProvider].
+  ///
+  /// Requires various use cases for its operations and the [roomId] and [chatPartner]
+  /// to identify the chat.
   IndividualChatProvider({
     required this.roomId,
     required this.chatPartner,
@@ -77,15 +97,26 @@ class IndividualChatProvider with ChangeNotifier {
   }
 
   // --- Getter für die UI ---
-  List<MessageEntity> get messages => _visibleMessages; // UI zeigt nur sichtbare Nachrichten
+  /// The list of messages to be displayed in the UI.
+  /// These are filtered based on the `clearedAt` timestamp.
+  List<MessageEntity> get messages => _visibleMessages;
+  /// True if the provider is currently loading initial chat data.
   bool get isLoading => _isLoading;
+  /// True if a message is currently being sent.
   bool get isSendingMessage => _isSendingMessage;
+  /// An error message string if an error has occurred, otherwise null.
   String? get error => _error;
+  /// The image file selected by the user for preview before sending.
   File? get imagePreview => _imagePreview;
+  /// The ID of the currently authenticated user.
   String get currentUserId => _authProvider.currentUserId ?? '';
 
   // --- Kernlogik: Streams abonnieren und Daten verarbeiten ---
 
+  /// Subscribes to real-time updates for the current chat room's details.
+  ///
+  /// On receiving new details, it updates [_roomDetails] and triggers message filtering.
+  /// If it's the first time details are received, it also initiates message subscription.
   void _subscribeToRoomDetails() {
     _isLoading = true;
     notifyListeners();
@@ -114,6 +145,10 @@ class IndividualChatProvider with ChangeNotifier {
     );
   }
 
+  /// Subscribes to the stream of messages for the current chat room.
+  ///
+  /// Stores all incoming messages in [_allMessages] and then calls
+  /// [_filterAndNotifyMessages] to update the UI.
   void _subscribeToMessages() {
     _messagesSubscription?.cancel();
     _messagesSubscription = _getMessagesStreamUseCase(roomId: roomId).listen(
@@ -131,7 +166,10 @@ class IndividualChatProvider with ChangeNotifier {
     );
   }
 
-  /// Zentrale Methode, um Nachrichten zu filtern und die UI zu benachrichtigen.
+  /// Filters the [_allMessages] list based on the current user's `clearedAt` timestamp
+  /// from [_roomDetails] and updates [_visibleMessages].
+  ///
+  /// Notifies listeners and then marks the now visible messages as read.
   void _filterAndNotifyMessages() {
     final clearedAtTimestamp = _roomDetails?.clearedAt[currentUserId];
 
@@ -156,7 +194,10 @@ class IndividualChatProvider with ChangeNotifier {
     _markReceivedMessagesAsRead(_visibleMessages);
   }
 
-
+  /// Marks unread messages received from the chat partner as read.
+  ///
+  /// Only processes messages that are from the [chatPartner] and do not have a `readAt` timestamp.
+  /// Sets [_isMarkingAsRead] to true during the operation to prevent concurrent calls.
   void _markReceivedMessagesAsRead(List<MessageEntity> receivedMessages) {
     if (_isMarkingAsRead || currentUserId.isEmpty) return;
 
@@ -179,6 +220,10 @@ class IndividualChatProvider with ChangeNotifier {
 
   // --- Aktions-Methoden für die UI ---
 
+  /// Hides the current chat room for the current user.
+  ///
+  /// This typically means the chat will no longer appear in the user's chat list,
+  /// but the messages are not deleted.
   Future<void> hideChat() async {
     if (currentUserId.isEmpty) return;
     AppLogger.info("Hiding chat room $roomId for user $currentUserId");
@@ -191,6 +236,10 @@ class IndividualChatProvider with ChangeNotifier {
     }
   }
 
+  /// Clears the chat history for the current user in this chat room.
+  ///
+  /// This sets a `clearedAt` timestamp for the user, causing messages sent
+  /// before this time to be filtered out by [_filterAndNotifyMessages].
   Future<void> clearHistory() async {
     if (currentUserId.isEmpty) return;
     AppLogger.info("Clearing chat history for room $roomId");
@@ -204,6 +253,12 @@ class IndividualChatProvider with ChangeNotifier {
     }
   }
 
+  /// Sends a text message to the chat partner.
+  ///
+  /// Validates that the [text] is not empty and the [currentUserId] is available.
+  /// Sets [_isSendingMessage] to true during the operation.
+  /// On success, the message is sent via [_sendMessageUseCase].
+  /// On failure, an error message is set.
   Future<void> sendTextMessage(String text) async {
     // Grundlegende Validierung
     if (text.trim().isEmpty || currentUserId.isEmpty) {
@@ -243,13 +298,21 @@ class IndividualChatProvider with ChangeNotifier {
     }
   }
 
-  /// Setzt ein Bild für die Vorschau in der UI.
+  /// Sets an image file for preview in the UI before sending.
+  ///
+  /// Updates [_imagePreview] and notifies listeners.
   void setImageForPreview(File? imageFile) {
     _imagePreview = imageFile;
     notifyListeners();
   }
 
-  /// Lädt das ausgewählte Bild hoch und sendet es als Bildnachricht.
+  /// Uploads the selected image and sends it as an image message.
+  ///
+  /// Validates that an image is selected ([_imagePreview] is not null) and
+  /// [currentUserId] is available.
+  /// First, uploads the image using [_uploadChatImageUseCase].
+  /// If successful, sends a message with the image URL via [_sendMessageUseCase].
+  /// Clears the [_imagePreview] and sets [_isSendingMessage] during the operation.
   Future<void> sendSelectedImage() async {
     // Grundlegende Validierung
     if (_imagePreview == null || currentUserId.isEmpty) {
@@ -302,6 +365,9 @@ class IndividualChatProvider with ChangeNotifier {
   }
 
   // --- Dispose ---
+  /// Cleans up resources when the provider is disposed.
+  ///
+  /// Cancels any active stream subscriptions.
   @override
   void dispose() {
     AppLogger.debug("IndividualChatProvider for roomId: $roomId disposing...");

@@ -3,8 +3,16 @@ import '../../domain/repositories/intro_repository.dart';
 import '../datasources/intro_local_datasource.dart';
 import '../models/intro_page_model.dart';
 
+/// Implements the [IntroRepository] interface.
+///
+/// This repository is responsible for fetching introduction page data.
 class IntroRepositoryImpl implements IntroRepository {
+  /// The local data source for introduction pages.
   final IntroLocalDataSource localDataSource;
+
+  /// Creates an instance of [IntroRepositoryImpl].
+  ///
+  /// Requires a [localDataSource] to fetch data from.
   IntroRepositoryImpl({required this.localDataSource});
 
   @override
@@ -13,6 +21,7 @@ class IntroRepositoryImpl implements IntroRepository {
     return models.map((model) => _mapModelToEntity(model)).toList();
   }
 
+  /// Maps an [IntroPageModel] to an [IntroPageEntity].
   IntroPageEntity _mapModelToEntity(IntroPageModel model) {
     return IntroPageEntity(
       id: model.id,

@@ -1,3 +1,7 @@
+/// Provides an implementation of the [SdgRepository] interface.
+///
+/// This repository is responsible for fetching and mapping SDG (Sustainable Development Goal)
+/// data from a local data source. It includes caching for base SDG data to optimize performance.
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/sdg_detail_entity.dart';
 import '../../domain/entities/sdg_list_item_entity.dart';
@@ -5,20 +9,32 @@ import '../../domain/repositories/sdg_repository.dart';
 import '../datasources/sdg_local_datasource.dart';
 import '../models/sdg_data_model.dart';
 
+/// Implements the [SdgRepository] for fetching SDG data.
+///
+/// It uses a [SdgLocalDataSource] to retrieve data and maps it to
+/// domain-specific entities. It also caches the base SDG data to avoid
+/// redundant fetching.
 class SdgRepositoryImpl implements SdgRepository {
+  /// The local data source for SDG data.
   final SdgLocalDataSource localDataSource;
 
+  /// Cache for the base SDG data to avoid repeated fetching from the data source.
   List<SdgDataModel>? _cachedSdgBaseData;
 
+  /// Creates an instance of [SdgRepositoryImpl].
+  ///
+  /// Requires a [SdgLocalDataSource] to fetch data.
   SdgRepositoryImpl({required this.localDataSource});
 
-  // Hilfsmethode, um sicherzustellen, dass die Basis-Daten geladen und gecached sind.
+  /// Helper method to ensure that the base data is loaded and cached.
+  ///
+  /// If the data is not already cached, it fetches it from the [localDataSource].
   Future<List<SdgDataModel>> _getOrFetchBaseData() async {
     _cachedSdgBaseData ??= await localDataSource.getAllSdgBaseData();
-    return _cachedSdgBaseData!; // Non-null assertion, da es gerade gesetzt wurde
+    return _cachedSdgBaseData!; // Non-null assertion, as it has just been set.
   }
 
-  // Mappt ein SdgDataModel zu einer SdgListItemEntity
+  /// Maps an [SdgDataModel] to an [SdgListItemEntity].
   SdgListItemEntity _mapModelToListItemEntity(SdgDataModel model) {
     return SdgListItemEntity(
       id: model.id,
@@ -27,7 +43,7 @@ class SdgRepositoryImpl implements SdgRepository {
     );
   }
 
-  // Mappt ein SdgDataModel und den zusätzlichen Textinhalt zu einer SdgDetailEntity
+  /// Maps an [SdgDataModel] and additional text content to an [SdgDetailEntity].
   SdgDetailEntity _mapModelToDetailEntity(SdgDataModel model, String? textContent) {
     return SdgDetailEntity(
       id: model.id,
@@ -46,7 +62,7 @@ class SdgRepositoryImpl implements SdgRepository {
       return baseDataModels.map(_mapModelToListItemEntity).toList();
     } catch (e) {
       AppLogger.error("SdgRepositoryImpl: Error in getAllSdgListItems", e);
-      return null; // Fehler signalisieren
+      return null; // Signal an error.
     }
   }
 
@@ -61,15 +77,22 @@ class SdgRepositoryImpl implements SdgRepository {
       final SdgDataModel targetModel = baseDataModels.firstWhere(
               (model) => model.id == sdgId,
           orElse: () {
-            // explizit null zurückgeben, wenn nicht gefunden, anstatt Fehler zu werfen
-            // der dann als generischer Fehler im catch landen würde.
-            // Dies ermöglicht dem Provider, "nicht gefunden" spezifischer zu behandeln.
+            // Explicitly return null if not found, instead of throwing an error
+            // which would then land in the generic catch block.
+            // This allows the provider to handle "not found" more specifically.
             AppLogger.warning("SdgRepositoryImpl: SDG with ID '$sdgId' not found in base data");
-            return null as SdgDataModel; // Cast, um den Typ des orElse zu erfüllen
+            return null as SdgDataModel; // Cast to satisfy the orElse type.
           }
       );
 
-      // Lade den spezifischen Textinhalt für dieses SDG
+      // If targetModel is null (because it wasn't found), return null immediately.
+      // This check is necessary because the orElse block now returns null SdgDataModel.
+      // ignore: unnecessary_null_comparison
+      if (targetModel == null) {
+        return null;
+      }
+
+      // Load the specific text content for this SDG.
       final textContent = await localDataSource.getSdgTextContent(targetModel.textAssetPath);
 
       return _mapModelToDetailEntity(targetModel, textContent);

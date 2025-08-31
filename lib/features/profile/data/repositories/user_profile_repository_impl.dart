@@ -8,10 +8,20 @@ import '../datasources/profile_remote_datasource.dart';
 import '../datasources/profile_stats_datasource.dart';
 import '../models/user_profile_model.dart';
 
+/// Implementation of the [UserProfileRepository] interface.
+///
+/// This repository handles user profile data operations, including fetching,
+/// updating, and managing user-specific information like tasks and points.
 class UserProfileRepositoryImpl implements UserProfileRepository {
+  /// The remote data source for profile-related operations.
   final ProfileRemoteDataSource remoteDataSource;
+  /// The data source for profile statistics.
   final ProfileStatsDataSource statsDataSource;
 
+  /// Creates a [UserProfileRepositoryImpl].
+  ///
+  /// Requires a [remoteDataSource] for accessing and modifying profile data
+  /// in the remote backend, and a [statsDataSource] for statistical data.
   UserProfileRepositoryImpl({
     required this.remoteDataSource,
     required this.statsDataSource,
@@ -42,6 +52,9 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
     });
   }
 
+  /// Maps a [UserProfileModel] to a [UserProfileEntity].
+  ///
+  /// Returns `null` if the input [model] is `null`.
   UserProfileEntity? _mapModelToEntity(UserProfileModel? model) {
     if (model == null) return null;
     return UserProfileEntity(
@@ -56,7 +69,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       level: model.level,
       completedTasks: model.completedTasks,
       ongoingTasks: model.ongoingTasks,
-      hasCompletedIntro: model.hasCompletedIntro, // <-- HIER AKTUALISIERT
+      hasCompletedIntro: model.hasCompletedIntro, // Maps the hasCompletedIntro field.
     );
   }
 

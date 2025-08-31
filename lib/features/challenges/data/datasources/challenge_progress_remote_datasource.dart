@@ -84,14 +84,12 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
   Future<void> createChallengeProgress(ChallengeProgressModel progress) async {
     await _progressCollection.doc(progress.id).set(progress.toMap());
   }
 
   @override
 
-  /// {@inheritdoc}
   Stream<ChallengeProgressModel?> watchChallengeProgress(String progressId) {
     return _progressCollection.doc(progressId).snapshots().map((snapshot) {
       if (snapshot.exists) {
@@ -103,7 +101,6 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
   Future<void> updateTaskState(String progressId, String taskIndex, Map<String, dynamic> newStateMap) async {
     try {
       await _progressCollection.doc(progressId).update({
@@ -116,14 +113,12 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
   Future<void> createGroupProgress(GroupChallengeProgressModel groupProgress) async {
     await _groupProgressCollection.doc(groupProgress.id).set(groupProgress.toMap());
   }
 
   @override
 
-  /// {@inheritdoc}
   Future<GroupChallengeProgressModel?> getGroupProgress(String inviteId) async {
     final doc = await _groupProgressCollection.doc(inviteId).get();
     if (doc.exists) {
@@ -134,7 +129,7 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
+
   Future<void> addParticipantToGroupProgress({required String inviteId, required String userId, required int tasksPerUser}) async {
     final docRef = _groupProgressCollection.doc(inviteId);
     return _firestore.runTransaction((transaction) async {
@@ -156,7 +151,6 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
   Future<GroupChallengeProgressModel?> incrementGroupProgress(String inviteId) async {
     final docRef = _groupProgressCollection.doc(inviteId);
 
@@ -182,7 +176,6 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
 
   @override
 
-  /// {@inheritdoc}
   Future<void> markMilestoneAsAwarded({required String inviteId, required int milestone}) async {
     final docRef = _groupProgressCollection.doc(inviteId);
     await docRef.update({
@@ -191,7 +184,6 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
   }
   @override
 
-  /// {@inheritdoc}
   Stream<List<GroupChallengeProgressModel>> watchGroupProgressByContextId(String contextId) {
     return _groupProgressCollection
         .where('contextId',

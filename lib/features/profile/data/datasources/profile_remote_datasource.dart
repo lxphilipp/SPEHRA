@@ -5,45 +5,50 @@ import '../../../../core/utils/app_logger.dart';
 import '../models/user_profile_model.dart';
 
 // --- Interface Definition ---
+/// Abstract class for remote data operations related to user profiles.
 abstract class ProfileRemoteDataSource {
-  /// Holt das UserProfileModel für eine gegebene userId.
-  /// Wirft eine Exception bei Fehlern.
+  /// Fetches the [UserProfileModel] for a given [userId].
+  /// Throws an [Exception] on failure.
   Future<UserProfileModel?> getUserProfile(String userId);
 
-  /// Liefert einen Stream von DocumentSnapshots für ein User-Dokument.
-  /// Der Stream selbst kann Fehler enthalten.
+  /// Provides a stream of [DocumentSnapshot] for a user document.
+  /// The stream itself can emit errors.
   Stream<DocumentSnapshot> watchUserProfile(String userId);
 
-  /// Aktualisiert spezifische Felder im User-Dokument.
-  /// `data` ist eine Map der zu aktualisierenden Felder und ihrer neuen Werte.
-  /// Wirft eine Exception bei Fehlern.
+  /// Updates specific fields in the user document.
+  /// [data] is a map of fields to update and their new values.
+  /// Throws an [Exception] on failure.
   Future<void> updateUserProfileData(String userId, Map<String, dynamic> data);
 
-  /// Lädt ein Bild in Firebase Storage hoch.
-  /// Gibt die Download-URL des hochgeladenen Bildes zurück.
-  /// Wirft eine Exception bei Fehlern.
+  /// Uploads a profile image to Firebase Storage.
+  /// Returns the download URL of the uploaded image.
+  /// Throws an [Exception] on failure.
   Future<String> uploadProfileImage(String userId, File imageFile);
 
-  /// Löscht ein Bild aus Firebase Storage anhand seiner URL.
-  /// Fehler werden intern behandelt (nur geloggt).
+  /// Deletes an image from Firebase Storage using its URL.
+  /// Errors are handled internally (logged only).
   Future<void> deleteOldProfileImage(String imageUrl);
 
-  /// Fügt eine challengeId zur 'ongoingTasks'-Liste des Users hinzu.
-  /// Wirft eine Exception bei Fehlern.
+  /// Adds a [challengeId] to the user's 'ongoingTasks' list.
+  /// Throws an [Exception] on failure.
   Future<void> addUserOngoingTask(String userId, String challengeId);
 
-  /// Entfernt eine challengeId aus der 'ongoingTasks'-Liste des Users.
-  /// Wirft eine Exception bei Fehlern.
+  /// Removes a [challengeId] from the user's 'ongoingTasks' list.
+  /// Throws an [Exception] on failure.
   Future<void> removeUserOngoingTask(String userId, String challengeId);
 
-  /// Holt das User-Dokument innerhalb einer Firestore-Transaktion.
-  /// Wird vom Repository für atomare Lese-Schreib-Operationen verwendet.
-  /// Wirft eine Exception bei Fehlern.
+  /// Fetches the user document within a Firestore transaction.
+  /// Used by the repository for atomic read-write operations.
+  /// Throws an [Exception] on failure.
   Future<DocumentSnapshot> getUserDocumentForTransaction(String userId, Transaction transaction);
 
-  /// Aktualisiert mehrere Felder des User-Dokuments innerhalb einer Firestore-Transaktion.
-  /// Wird vom Repository für atomare Updates nach komplexen Berechnungen verwendet.
-  /// `data` ist eine Map der zu aktualisierenden Felder.
+  /// Runs a Firestore transaction to update multiple fields of the user document.
+  /// Used by the repository for atomic updates after complex calculations.
+  /// [userId] is the ID of the user whose profile is to be updated.
+  /// [updateFunction] is a callback that receives the [Transaction] and [DocumentReference]
+  /// and should return a [Future] with the result of the transaction.
+  /// Returns the result of the [updateFunction].
+  /// Throws an [Exception] if the transaction fails.
   Future<T> runUserProfileTransaction<T>({
     required String userId,
     required Future<T> Function(Transaction transaction, DocumentReference userDocRef) updateFunction,
@@ -51,10 +56,13 @@ abstract class ProfileRemoteDataSource {
 }
 
 // --- Implementierung ---
+/// Implementation of [ProfileRemoteDataSource] using Firebase services.
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
 
+  /// Creates an instance of [ProfileRemoteDataSourceImpl].
+  /// Requires [firestore] and [storage] instances.
   ProfileRemoteDataSourceImpl({
     required FirebaseFirestore firestore,
     required FirebaseStorage storage,
@@ -106,7 +114,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<String> uploadProfileImage(String userId, File imageFile) async {
     if (userId.isEmpty) throw ArgumentError('UserId cannot be empty for uploadProfileImage.');
     try {
-      final refName = 'profile_images/$userId.jpg'; // Eindeutiger Name, überschreibt altes Bild mit gleichem Namen
+      final refName = 'profile_images/$userId.jpg'; // Unique name, overwrites old image with the same name
       final storageRef = _storage.ref().child(refName);
       await storageRef.putFile(imageFile);
       final downloadUrl = await storageRef.getDownloadURL();
@@ -121,7 +129,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<void> deleteOldProfileImage(String imageUrl) async {
     if (imageUrl.isEmpty) return;
-    // Prüfe, ob es eine Firebase Storage URL ist, um Fehler bei anderen URLs zu vermeiden
+    // Check if it's a Firebase Storage URL to avoid errors with other URLs
     if (!imageUrl.startsWith('https://firebasestorage.googleapis.com')) {
       AppLogger.warning("ProfileRemoteDS: Invalid URL for deletion: $imageUrl");
       return;
@@ -130,8 +138,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       await _storage.refFromURL(imageUrl).delete();
       AppLogger.info("ProfileRemoteDS: Old profile image deleted: $imageUrl");
     } catch (e) {
-      // Fehler beim Löschen des alten Bildes werden oft nicht als kritisch angesehen,
-      // daher nur loggen und nicht unbedingt eine Exception weiterwerfen.
+      // Errors when deleting the old image are often not considered critical,
+      // so only log and don't necessarily rethrow an exception.
       AppLogger.warning('ProfileRemoteDS: Error deleting old profile image ($imageUrl)', e);
     }
   }

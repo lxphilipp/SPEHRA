@@ -1,16 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/app_logger.dart';
 
+/// Represents a group chat in the application.
 class GroupChatModel {
+  /// The unique identifier of the group chat.
   final String id;
+
+  /// The name of the group chat.
   final String name;
+
+  /// The URL of the group chat's image.
   final String? imageUrl;
+
+  /// A list of user IDs who are administrators of the group chat.
   final List<String> adminIds;
+
+  /// A list of user IDs who are members of the group chat.
   final List<String> memberIds;
+
+  /// The last message sent in the group chat.
   final String? lastMessage;
+
+  /// The timestamp of the last message sent in the group chat.
   final DateTime? lastMessageTime;
+
+  /// The timestamp when the group chat was created.
   final DateTime? createdAt;
 
+  /// Creates a [GroupChatModel] instance.
+  ///
+  /// All parameters are required except [imageUrl], [lastMessage],
+  /// [lastMessageTime], and [createdAt].
   const GroupChatModel({
     required this.id,
     required this.name,
@@ -22,6 +42,10 @@ class GroupChatModel {
     this.createdAt,
   });
 
+  /// Creates a [GroupChatModel] instance from a JSON object.
+  ///
+  /// The [json] parameter is a map representing the JSON object.
+  /// The [docId] parameter is the document ID from Firestore.
   factory GroupChatModel.fromJson(Map<String, dynamic> json, String docId) {
 
     DateTime? lastMessageTime;
@@ -61,6 +85,12 @@ class GroupChatModel {
     );
   }
 
+  /// Converts this [GroupChatModel] instance to a JSON object for creating a new document in Firestore.
+  ///
+  /// The 'created_at' field is set to the server timestamp.
+  /// If [lastMessage] is provided, 'last_message_time' is set to [lastMessageTime] if not null,
+  /// otherwise it's set to the server timestamp.
+  /// If [lastMessage] is null or empty, 'last_message' and 'last_message_time' are set to null.
   Map<String, dynamic> toJsonForCreate() {
     final Map<String, dynamic> data = {
       'name': name,
@@ -82,6 +112,10 @@ class GroupChatModel {
     return data;
   }
 
+  /// Converts this [GroupChatModel] instance to a JSON object for updating an existing document in Firestore.
+  ///
+  /// Only includes fields that are typically updated.
+  /// If [lastMessage] is provided, 'last_message_time' is set to the server timestamp.
   Map<String, dynamic> toJsonForUpdate() {
     final data = <String, dynamic>{};
     data['name'] = name;
@@ -103,6 +137,10 @@ class GroupChatModel {
     return data;
   }
 
+  /// Creates a copy of this [GroupChatModel] instance with the given fields replaced with new values.
+  ///
+  /// Use [allowNullImageUrl], [allowNullLastMessage], [allowNullLastMessageTime],
+  /// and [allowNullCreatedAt] to explicitly set the corresponding fields to null.
   GroupChatModel copyWith({
     String? id,
     String? name,

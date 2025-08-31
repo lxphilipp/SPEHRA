@@ -1,16 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/invite_entity.dart';
 
+/// Represents the data model for an invite, used for Firestore operations.
 class InviteModel {
+  /// The unique identifier of the invite.
   final String id;
+
+  /// The ID of the user who sent the invite.
   final String inviterId;
+
+  /// The ID of the target entity (e.g., user, group) being invited.
   final String targetId;
+
+  /// The title or name of the target entity.
   final String targetTitle;
+
+  /// The context of the invite (e.g., "direct", "group").
   final String context;
+
+  /// An optional ID related to the context (e.g., group ID).
   final String? contextId;
+
+  /// A map of recipient IDs to their invite status as a string.
   final Map<String, String> recipients;
+
+  /// The timestamp when the invite was created.
   final Timestamp createdAt;
 
+  /// Creates an [InviteModel].
   InviteModel({
     required this.id,
     required this.inviterId,
@@ -22,7 +39,7 @@ class InviteModel {
     required this.createdAt,
   });
 
-  /// Konvertiert ein Firestore-Dokument in ein InviteModel
+  /// Creates an [InviteModel] from a Firestore [DocumentSnapshot].
   factory InviteModel.fromSnapshot(DocumentSnapshot snap) {
     final data = snap.data() as Map<String, dynamic>;
     return InviteModel(
@@ -37,6 +54,7 @@ class InviteModel {
     );
   }
 
+  /// Creates an [InviteModel] from a [Map] of data and an [id].
   factory InviteModel.fromMap(Map<String, dynamic> data, String id) {
     return InviteModel(
       id: id,
@@ -50,7 +68,7 @@ class InviteModel {
     );
   }
 
-  /// Konvertiert das Model in eine Map für Firestore
+  /// Converts this [InviteModel] to a [Map] for Firestore.
   Map<String, dynamic> toMap() {
     return {
       'inviterId': inviterId,
@@ -63,7 +81,7 @@ class InviteModel {
     };
   }
 
-  /// Konvertiert eine InviteEntity (aus der Domain-Schicht) in ein InviteModel
+  /// Creates an [InviteModel] from an [InviteEntity] (from the domain layer).
   factory InviteModel.fromEntity(InviteEntity entity) {
     return InviteModel(
       id: entity.id,
@@ -77,7 +95,7 @@ class InviteModel {
     );
   }
 
-  /// Konvertiert das InviteModel in eine InviteEntity
+  /// Converts this [InviteModel] to an [InviteEntity].
   InviteEntity toEntity() {
     return InviteEntity(
       id: id,

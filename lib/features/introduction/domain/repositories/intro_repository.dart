@@ -1,17 +1,14 @@
 import '../entities/intro_page_entity.dart';
 
-/// Das Repository-Interface definiert den Vertrag für die Introduction-Daten.
+/// Defines the contract for accessing introduction data.
 ///
-/// Die Domain-Schicht (UseCases) wird nur dieses Interface verwenden,
-/// ohne zu wissen, wie oder woher die Daten tatsächlich kommen (ob aus einer
-/// lokalen JSON-Datei, einer API oder einer Datenbank).
+/// The domain layer (UseCases) will interact with this interface,
+/// without needing to know the specific data source (e.g., local JSON, API, database).
 abstract class IntroRepository {
-
-  /// Ruft eine Liste von [IntroPageEntity] ab, die alle Seiten der
-  /// Einführungssequenz repräsentieren.
+  /// Retrieves a list of [IntroPageEntity] objects, representing all pages
+  /// in the introduction sequence.
   ///
-  /// Gibt eine `Future<List<IntroPageEntity>>` zurück.
-  /// Kann eine Exception werfen, wenn das Laden der Daten fehlschlägt.
+  /// Returns a `Future<List<IntroPageEntity>>`.
+  /// May throw an exception if loading the data fails.
   Future<List<IntroPageEntity>> getIntroPages();
-
 }

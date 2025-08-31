@@ -2,14 +2,28 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../core/utils/app_logger.dart';
 
+/// Abstract class for profile statistics data operations.
 abstract class ProfileStatsDataSource {
+  /// Retrieves a stream of completed task IDs for a given user.
+  ///
+  /// Returns `null` if the [userId] is empty or an error occurs.
   Stream<List<String>?> getCompletedTaskIdsStream(String userId);
+
+  /// Fetches details for a list of challenge tasks.
+  ///
+  /// Returns a list of maps, where each map represents a challenge task's details.
+  /// Returns an empty list if [taskIds] is empty.
+  /// Returns `null` if an error occurs.
   Future<List<Map<String, dynamic>>?> getChallengeDetailsForTasks(List<String> taskIds);
 }
 
+/// Implementation of [ProfileStatsDataSource] using Firebase Firestore.
 class ProfileStatsDataSourceImpl implements ProfileStatsDataSource {
   final FirebaseFirestore _firestore;
 
+  /// Creates an instance of [ProfileStatsDataSourceImpl].
+  ///
+  /// Requires a [FirebaseFirestore] instance.
   ProfileStatsDataSourceImpl({required FirebaseFirestore firestore})
       : _firestore = firestore;
 
@@ -54,7 +68,7 @@ class ProfileStatsDataSourceImpl implements ProfileStatsDataSource {
       return [];
     }
 
-    const batchSize = 30;
+    const batchSize = 30; // Firestore 'in' query supports up to 30 elements
     final List<Future<QuerySnapshot<Map<String, dynamic>>>> futures = [];
 
     for (int i = 0; i < taskIds.length; i += batchSize) {

@@ -1,22 +1,49 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show immutable, listEquals;
 
+/// Represents a user's profile information.
 @immutable
 class UserProfileModel {
+  /// The unique identifier of the user.
   final String id;
+
+  /// The name of the user.
   final String name;
+
+  /// The email address of the user (optional).
   final String? email;
+
+  /// The age of the user.
   final int age;
+
+  /// The field of study of the user.
   final String studyField;
+
+  /// The school or university the user attends.
   final String school;
+
+  /// The URL of the user's profile image (optional).
   final String? imageURL;
+
+  /// The points accumulated by the user.
   final int points;
+
+  /// The current level of the user.
   final int level;
+
+  /// A list of IDs of tasks currently in progress by the user.
   final List<String> ongoingTasks;
+
+  /// A list of IDs of tasks completed by the user.
   final List<String> completedTasks;
+
+  /// The date and time when the user profile was created (optional).
   final DateTime? createdAt;
+
+  /// Indicates whether the user has completed the introductory flow.
   final bool hasCompletedIntro;
 
+  /// Creates a [UserProfileModel] instance.
   const UserProfileModel({
     required this.id,
     required this.name,
@@ -33,6 +60,10 @@ class UserProfileModel {
     required this.hasCompletedIntro,
   });
 
+  /// Creates a [UserProfileModel] instance from a Firestore document map.
+  ///
+  /// [map] is a map of data from Firestore.
+  /// [documentId] is the ID of the Firestore document.
   factory UserProfileModel.fromMap(Map<String, dynamic> map, String documentId) {
     final ageNum = map['age'] as num?;
     final pointsNum = map['points'] as num?;
@@ -55,6 +86,9 @@ class UserProfileModel {
     );
   }
 
+  /// Converts the [UserProfileModel] to a map for updating Firestore.
+  ///
+  /// This map includes only the fields that are typically updated by the user.
   Map<String, dynamic> toUpdateMap() {
     return {
       'name': name,
@@ -65,6 +99,9 @@ class UserProfileModel {
     };
   }
 
+  /// Converts the [UserProfileModel] to a full map for Firestore.
+  ///
+  /// This map includes all fields of the user profile.
   Map<String, dynamic> toFullMap() {
     return {
       'name': name,
@@ -78,10 +115,12 @@ class UserProfileModel {
       'ongoingTasks': ongoingTasks,
       'completedTasks': completedTasks,
       if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
-      'hasCompletedIntro': hasCompletedIntro, // <-- NEU HINZUGEFÜGT
+      'hasCompletedIntro': hasCompletedIntro,
     };
   }
 
+  /// Creates a copy of this [UserProfileModel] but with the given fields replaced
+  /// with the new values.
   UserProfileModel copyWith({
     String? id,
     String? name,

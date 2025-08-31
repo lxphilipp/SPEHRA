@@ -12,12 +12,22 @@ import '../models/chat_room_model.dart';
 import '../models/group_chat_model.dart';
 import '../models/message_model.dart';
 
+/// Implementation of the [ChatRepository] interface.
+///
+/// This class handles the communication with the [ChatRemoteDataSource]
+/// and maps the data models to domain entities.
 class ChatRepositoryImpl implements ChatRepository {
+  /// The remote data source for chat operations.
   final ChatRemoteDataSource remoteDataSource;
 
+  /// Creates a [ChatRepositoryImpl].
+  ///
+  /// Requires a [remoteDataSource] to interact with the backend.
   ChatRepositoryImpl({required this.remoteDataSource});
 
   // --- Mapping Hilfsmethoden (Model zu Entity) ---
+
+  /// Maps a [ChatRoomModel] to a [ChatRoomEntity].
   ChatRoomEntity _mapChatRoomModelToEntity(ChatRoomModel model) {
     final clearedAtMap = <String, DateTime>{};
     model.clearedAt.forEach((key, value) {
@@ -37,6 +47,7 @@ class ChatRepositoryImpl implements ChatRepository {
     );
   }
 
+  /// Maps a [GroupChatModel] to a [GroupChatEntity].
   GroupChatEntity _mapGroupChatModelToEntity(GroupChatModel model) {
     return GroupChatEntity(
       id: model.id,
@@ -50,6 +61,7 @@ class ChatRepositoryImpl implements ChatRepository {
     );
   }
 
+  /// Maps a [MessageModel] to a [MessageEntity].
   MessageEntity _mapMessageModelToEntity(MessageModel model) {
     return MessageEntity(
       id: model.id,
@@ -62,6 +74,7 @@ class ChatRepositoryImpl implements ChatRepository {
     );
   }
 
+  /// Maps a [MessageEntity] to a [MessageModel].
   MessageModel _mapMessageEntityToModel(MessageEntity entity) {
     return MessageModel(
       id: entity.id, // ID kann hier leer sein, wenn sie von der DS generiert wird
@@ -74,6 +87,7 @@ class ChatRepositoryImpl implements ChatRepository {
     );
   }
 
+  /// Maps a [GroupChatEntity] to a [GroupChatModel].
   GroupChatModel _mapGroupChatEntityToModel(GroupChatEntity entity) {
     return GroupChatModel(
       id: entity.id,
@@ -302,7 +316,8 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<List<ChatUserEntity>> findChatUsersByNamePrefix(String namePrefix, {List<String> excludeIds = const []}) async {
     try {
-      return await remoteDataSource.findChatUsersByNamePrefix(namePrefix);
+      // Pass the excludeIds to the remoteDataSource
+      return await remoteDataSource.findChatUsersByNamePrefix(namePrefix, excludeIds: excludeIds);
     } catch (e) {
       AppLogger.error("ChatRepo Error: $e");
       return []; // Leere Liste bei Fehler
@@ -335,26 +350,31 @@ class ChatRepositoryImpl implements ChatRepository {
   }
   @override
   Future<void> deleteGroup(String groupId) async {
+    // try-catch block could be added here for error handling if needed
     await remoteDataSource.deleteGroup(groupId);
   }
 
   @override
   Future<void> hideChatForUser(String roomId, String userId) async {
+    // try-catch block could be added here for error handling if needed
     await remoteDataSource.hideChatForUser(roomId, userId);
   }
 
   @override
   Future<void> unhideChatForUser(String roomId, String userId) async {
+    // try-catch block could be added here for error handling if needed
     await remoteDataSource.unhideChatForUser(roomId, userId);
   }
 
   @override
   Future<void> setChatClearedTimestamp(String roomId, String userId) async {
+    // try-catch block could be added here for error handling if needed
     await remoteDataSource.setChatClearedTimestamp(roomId, userId);
   }
 
   @override
   Stream<ChatRoomEntity?> watchChatRoomById(String roomId) {
+    // try-catch block could be added here for error handling if needed
     return remoteDataSource
         .watchChatRoomById(roomId)
         .map((model) => model != null ? _mapChatRoomModelToEntity(model) : null);

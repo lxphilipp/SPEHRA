@@ -2,8 +2,12 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-/// Eine Hilfsklasse, die dynamisch Farbverläufe für jedes Level generiert.
+/// A utility class that dynamically generates color gradients for each level.
 class LevelColor {
+  /// Returns a list of two colors for a gradient based on the given [level].
+  ///
+  /// The hue of the colors is determined by the level, ensuring a unique
+  /// gradient for different levels. Saturation and lightness are kept constant.
   static List<Color> getGradientForLevel(int level) {
     final double hue = (level * 41) % 360.0;
     const double saturation = 0.85;
@@ -14,13 +18,21 @@ class LevelColor {
   }
 }
 
-/// Ein benutzerdefiniertes Widget, das den Fortschrittsanzeiger mit einem Farbverlauf zeichnet.
+/// A custom widget that draws a circular progress indicator with a gradient.
 class CircularGradientProgressIndicator extends StatelessWidget {
+  /// The current progress value, between 0.0 and 1.0.
   final double progress;
+  /// The width of the progress indicator's stroke.
   final double strokeWidth;
+  /// The list of colors to use for the gradient.
   final List<Color> gradientColors;
+  /// The background color of the progress indicator track.
   final Color backgroundColor;
 
+  /// Creates a [CircularGradientProgressIndicator].
+  ///
+  /// Requires [progress], [gradientColors], and [backgroundColor].
+  /// [strokeWidth] defaults to 4.0.
   const CircularGradientProgressIndicator({
     super.key,
     required this.progress,
@@ -42,12 +54,20 @@ class CircularGradientProgressIndicator extends StatelessWidget {
   }
 }
 
+/// A [CustomPainter] that draws the circular gradient progress.
 class _GradientCircularPainter extends CustomPainter {
+  /// The current progress value, between 0.0 and 1.0.
   final double progress;
+  /// The width of the progress indicator's stroke.
   final double strokeWidth;
+  /// The list of colors to use for the gradient.
   final List<Color> gradientColors;
+  /// The background color of the progress indicator track.
   final Color backgroundColor;
 
+  /// Creates a [_GradientCircularPainter].
+  ///
+  /// Requires [progress], [strokeWidth], [gradientColors], and [backgroundColor].
   _GradientCircularPainter({
     required this.progress,
     required this.strokeWidth,
@@ -60,12 +80,14 @@ class _GradientCircularPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
+    // Draw the background track
     final backgroundPaint = Paint()
       ..color = backgroundColor
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
     canvas.drawCircle(center, radius, backgroundPaint);
 
+    // Draw the foreground progress arc with a gradient
     final foregroundPaint = Paint()
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
@@ -73,14 +95,14 @@ class _GradientCircularPainter extends CustomPainter {
       ..shader = SweepGradient(
         colors: gradientColors,
         startAngle: -pi / 2,
-        endAngle: (pi * 2),
-        transform: const GradientRotation(-pi / 2),
+        endAngle: (pi * 2), // Ensure the gradient covers the full circle for smooth animation
+        transform: const GradientRotation(-pi / 2), // Start gradient from the top
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      2 * pi * progress,
+      -pi / 2, // Start angle (top of the circle)
+      2 * pi * progress, // Sweep angle based on progress
       false,
       foregroundPaint,
     );
@@ -88,17 +110,29 @@ class _GradientCircularPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // Repaint whenever properties change to reflect updates.
     return true;
   }
 }
 
+/// A widget that displays a circular progress indicator around a profile image or initial,
+/// along with a level badge.
 class CircularProfileProgressWidget extends StatelessWidget {
+  /// The URL of the profile image to display. If null or empty, initials are shown.
   final String? imageUrl;
+  /// The current level of the user.
   final int level;
+  /// The progress towards the next level, between 0.0 and 1.0.
   final double progress;
+  /// The size (width and height) of the widget. Defaults to 40.0.
   final double size;
+  /// The name of the user, used to display initials if [imageUrl] is not provided.
   final String? userName;
 
+  /// Creates a [CircularProfileProgressWidget].
+  ///
+  /// Requires [level] and [progress].
+  /// [imageUrl], [size], and [userName] are optional.
   const CircularProfileProgressWidget({
     super.key,
     this.imageUrl,
@@ -120,7 +154,7 @@ class CircularProfileProgressWidget extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 1. Der äußere Fortschrittsring mit dem dynamischen Farbverlauf
+          // 1. The outer progress ring with the dynamic gradient
           CircularGradientProgressIndicator(
             progress: progress,
             strokeWidth: 3.5,
@@ -128,26 +162,26 @@ class CircularProfileProgressWidget extends StatelessWidget {
             backgroundColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
           ),
 
-          // 2. Das Profilbild in der Mitte, jetzt mit CachedNetworkImage
+          // 2. The profile picture in the center, now with CachedNetworkImage
           Padding(
-            padding: const EdgeInsets.all(3.0),
+            padding: const EdgeInsets.all(3.0), // Padding to avoid overlap with the progress ring
             child: CircleAvatar(
-              backgroundColor: theme.scaffoldBackgroundColor,
+              backgroundColor: theme.scaffoldBackgroundColor, // Background color for the avatar circle itself
               child: ClipOval(
                 child: CachedNetworkImage(
                   imageUrl: imageUrl ?? '',
                   fit: BoxFit.cover,
-                  width: size,
-                  height: size,
+                  width: size, // Ensure image fills the avatar
+                  height: size, // Ensure image fills the avatar
                   placeholder: (context, url) => CircleAvatar(
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest, // Placeholder background
                   ),
                   errorWidget: (context, url, error) => CircleAvatar(
-                    backgroundColor: theme.colorScheme.primaryContainer,
+                    backgroundColor: theme.colorScheme.primaryContainer, // Background for initials
                     child: Text(
                       initial,
                       style: TextStyle(
-                        fontSize: size * 0.4,
+                        fontSize: size * 0.4, // Scale font size with widget size
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.onPrimaryContainer,
                       ),
@@ -158,17 +192,17 @@ class CircularProfileProgressWidget extends StatelessWidget {
             ),
           ),
 
-          // 3. Das Level-Badge unten rechts
+          // 3. The level badge at the bottom right
           Positioned(
             right: 0,
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradientColors),
+                gradient: LinearGradient(colors: gradientColors), // Use the same gradient as the progress ring
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: theme.scaffoldBackgroundColor,
+                  color: theme.scaffoldBackgroundColor, // Border to make it pop from the background
                   width: 1.5,
                 ),
               ),
@@ -177,10 +211,10 @@ class CircularProfileProgressWidget extends StatelessWidget {
                 style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: size * 0.3,
+                    fontSize: size * 0.3, // Scale font size with widget size
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withOpacity(0.5), // Text shadow for better readability
                         blurRadius: 3,
                       )
                     ]
