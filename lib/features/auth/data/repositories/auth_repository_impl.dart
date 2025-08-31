@@ -86,7 +86,6 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  // -- Hilfsmethode (unverändert) --
   Future<UserEntity?> _mapFirebaseUserToUserEntity(fb_auth.User? firebaseUser, {String? nameFromRegistration}) async {
     if (firebaseUser == null) return null;
     return UserEntity(
@@ -96,7 +95,6 @@ class AuthRepositoryImpl implements AuthRepository {
     );
   }
 
-  // -- Restliche Methoden (unverändert) --
   @override
   Stream<UserEntity?> get authStateChanges {
     return remoteDataSource.firebaseAuthStateChanges.asyncMap((firebaseUser) async {

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// A model for the user.
 class UserModel {
   String? id;
   String? name;
@@ -11,7 +12,6 @@ class UserModel {
   String? pushToken;
   bool? online;
   List<String>? myUsers;
-
   int? age;
   String? studyField;
   String? school;
@@ -21,6 +21,7 @@ class UserModel {
   int? level;
   bool? hasCompletedIntro;
 
+  /// Creates a [UserModel].
   UserModel({
     this.id,
     this.name,

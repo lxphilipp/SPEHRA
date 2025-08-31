@@ -15,7 +15,12 @@ import 'package:flutter_sdg/features/profile/domain/entities/user_profile_entity
 import 'package:flutter_sdg/features/profile/domain/utils/level_utils.dart';
 import 'package:flutter_sdg/features/profile/presentation/widgets/circular_profile_progress_widget.dart';
 
+/// A responsive main navigation widget that adapts to different screen sizes.
+///
+/// On mobile devices, it displays a [BottomNavigationBar]. On larger screens,
+/// it shows a [NavigationRail].
 class ResponsiveMainNavigation extends StatefulWidget {
+  /// Creates a [ResponsiveMainNavigation] widget.
   const ResponsiveMainNavigation({super.key});
 
   @override
@@ -160,11 +165,18 @@ class _ResponsiveMainNavigationState extends State<ResponsiveMainNavigation> {
 }
 
 
+/// A private widget to display the user's profile picture and level in the navigation.
 class _ProfileNavWidget extends StatelessWidget {
+  /// The callback to be executed when the widget is tapped.
   final VoidCallback onTap;
+
+  /// Whether the widget is displayed in a mobile layout.
   final bool isMobile;
+
+  /// Whether the widget is currently selected.
   final bool isSelected;
 
+  /// Creates a [_ProfileNavWidget].
   const _ProfileNavWidget({
     required this.onTap,
     required this.isMobile,

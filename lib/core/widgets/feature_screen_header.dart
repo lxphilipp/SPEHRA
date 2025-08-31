@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
+/// A header for the feature screens.
+///
+/// It displays a title and a list of actions.
 class FeatureScreenHeader extends StatelessWidget {
+  /// The title of the header.
   final String title;
+
+  /// The actions of the header.
   final List<Widget> actions;
 
+  /// Creates a [FeatureScreenHeader].
   const FeatureScreenHeader({
     super.key,
     required this.title,

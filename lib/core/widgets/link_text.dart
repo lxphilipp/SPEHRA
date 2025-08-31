@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/link.dart';
 
+/// A widget that displays a hyperlink.
 class LinkTextWidget extends StatelessWidget {
+  /// The URL to link to.
   final String url;
+
+  /// The text to display.
+  ///
+  /// If this is null, the URL is displayed instead.
   final String? displayText;
+
+  /// Creates a [LinkTextWidget].
   const LinkTextWidget({
     super.key,
     required this.url,

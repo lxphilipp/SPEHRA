@@ -142,9 +142,17 @@ import 'features/chat/presentation/providers/user_search_provider.dart';
 import 'features/chat/presentation/providers/create_group_provider.dart';
 
 
+/// The entry point of the application.
+///
+/// This function initializes the Flutter binding, sets up logging, initializes
+/// Firebase, and sets up the dependency injection using [MultiProvider].
+///
+/// It also sets up global error handlers for Flutter and platform errors.
 Future<void> main() async {
+  // Ensure that the Flutter binding is initialized.
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Set the logging level based on the environment.
   if (kDebugMode) {
     Logger.level = Level.debug;
   } else {
@@ -152,10 +160,12 @@ Future<void> main() async {
   }
   AppLogger.info("Starting App initialization");
 
+  // Initialize Firebase.
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    // Activate Firebase App Check.
     await FirebaseAppCheck.instance.activate(
       webProvider: ReCaptchaV3Provider('6LcHiH8rAAAAAL4NOwsSwnGfXBUqOjeyRfQgKNHq'),
       androidProvider: AndroidProvider.debug,
@@ -167,14 +177,16 @@ Future<void> main() async {
     return;
   }
 
+  // Create instances of the Firebase services.
   final fbAuth = FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;
   final storage = FirebaseStorage.instance;
   final appcheck = FirebaseAppCheck.instance;
   const uuid = Uuid();
 
+  // Set up global error handlers.
   FlutterError.onError = (FlutterErrorDetails details) {
-    AppLogger.fatal('Flutter Error: ${details.exception}', details.exception, details.stack);
+    AppLogger.fatal('Flutter Error: \${details.exception}', details.exception, details.stack);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
     AppLogger.fatal('Platform Error: $error', error, stack);
@@ -183,10 +195,12 @@ Future<void> main() async {
 
   AppLogger.info("Starting app with providers configuration");
 
+  // Run the app with the dependency injection setup.
   runApp(
     MultiProvider(
       providers: [
         // --- EXTERNAL / GLOBAL ---
+        // These providers are used to provide external dependencies to the app.
         Provider<FirebaseAuth>.value(value: fbAuth),
         Provider<FirebaseFirestore>.value(value: firestore),
         Provider<FirebaseStorage>.value(value: storage),
@@ -195,6 +209,9 @@ Future<void> main() async {
         Provider<http.Client>(create: (_) => http.Client()),
 
         // --- DATA & DOMAIN LAYER (By Feature) ---
+        // These providers are used to provide the data and domain layer
+        // of the different features of the app.
+
         // AUTH
         Provider<AuthRemoteDataSource>(create: (context) => AuthRemoteDataSourceImpl(firebaseAuth: context.read(), firestore: context.read())),
         Provider<AuthRepository>(create: (context) => AuthRepositoryImpl(remoteDataSource: context.read())),
@@ -341,7 +358,7 @@ Future<void> main() async {
           ),
         ),
 
-        // --- NEWS FEATURE ---
+        // NEWS
         Provider<NewsRemoteDataSource>(
           create: (context) => NewsRemoteDataSourceImpl(client: context.read()),
         ),
@@ -354,6 +371,8 @@ Future<void> main() async {
 
 
         // --- PRESENTATION LAYER (ChangeNotifierProviders) ---
+        // These providers are used to provide the presentation layer
+        // of the different features of the app.
         ChangeNotifierProvider<AuthenticationProvider>(
           create: (context) => AuthenticationProvider(
             getAuthStateChangesUseCase: context.read<GetAuthStateChangesUseCase>(),

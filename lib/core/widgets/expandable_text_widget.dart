@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// A widget that displays a text that can be expanded and collapsed.
 class ExpandableTextWidget extends StatefulWidget {
+  /// Creates an [ExpandableTextWidget].
   const ExpandableTextWidget({super.key});
 
   @override
@@ -12,7 +14,6 @@ class _ExpandableTextWidgetState extends State<ExpandableTextWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Hole das Theme am Anfang der build-Methode
     final theme = Theme.of(context);
 
     const String fullText =

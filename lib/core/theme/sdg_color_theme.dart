@@ -2,29 +2,66 @@ import 'package:flutter/material.dart';
 // Deine Basisfarben
 
 // @immutable ist eine gute Praxis für ThemeExtensions, da sie unveränderlich sein sollten.
+/// A [ThemeExtension] for the SDG colors.
+///
+/// This allows the SDG colors to be accessed from the theme.
 @immutable
 class SdgColorTheme extends ThemeExtension<SdgColorTheme> {
-  // Definiere Felder für jede deiner SDG-Farben
+  /// The color for SDG Goal 1.
   final Color goal1;
-  final Color goal2;
-  final Color goal3;
-  final Color goal4;
-  final Color goal5;
-  final Color goal6;
-  final Color goal7;
-  final Color goal8;
-  final Color goal9;
-  final Color goal10;
-  final Color goal11;
-  final Color goal12;
-  final Color goal13;
-  final Color goal14;
-  final Color goal15;
-  final Color goal16;
-  final Color goal17;
-  final Color defaultGoalColor; // Eine Fallback-Farbe
 
-  // Konstruktor, der alle Farben entgegennimmt
+  /// The color for SDG Goal 2.
+  final Color goal2;
+
+  /// The color for SDG Goal 3.
+  final Color goal3;
+
+  /// The color for SDG Goal 4.
+  final Color goal4;
+
+  /// The color for SDG Goal 5.
+  final Color goal5;
+
+  /// The color for SDG Goal 6.
+  final Color goal6;
+
+  /// The color for SDG Goal 7.
+  final Color goal7;
+
+  /// The color for SDG Goal 8.
+  final Color goal8;
+
+  /// The color for SDG Goal 9.
+  final Color goal9;
+
+  /// The color for SDG Goal 10.
+  final Color goal10;
+
+  /// The color for SDG Goal 11.
+  final Color goal11;
+
+  /// The color for SDG Goal 12.
+  final Color goal12;
+
+  /// The color for SDG Goal 13.
+  final Color goal13;
+
+  /// The color for SDG Goal 14.
+  final Color goal14;
+
+  /// The color for SDG Goal 15.
+  final Color goal15;
+
+  /// The color for SDG Goal 16.
+  final Color goal16;
+
+  /// The color for SDG Goal 17.
+  final Color goal17;
+
+  /// The default color for SDGs.
+  final Color defaultGoalColor;
+
+  /// Creates an [SdgColorTheme].
   const SdgColorTheme({
     required this.goal1,
     required this.goal2,
@@ -46,39 +83,68 @@ class SdgColorTheme extends ThemeExtension<SdgColorTheme> {
     required this.defaultGoalColor,
   });
 
-  // Methode, um die Farbe basierend auf einem Schlüssel (z.B. "goal1") zu bekommen
-  // Dies ersetzt deine alte getCategoryColor-Logik
+  /// Returns the color for the given SDG key.
   Color colorForSdgKey(String sdgKey) {
-    switch (sdgKey.toLowerCase()) { // toLowerCase für Robustheit
-      case 'goal1': return goal1;
-      case 'goal2': return goal2;
-      case 'goal3': return goal3;
-      case 'goal4': return goal4;
-      case 'goal5': return goal5;
-      case 'goal6': return goal6;
-      case 'goal7': return goal7;
-      case 'goal8': return goal8;
-      case 'goal9': return goal9;
-      case 'goal10': return goal10;
-      case 'goal11': return goal11;
-      case 'goal12': return goal12;
-      case 'goal13': return goal13;
-      case 'goal14': return goal14;
-      case 'goal15': return goal15;
-      case 'goal16': return goal16;
-      case 'goal17': return goal17;
-      default: return defaultGoalColor;
+    switch (sdgKey.toLowerCase()) {
+      case 'goal1':
+        return goal1;
+      case 'goal2':
+        return goal2;
+      case 'goal3':
+        return goal3;
+      case 'goal4':
+        return goal4;
+      case 'goal5':
+        return goal5;
+      case 'goal6':
+        return goal6;
+      case 'goal7':
+        return goal7;
+      case 'goal8':
+        return goal8;
+      case 'goal9':
+        return goal9;
+      case 'goal10':
+        return goal10;
+      case 'goal11':
+        return goal11;
+      case 'goal12':
+        return goal12;
+      case 'goal13':
+        return goal13;
+      case 'goal14':
+        return goal14;
+      case 'goal15':
+        return goal15;
+      case 'goal16':
+        return goal16;
+      case 'goal17':
+        return goal17;
+      default:
+        return defaultGoalColor;
     }
   }
 
-  // Die `copyWith` Methode ist erforderlich für ThemeExtension.
-  // Sie wird verwendet, um eine neue Instanz mit einigen geänderten Werten zu erstellen.
   @override
   SdgColorTheme copyWith({
-    Color? goal1, Color? goal2, Color? goal3, Color? goal4, Color? goal5,
-    Color? goal6, Color? goal7, Color? goal8, Color? goal9, Color? goal10,
-    Color? goal11, Color? goal12, Color? goal13, Color? goal14, Color? goal15,
-    Color? goal16, Color? goal17, Color? defaultGoalColor,
+    Color? goal1,
+    Color? goal2,
+    Color? goal3,
+    Color? goal4,
+    Color? goal5,
+    Color? goal6,
+    Color? goal7,
+    Color? goal8,
+    Color? goal9,
+    Color? goal10,
+    Color? goal11,
+    Color? goal12,
+    Color? goal13,
+    Color? goal14,
+    Color? goal15,
+    Color? goal16,
+    Color? goal17,
+    Color? defaultGoalColor,
   }) {
     return SdgColorTheme(
       goal1: goal1 ?? this.goal1,
@@ -102,14 +168,11 @@ class SdgColorTheme extends ThemeExtension<SdgColorTheme> {
     );
   }
 
-  // Die `lerp` Methode ist erforderlich für ThemeExtension.
-  // Sie wird verwendet, um zwischen zwei Themes zu interpolieren (z.B. bei Theme-Animationen).
   @override
   SdgColorTheme lerp(ThemeExtension<SdgColorTheme>? other, double t) {
     if (other is! SdgColorTheme) {
-      return this; // Wenn 'other' nicht vom richtigen Typ ist, gib das aktuelle Theme zurück
+      return this;
     }
-    // Interpoliere jede Farbe
     return SdgColorTheme(
       goal1: Color.lerp(goal1, other.goal1, t)!,
       goal2: Color.lerp(goal2, other.goal2, t)!,

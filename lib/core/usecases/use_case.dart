@@ -7,8 +7,7 @@ abstract class UseCase<Type, Params> {
   Future<Type> call(Params params);
 }
 
-/// Eine Hilfsklasse, die verwendet wird, wenn ein Use Case keine Parameter benötigt.
-/// z.B. bei einem einfachen Logout oder dem Abrufen aller Daten ohne Filter.
+/// A class that represents no parameters for a use case.
 class NoParams extends Equatable {
   @override
   List<Object> get props => [];
