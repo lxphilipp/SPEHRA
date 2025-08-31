@@ -1,17 +1,18 @@
-// lib/features/auth/data/repositories/auth_repository_impl.dart
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import '../../../../core/utils/app_logger.dart';
 import '../../domain/entities/user_entity.dart';
-import '../../domain/entities/auth_failures.dart'; // <-- NEUER IMPORT
+import '../../domain/entities/auth_failures.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/user_model.dart';
 
+/// Implementation of the [AuthRepository] interface.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
 
   AuthRepositoryImpl({required this.remoteDataSource});
 
+  /// Handles [fb_auth.FirebaseAuthException] and returns a corresponding [AuthFailure].
   AuthFailure _handleFirebaseAuthException(fb_auth.FirebaseAuthException e) {
     AppLogger.warning("AuthRepo: FirebaseAuthException (${e.code}): ${e.message}");
     switch (e.code) {
@@ -42,10 +43,10 @@ class AuthRepositoryImpl implements AuthRepository {
           email: email.trim(), password: password.trim());
       return _mapFirebaseUserToUserEntity(credential.user);
     } on fb_auth.FirebaseAuthException catch (e) {
-      // Wir fangen den Firebase-Fehler ab und werfen unseren eigenen, sauberen Fehler.
+      // We catch the Firebase error and throw our own, clean error.
       throw _handleFirebaseAuthException(e);
     } catch (e) {
-      AppLogger.error("AuthRepo: Unerwarteter Fehler in signIn: $e", e);
+      AppLogger.error("AuthRepo: Unexpected error in signIn: $e", e);
       throw const UnknownAuthFailure();
     }
   }
@@ -78,14 +79,15 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.createUserDocument(newUserModel);
       return _mapFirebaseUserToUserEntity(firebaseUser, nameFromRegistration: name.trim());
     } on fb_auth.FirebaseAuthException catch (e) {
-      // Auch hier wird der Fehler übersetzt und geworfen.
+      // Here, too, the error is translated and thrown.
       throw _handleFirebaseAuthException(e);
     } catch (e) {
-      AppLogger.error("AuthRepo: Unerwarteter Fehler in register: $e", e);
+      AppLogger.error("AuthRepo: Unexpected error in register: $e", e);
       throw const UnknownAuthFailure();
     }
   }
 
+  /// Maps a [fb_auth.User] to a [UserEntity].
   Future<UserEntity?> _mapFirebaseUserToUserEntity(fb_auth.User? firebaseUser, {String? nameFromRegistration}) async {
     if (firebaseUser == null) return null;
     return UserEntity(
@@ -128,7 +130,7 @@ class AuthRepositoryImpl implements AuthRepository {
           isOnline: false,
         );
       } catch (e) {
-        AppLogger.error("AuthRepo: Fehler beim Aktualisieren der Präsenz vor dem Ausloggen.", e);
+        AppLogger.error("AuthRepo: Error updating presence before logging out.", e);
       }
     }
     await remoteDataSource.signOut();

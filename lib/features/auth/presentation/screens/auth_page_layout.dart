@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 
+/// A layout for authentication pages.
 class AuthPageLayout extends StatelessWidget {
+  /// The main content of the page.
   final Widget body;
+
+  /// The text to display in the app bar.
   final String? appBarTitleText;
+
+  /// Whether to show the back button in the app bar.
   final bool showBackButton;
+
+  /// The leading widget in the app bar.
   final Widget? appBarLeading;
 
+  /// Creates an [AuthPageLayout].
   const AuthPageLayout({
     super.key,
     required this.body,

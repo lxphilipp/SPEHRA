@@ -1,8 +1,15 @@
+/// Represents a user entity.
 class UserEntity {
+  /// The unique identifier of the user.
   final String id;
+
+  /// The email address of the user.
   final String? email;
+
+  /// The name of the user.
   final String? name;
 
+  /// Creates a [UserEntity] instance.
   UserEntity({
     required this.id,
     this.email,
@@ -24,6 +31,7 @@ class UserEntity {
       email.hashCode ^
       name.hashCode;
 
+  /// Creates a copy of this user entity with the given fields replaced with the new values.
   UserEntity copyWith({
     String? id,
     String? email,

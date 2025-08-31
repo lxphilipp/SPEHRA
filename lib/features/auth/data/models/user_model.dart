@@ -1,27 +1,62 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// A model for the user.
+/// A model representing a user in the application.
 class UserModel {
+  /// The unique identifier of the user.
   String? id;
+
+  /// The name of the user.
   String? name;
+
+  /// The email address of the user.
   String? email;
+
+  /// A short bio or description about the user.
   String? about;
+
+  /// The URL of the user's profile image.
   String? imageURL;
+
+  /// The date and time when the user account was created.
   DateTime? createdAt;
+
+  /// The date and time when the user was last active.
   DateTime? lastActiveAt;
+
+  /// The push notification token for the user's device.
   String? pushToken;
+
+  /// A flag indicating whether the user is currently online.
   bool? online;
+
+  /// A list of user IDs that this user is connected to.
   List<String>? myUsers;
+
+  /// The age of the user.
   int? age;
+
+  /// The user's field of study.
   String? studyField;
+
+  /// The school or university the user attends.
   String? school;
+
+  /// A list of task IDs that the user has completed.
   List<String>? completedTasks;
+
+  /// A list of task IDs that the user is currently working on.
   List<String>? ongoingTasks;
+
+  /// The total points accumulated by the user.
   int? points;
+
+  /// The current level of the user in the gamification system.
   int? level;
+
+  /// A flag indicating whether the user has completed the introductory flow.
   bool? hasCompletedIntro;
 
-  /// Creates a [UserModel].
+  /// Creates a [UserModel] instance.
   UserModel({
     this.id,
     this.name,
@@ -43,6 +78,7 @@ class UserModel {
     this.hasCompletedIntro = false,
   });
 
+  /// Creates a [UserModel] from a map of data.
   factory UserModel.fromMap(Map<String, dynamic> map, String docId) {
     String? emptyToNull(dynamic value) {
       if (value is String && value.isEmpty) {
@@ -85,6 +121,7 @@ class UserModel {
     );
   }
 
+  /// Converts the [UserModel] to a map of data.
   Map<String, dynamic> toMap() {
     return {
       'id': id,

@@ -195,8 +195,6 @@ class SdgColorTheme extends ThemeExtension<SdgColorTheme> {
     );
   }
 
-  // Optional: Implementiere == und hashCode, wenn du Instanzen vergleichen möchtest.
-  // Für ThemeExtensions ist das oft eine gute Praxis.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
