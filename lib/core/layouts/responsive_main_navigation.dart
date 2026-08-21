@@ -12,7 +12,6 @@ import 'package:flutter_sdg/features/profile/presentation/screens/profile_stats_
 // Profile Widgets & Provider
 import 'package:flutter_sdg/features/profile/presentation/providers/user_profile_provider.dart';
 import 'package:flutter_sdg/features/profile/domain/entities/user_profile_entity.dart';
-import 'package:flutter_sdg/features/profile/domain/utils/level_utils.dart';
 import 'package:flutter_sdg/features/profile/presentation/widgets/circular_profile_progress_widget.dart';
 
 /// A responsive main navigation widget that adapts to different screen sizes.
@@ -196,7 +195,7 @@ class _ProfileNavWidget extends StatelessWidget {
           );
         }
 
-        final levelData = LevelUtils.calculateLevelData(userProfile.points);
+        final levelData = profileProvider.levelData;
         final size = 50.0;
 
         return InkWell(
@@ -204,8 +203,8 @@ class _ProfileNavWidget extends StatelessWidget {
           customBorder: const CircleBorder(),
           child: CircularProfileProgressWidget(
             imageUrl: userProfile.profileImageUrl,
-            level: levelData.level,
-            progress: levelData.progress,
+            level: levelData?.level ?? 1,
+            progress: levelData?.progress ?? 0.0,
             size: size,
           ),
         );

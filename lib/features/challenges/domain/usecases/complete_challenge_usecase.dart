@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../profile/domain/repositories/user_profile_repository.dart';
+import '../../../profile/domain/utils/level_utils.dart';
 import '../repositories/challenge_progress_repository.dart';
 import '../repositories/challenge_repository.dart';
 import 'get_game_balance_usecase.dart';
@@ -57,6 +58,7 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
         userId: params.userId,
         challengeId: params.challengeId,
         pointsEarned: basePoints,
+        levelCalculator: LevelUtils.fromBalance(balance),
       );
       AppLogger.info("Base points ($basePoints) awarded to user ${params.userId}.");
 

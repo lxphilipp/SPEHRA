@@ -1,5 +1,6 @@
 import 'dart:io';
 import '../entities/user_profile_entity.dart';
+import '../utils/level_utils.dart';
 
 /// Abstract class for user profile related operations.
 /// This class defines the contract for fetching, updating, and managing user profile data.
@@ -60,11 +61,14 @@ abstract class UserProfileRepository {
   /// Marks a task as completed for the user.
   ///
   /// Takes [userId], [challengeId], and [pointsEarned] for completing the task.
+  /// [levelCalculator] carries the configured level curve and is used to
+  /// derive the user's new level from the updated point total.
   /// Returns true if the task was successfully marked as completed, false otherwise.
   Future<bool> markTaskAsCompleted({
     required String userId,
     required String challengeId,
     required int pointsEarned,
+    required LevelUtils levelCalculator,
   });
 
   /// Adds bonus points to the profiles of the specified users.

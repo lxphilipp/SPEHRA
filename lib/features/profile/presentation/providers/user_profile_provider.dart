@@ -7,12 +7,16 @@ import '../../../../core/utils/app_logger.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 // Domain & Entities
+import '../../../../core/usecases/use_case.dart';
+import '../../../challenges/domain/entities/game_balance_entity.dart';
+import '../../../challenges/domain/usecases/get_game_balance_usecase.dart';
 import '../../domain/entities/user_profile_entity.dart';
 import '../../domain/usecases/get_user_profile_usecase.dart';
 import '../../domain/usecases/watch_user_profile_usecase.dart';
 import '../../domain/usecases/update_profile_data_usecase.dart';
 import '../../domain/usecases/upload_profile_image_usecase.dart';
 import '../../domain/usecases/get_profile_stats_pie_chart_usecase.dart';
+import '../../domain/utils/level_utils.dart';
 
 class UserProfileProvider with ChangeNotifier {
   // --- UseCases ---
@@ -21,9 +25,11 @@ class UserProfileProvider with ChangeNotifier {
   final UpdateProfileDataUseCase _updateProfileDataUseCase;
   final UploadProfileImageUseCase _uploadProfileImageUseCase;
   final GetCategoryCountsStream _getProfileStatsPieChartUseCase;
+  final GetGameBalanceUseCase _getGameBalanceUseCase;
 
   // --- State ---
   UserProfileEntity? _userProfile;
+  GameBalanceEntity? _gameBalance;
   bool _isLoadingProfile = false;
   bool _isUpdatingProfile = false;
   String? _profileError;
@@ -33,6 +39,7 @@ class UserProfileProvider with ChangeNotifier {
 
   // --- Subscriptions ---
   StreamSubscription<UserProfileEntity?>? _userProfileSubscription;
+  bool _disposed = false;
 
   UserProfileProvider({
     required GetUserProfileUseCase getUserProfileUseCase,
@@ -40,20 +47,47 @@ class UserProfileProvider with ChangeNotifier {
     required UpdateProfileDataUseCase updateProfileDataUseCase,
     required UploadProfileImageUseCase uploadProfileImageUseCase,
     required GetCategoryCountsStream getProfileStatsPieChartUseCase,
+    required GetGameBalanceUseCase getGameBalanceUseCase,
   })  : _getUserProfileUseCase = getUserProfileUseCase,
         _watchUserProfileUseCase = watchUserProfileUseCase,
         _updateProfileDataUseCase = updateProfileDataUseCase,
         _uploadProfileImageUseCase = uploadProfileImageUseCase,
-        _getProfileStatsPieChartUseCase = getProfileStatsPieChartUseCase {
+        _getProfileStatsPieChartUseCase = getProfileStatsPieChartUseCase,
+        _getGameBalanceUseCase = getGameBalanceUseCase {
     AppLogger.debug("UserProfileProvider: Instance created.");
+    _loadGameBalance();
   }
 
   // --- Getters for the UI ---
   UserProfileEntity? get userProfile => _userProfile;
+
+  /// The level curve parameters currently in effect, or null while loading.
+  GameBalanceEntity? get gameBalance => _gameBalance;
+
+  /// Level, progress and XP thresholds derived from the user's points and the
+  /// configured level curve. Null until both the profile and the game balance
+  /// are available.
+  LevelData? get levelData {
+    final profile = _userProfile;
+    final balance = _gameBalance;
+    if (profile == null || balance == null) return null;
+    return LevelUtils.fromBalance(balance).calculateLevelData(profile.points);
+  }
   bool get isLoadingProfile => _isLoadingProfile;
   bool get isUpdatingProfile => _isUpdatingProfile;
   String? get profileError => _profileError;
   Stream<Map<String, int>?> get categoryCountsStream => _categoryCountsStream;
+
+  Future<void> _loadGameBalance() async {
+    try {
+      final balance = await _getGameBalanceUseCase(NoParams());
+      if (_disposed) return;
+      _gameBalance = balance;
+      notifyListeners();
+    } catch (e, stackTrace) {
+      AppLogger.error("UserProfileProvider: Could not load game balance.", e, stackTrace);
+    }
+  }
 
   void updateDependencies(AuthenticationProvider authProvider) {
     final newUserId = authProvider.currentUserId;
@@ -192,6 +226,7 @@ class UserProfileProvider with ChangeNotifier {
   @override
   void dispose() {
     AppLogger.debug("UserProfileProvider: Disposing.");
+    _disposed = true;
     _userProfileSubscription?.cancel();
     super.dispose();
   }

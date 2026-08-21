@@ -162,6 +162,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   @override
   Future<bool> markTaskAsCompleted({
     required String userId, required String challengeId, required int pointsEarned,
+    required LevelUtils levelCalculator,
   }) async {
     if (userId.isEmpty || challengeId.isEmpty) return false;
     try {
@@ -177,7 +178,7 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
           if (!completed.contains(challengeId)) completed.add(challengeId);
 
           final newPoints = model.points + pointsEarned;
-          final newLevel = LevelUtils.calculateLevel(newPoints);
+          final newLevel = levelCalculator.calculateLevel(newPoints);
 
           transaction.update(userDocRef, {
             'ongoingTasks': ongoing, 'completedTasks': completed,

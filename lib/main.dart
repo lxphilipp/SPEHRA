@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 
 import 'app.dart';
 import 'features/challenges/data/datasources/challenge_progress_remote_datasource.dart';
+import 'features/challenges/data/datasources/configuration_local_datasource.dart';
 import 'features/challenges/data/datasources/configuration_remote_datasource.dart';
 import 'features/challenges/data/datasources/geolocation_service.dart';
 import 'features/challenges/data/datasources/health_service.dart';
@@ -271,8 +272,14 @@ Future<void> main() async {
         Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
         Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
         Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
-        Provider<ConfigurationDataSource>(create: (_) => ConfigurationDataSourceImpl()),
-        Provider<ConfigurationRepository>(create: (context) => ConfigurationRepositoryImpl(dataSource: context.read())),
+        Provider<ConfigurationRemoteDataSourceImpl>(create: (context) => ConfigurationRemoteDataSourceImpl(firestore: context.read())),
+        Provider<ConfigurationLocalDataSourceImpl>(create: (_) => ConfigurationLocalDataSourceImpl()),
+        Provider<ConfigurationRepository>(
+          create: (context) => ConfigurationRepositoryImpl(
+            remoteDataSource: context.read<ConfigurationRemoteDataSourceImpl>(),
+            localDataSource: context.read<ConfigurationLocalDataSourceImpl>(),
+          ),
+        ),
         Provider<GetGameBalanceUseCase>(create: (context) => GetGameBalanceUseCase(context.read())),
         Provider<CompleteChallengeUseCase>(
           create: (context) => CompleteChallengeUseCase(
@@ -391,6 +398,7 @@ Future<void> main() async {
             updateProfileDataUseCase: context.read<UpdateProfileDataUseCase>(),
             uploadProfileImageUseCase: context.read<UploadProfileImageUseCase>(),
             getProfileStatsPieChartUseCase: context.read<GetCategoryCountsStream>(),
+            getGameBalanceUseCase: context.read<GetGameBalanceUseCase>(),
           ),
           update: (context, auth, previous) => previous!..updateDependencies(auth),
         ),
