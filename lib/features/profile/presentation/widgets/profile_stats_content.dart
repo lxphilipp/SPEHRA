@@ -40,7 +40,10 @@ class ProfileStatsContent extends StatelessWidget {
         child: Text('Please log in to view your profile.', style: theme.textTheme.bodyLarge),
       );
     }
-    final levelData = LevelUtils.calculateLevelData(userProfile.points);
+    final levelData = profileProvider.levelData;
+    if (levelData == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SafeArea(
       child: ListView(
@@ -48,7 +51,7 @@ class ProfileStatsContent extends StatelessWidget {
         children: [
           _buildCustomHeader(context, userProfile, levelData),
           const SizedBox(height: 24),
-          _buildStatsCards(context, userProfile),
+          _buildStatsCards(context, userProfile, levelData),
           const SizedBox(height: 24),
           _buildUserDetailsCard(context, userProfile),
           const SizedBox(height: 24),
@@ -232,9 +235,8 @@ class ProfileStatsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCards(BuildContext context, UserProfileEntity userProfile) {
+  Widget _buildStatsCards(BuildContext context, UserProfileEntity userProfile, LevelData levelData) {
     final theme = Theme.of(context);
-    final levelData = LevelUtils.calculateLevelData(userProfile.points);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -257,7 +259,7 @@ class ProfileStatsContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Level ${userProfile.level}",
+                  "Level ${levelData.level}",
                   style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.secondary),
                 ),
               ],

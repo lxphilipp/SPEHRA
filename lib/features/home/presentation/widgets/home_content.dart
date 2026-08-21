@@ -31,6 +31,7 @@ class HomeContent extends StatelessWidget {
     final homeProvider = context.watch<HomeProvider>();
 
     final userProfile = profileProvider.userProfile;
+    final levelData = profileProvider.levelData;
     final userName = userProfile?.name ?? authProvider.currentUser?.name ?? "User";
 
     return Scaffold(
@@ -40,11 +41,11 @@ class HomeContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           children: [
             // --- 1. Minimalistischer Header ---
-            _buildModernHeader(context, userName, userProfile),
+            _buildModernHeader(context, userName, userProfile, levelData),
             const SizedBox(height: 24),
 
             // --- 2. Impact-Statistiken ---
-            _buildImpactStats(context, userProfile),
+            _buildImpactStats(context, userProfile, levelData),
             const SizedBox(height: 24),
 
             // --- 3. Horizontale SDG-Karten ---
@@ -69,7 +70,7 @@ class HomeContent extends StatelessWidget {
 
   // --- BUILD HELPER WIDGETS ---
 
-  Widget _buildModernHeader(BuildContext context, String userName, UserProfileEntity? userProfile) {
+  Widget _buildModernHeader(BuildContext context, String userName, UserProfileEntity? userProfile, LevelData? levelData) {
     final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,8 +94,8 @@ class HomeContent extends StatelessWidget {
         ),
         CircularProfileProgressWidget(
           imageUrl: userProfile?.profileImageUrl,
-          level: userProfile?.level ?? 1,
-          progress: userProfile != null ? LevelUtils.calculateLevelData(userProfile.points).progress : 0.0,
+          level: levelData?.level ?? 1,
+          progress: levelData?.progress ?? 0.0,
           size: 50,
           userName: userName,
         )
@@ -102,7 +103,7 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildImpactStats(BuildContext context, UserProfileEntity? userProfile) {
+  Widget _buildImpactStats(BuildContext context, UserProfileEntity? userProfile, LevelData? levelData) {
     if (userProfile == null) return const SizedBox(height: 140, child: Center(child: CircularProgressIndicator()));
 
     return SizedBox(
@@ -121,7 +122,7 @@ class HomeContent extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: StatDisplayCard(
-              value: userProfile.level.toString(),
+              value: (levelData?.level ?? userProfile.level).toString(),
               label: "Your Level",
               icon: Iconsax.shield_tick,
               iconColor: Colors.blue.shade400,

@@ -9,19 +9,35 @@
     "unlockedCheckboxPointsPerProvableTask": 25
   },
   "difficultyThresholds": [
-    { "name": "Easy", "points": 0 },
-    { "name": "Normal", "points": 51 },
-    { "name": "Advanced", "points": 151 },
-    { "name": "Experienced", "points": 351 }
+    {
+      "name": "Easy",
+      "points": 0
+    },
+    {
+      "name": "Normal",
+      "points": 51
+    },
+    {
+      "name": "Advanced",
+      "points": 151
+    },
+    {
+      "name": "Experienced",
+      "points": 351
+    }
   ],
   "groupChallengeMilestones": [
     {
       "percentage": 50,
-      "bonusFactor": 0.10
+      "bonusFactor": 0.1
     },
     {
       "percentage": 100,
       "bonusFactor": 0.25
     }
-  ]
+  ],
+  "levelProgression": {
+    "baseXp": 1000,
+    "exponent": 1.5
+  }
 }
