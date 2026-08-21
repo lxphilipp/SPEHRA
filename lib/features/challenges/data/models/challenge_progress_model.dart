@@ -22,6 +22,9 @@ class ChallengeProgressModel {
   /// The timestamp when the challenge ends. Can be null if there's no end date.
   final Timestamp? endsAt;
 
+  /// The timestamp when the user finalised the challenge. Null while running.
+  final Timestamp? completedAt;
+
   /// A map representing the progress of each task within the challenge.
   ///
   /// The key is the task ID and the value is a [TaskProgressModel].
@@ -37,6 +40,7 @@ class ChallengeProgressModel {
     required this.challengeId,
     required this.startedAt,
     this.endsAt,
+    this.completedAt,
     required this.taskStates,
     this.inviteId,
   });
@@ -58,8 +62,9 @@ class ChallengeProgressModel {
       challengeId: data['challengeId'] ?? '',
       startedAt: data['startedAt'] ?? Timestamp.now(),
       endsAt: data['endsAt'] as Timestamp?,
+      completedAt: data['completedAt'] as Timestamp?,
       taskStates: mappedTaskStates,
-      inviteId: data['inviteId'] as String?, // <-- NEU
+      inviteId: data['inviteId'] as String?,
     );
   }
 
@@ -70,6 +75,7 @@ class ChallengeProgressModel {
       'challengeId': challengeId,
       'startedAt': startedAt,
       'endsAt': endsAt,
+      'completedAt': completedAt,
       'taskStates': taskStates.map((key, value) => MapEntry(key, value.toMap())),
       if (inviteId != null) 'inviteId': inviteId, // Only save if present
     };
@@ -83,6 +89,7 @@ class ChallengeProgressModel {
       challengeId: entity.challengeId,
       startedAt: Timestamp.fromDate(entity.startedAt),
       endsAt: entity.endsAt != null ? Timestamp.fromDate(entity.endsAt!) : null,
+      completedAt: entity.completedAt != null ? Timestamp.fromDate(entity.completedAt!) : null,
       taskStates: entity.taskStates.map(
             (key, value) => MapEntry(key.toString(), TaskProgressModel.fromEntity(value)),
       ),
@@ -98,6 +105,7 @@ class ChallengeProgressModel {
       challengeId: challengeId,
       startedAt: startedAt.toDate(),
       endsAt: endsAt?.toDate(),
+      completedAt: completedAt?.toDate(),
       taskStates: taskStates.map(
             (key, value) => MapEntry(key.toString(), value.toEntity()),
       ),

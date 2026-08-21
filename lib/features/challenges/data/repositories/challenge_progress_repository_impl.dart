@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import '../../domain/entities/challenge_progress_entity.dart';
 import '../../domain/entities/group_challenge_progress_entity.dart';
 import '../../domain/entities/task_progress_entity.dart';
@@ -31,6 +32,23 @@ class ChallengeProgressRepositoryImpl implements ChallengeProgressRepository {
     // Convert the Entity to a Model and then to a Map
     final newStateMap = TaskProgressModel.fromEntity(newState).toMap();
     return remoteDataSource.updateTaskState(progressId, taskIndex, newStateMap);
+  }
+
+  @override
+  Stream<List<ChallengeProgressEntity>> watchUserProgress(String userId) {
+    return remoteDataSource
+        .watchUserProgress(userId)
+        .map((models) => models.map((m) => m.toEntity()).toList());
+  }
+
+  @override
+  Future<void> markChallengeCompleted(String progressId, DateTime completedAt) {
+    return remoteDataSource.markChallengeCompleted(progressId, Timestamp.fromDate(completedAt));
+  }
+
+  @override
+  Future<void> deleteChallengeProgress(String progressId) {
+    return remoteDataSource.deleteChallengeProgress(progressId);
   }
 
   @override

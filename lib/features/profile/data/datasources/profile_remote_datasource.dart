@@ -29,14 +29,6 @@ abstract class ProfileRemoteDataSource {
   /// Errors are handled internally (logged only).
   Future<void> deleteOldProfileImage(String imageUrl);
 
-  /// Adds a [challengeId] to the user's 'ongoingTasks' list.
-  /// Throws an [Exception] on failure.
-  Future<void> addUserOngoingTask(String userId, String challengeId);
-
-  /// Removes a [challengeId] from the user's 'ongoingTasks' list.
-  /// Throws an [Exception] on failure.
-  Future<void> removeUserOngoingTask(String userId, String challengeId);
-
   /// Fetches the user document within a Firestore transaction.
   /// Used by the repository for atomic read-write operations.
   /// Throws an [Exception] on failure.
@@ -141,34 +133,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       // Errors when deleting the old image are often not considered critical,
       // so only log and don't necessarily rethrow an exception.
       AppLogger.warning('ProfileRemoteDS: Error deleting old profile image ($imageUrl)', e);
-    }
-  }
-
-  @override
-  Future<void> addUserOngoingTask(String userId, String challengeId) async {
-    if (userId.isEmpty || challengeId.isEmpty) throw ArgumentError('UserId or ChallengeId cannot be empty.');
-    try {
-      await _firestore.collection('users').doc(userId).update({
-        'ongoingTasks': FieldValue.arrayUnion([challengeId]),
-      });
-      AppLogger.info("ProfileRemoteDS: Task $challengeId added to ongoing for user $userId");
-    } catch (e) {
-      AppLogger.error("ProfileRemoteDS: addUserOngoingTask error for $userId", e);
-      throw Exception('Failed to add ongoing task: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> removeUserOngoingTask(String userId, String challengeId) async {
-    if (userId.isEmpty || challengeId.isEmpty) throw ArgumentError('UserId or ChallengeId cannot be empty.');
-    try {
-      await _firestore.collection('users').doc(userId).update({
-        'ongoingTasks': FieldValue.arrayRemove([challengeId]),
-      });
-      AppLogger.info("ProfileRemoteDS: Task $challengeId removed from ongoing for user $userId");
-    } catch (e) {
-      AppLogger.error("ProfileRemoteDS: removeUserOngoingTask error for $userId", e);
-      throw Exception('Failed to remove ongoing task: ${e.toString()}');
     }
   }
 

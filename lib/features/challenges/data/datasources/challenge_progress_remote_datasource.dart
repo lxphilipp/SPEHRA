@@ -11,11 +11,26 @@ abstract class ChallengeProgressRemoteDataSource {
   /// Returns a stream of [ChallengeProgressModel], emitting a new model on updates, or null if not found.
   Stream<ChallengeProgressModel?> watchChallengeProgress(String progressId);
 
+  /// Watches every participation of a user, running and completed.
+  ///
+  /// [userId] The user whose participations to watch.
+  Stream<List<ChallengeProgressModel>> watchUserProgress(String userId);
+
   /// Creates a new challenge progress entry.
   ///
   /// [progress] The [ChallengeProgressModel] to create.
   /// Returns a [Future] that completes when the operation is done.
   Future<void> createChallengeProgress(ChallengeProgressModel progress);
+
+  /// Stamps [completedAt] on a participation.
+  ///
+  /// [progressId] The ID of the challenge progress.
+  Future<void> markChallengeCompleted(String progressId, Timestamp completedAt);
+
+  /// Deletes a participation (the user abandons the challenge).
+  ///
+  /// [progressId] The ID of the challenge progress.
+  Future<void> deleteChallengeProgress(String progressId);
 
   /// Updates the state of a specific task within a challenge progress.
   ///
@@ -82,10 +97,78 @@ class ChallengeProgressRemoteDataSourceImpl implements ChallengeProgressRemoteDa
   /// Reference to the 'group_challenge_progress' collection in Firestore.
   CollectionReference get _groupProgressCollection => _firestore.collection('group_challenge_progress');
 
-  @override
+  /// Reference to the 'users' collection, needed only for the legacy lists.
+  CollectionReference get _usersCollection => _firestore.collection('users');
 
+  // ---------------------------------------------------------------------------
+  // LEGACY DUAL-WRITE (migration step 1 of 3)
+  //
+  // Older app versions derived a user's running/completed challenges from two
+  // ID arrays on the user document ('ongoingTasks' / 'completedTasks'). Those
+  // arrays are no longer read by this app; the participation documents in
+  // 'challenge_progress' are the single source of truth. Until every client
+  // is on the new version and the arrays have been dropped (step 3), they are
+  // kept in sync here — inside the same WriteBatch as the participation write,
+  // so the two can never drift apart.
+  // ---------------------------------------------------------------------------
+
+  @override
   Future<void> createChallengeProgress(ChallengeProgressModel progress) async {
-    await _progressCollection.doc(progress.id).set(progress.toMap());
+    final batch = _firestore.batch();
+    batch.set(_progressCollection.doc(progress.id), progress.toMap());
+    batch.update(_usersCollection.doc(progress.userId), {
+      'ongoingTasks': FieldValue.arrayUnion([progress.challengeId]),
+    });
+    await batch.commit();
+  }
+
+  @override
+  Stream<List<ChallengeProgressModel>> watchUserProgress(String userId) {
+    return _progressCollection
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((query) => query.docs.map(ChallengeProgressModel.fromSnapshot).toList());
+  }
+
+  @override
+  Future<void> markChallengeCompleted(String progressId, Timestamp completedAt) async {
+    final docRef = _progressCollection.doc(progressId);
+    final snapshot = await docRef.get();
+    if (!snapshot.exists) {
+      throw Exception("Challenge progress $progressId not found.");
+    }
+    final data = snapshot.data() as Map<String, dynamic>;
+    final userId = data['userId'] as String?;
+    final challengeId = data['challengeId'] as String?;
+
+    final batch = _firestore.batch();
+    batch.update(docRef, {'completedAt': completedAt});
+    if (userId != null && challengeId != null) {
+      batch.update(_usersCollection.doc(userId), {
+        'ongoingTasks': FieldValue.arrayRemove([challengeId]),
+        'completedTasks': FieldValue.arrayUnion([challengeId]),
+      });
+    }
+    await batch.commit();
+  }
+
+  @override
+  Future<void> deleteChallengeProgress(String progressId) async {
+    final docRef = _progressCollection.doc(progressId);
+    final snapshot = await docRef.get();
+    if (!snapshot.exists) return;
+    final data = snapshot.data() as Map<String, dynamic>;
+    final userId = data['userId'] as String?;
+    final challengeId = data['challengeId'] as String?;
+
+    final batch = _firestore.batch();
+    batch.delete(docRef);
+    if (userId != null && challengeId != null) {
+      batch.update(_usersCollection.doc(userId), {
+        'ongoingTasks': FieldValue.arrayRemove([challengeId]),
+      });
+    }
+    await batch.commit();
   }
 
   @override

@@ -10,7 +10,6 @@ import 'task_progress_list_item.dart';
 
 // Feature Provider & Entities
 import '../../domain/entities/challenge_entity.dart';
-import '../../../profile/presentation/providers/user_profile_provider.dart';
 import '../../../sdg/domain/entities/sdg_list_item_entity.dart';
 import '../../../sdg/presentation/providers/sdg_list_provider.dart';
 
@@ -248,11 +247,11 @@ class _ChallengeDetailsContentState extends State<ChallengeDetailsContent> {
   /// - If ongoing, shows "Complete Challenge" and "Cancel" buttons.
   /// - Otherwise, shows an "Accept Challenge" button.
   Widget _buildActionButtons(BuildContext context, ChallengeProvider provider) {
-    final userProfile = context.watch<UserProfileProvider>().userProfile;
     final challenge = provider.selectedChallenge!;
 
-    final bool isOngoing = userProfile?.ongoingTasks.contains(challenge.id) ?? false;
-    final bool isCompleted = userProfile?.completedTasks.contains(challenge.id) ?? false;
+    // Derived from the user's participation records, see ChallengeProvider.
+    final bool isOngoing = provider.isChallengeOngoing(challenge.id);
+    final bool isCompleted = provider.isChallengeCompleted(challenge.id);
 
     if (isCompleted) {
       return Center(child: Chip(

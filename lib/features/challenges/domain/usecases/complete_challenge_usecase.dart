@@ -3,6 +3,7 @@ import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
 import '../../../profile/domain/repositories/user_profile_repository.dart';
 import '../../../profile/domain/utils/level_utils.dart';
+import '../entities/challenge_progress_entity.dart';
 import '../repositories/challenge_progress_repository.dart';
 import '../repositories/challenge_repository.dart';
 import 'get_game_balance_usecase.dart';
@@ -52,19 +53,35 @@ class CompleteChallengeUseCase implements UseCase<bool, CompleteChallengeParams>
         return false;
       }
 
-      final int basePoints = challenge.calculatePoints(balance);
+      final progressId = ChallengeProgressEntity.buildId(params.userId, params.challengeId);
+      final individualProgress = await _progressRepository.watchChallengeProgress(progressId).first;
+      if (individualProgress == null) {
+        AppLogger.warning("CompleteChallengeUseCase: user ${params.userId} has no participation in ${params.challengeId}.");
+        return false;
+      }
+      if (individualProgress.isCompleted) {
+        AppLogger.warning("CompleteChallengeUseCase: challenge ${params.challengeId} already completed; not awarding again.");
+        return false;
+      }
+      if (!individualProgress.allTasksDone) {
+        AppLogger.warning("CompleteChallengeUseCase: not all tasks of ${params.challengeId} are done.");
+        return false;
+      }
 
-      await _userProfileRepository.markTaskAsCompleted(
+      // 1. Finalise the participation. From now on the challenge counts as
+      //    completed for this user (derived, not stored elsewhere).
+      await _progressRepository.markChallengeCompleted(progressId, DateTime.now());
+
+      // 2. Award the reward.
+      final int basePoints = challenge.calculatePoints(balance);
+      await _userProfileRepository.awardChallengePoints(
         userId: params.userId,
-        challengeId: params.challengeId,
-        pointsEarned: basePoints,
+        points: basePoints,
         levelCalculator: LevelUtils.fromBalance(balance),
       );
       AppLogger.info("Base points ($basePoints) awarded to user ${params.userId}.");
 
-      final progressId = '${params.userId}_${params.challengeId}';
-      final individualProgress = await _progressRepository.watchChallengeProgress(progressId).first;
-      final inviteId = individualProgress?.inviteId;
+      final inviteId = individualProgress.inviteId;
 
       if (inviteId == null) {
         AppLogger.info("Solo challenge completed. No bonus logic triggered.");

@@ -23,6 +23,7 @@ import 'features/challenges/data/repositories/device_tracking_repository_impl.da
 import 'features/challenges/domain/repositories/challenge_progress_repository.dart';
 import 'features/challenges/domain/repositories/configuration_repository.dart';
 import 'features/challenges/domain/repositories/device_tracking_repository.dart';
+import 'features/challenges/domain/usecases/abandon_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/add_participant_to_group_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
 import 'features/challenges/domain/usecases/get_game_balance_usecase.dart';
@@ -36,6 +37,7 @@ import 'features/challenges/domain/usecases/update_task_progress_usecase.dart';
 import 'features/challenges/domain/usecases/verify_location_for_task_usecase.dart';
 import 'features/challenges/domain/usecases/watch_challenge_progress_usecase.dart';
 import 'features/challenges/domain/usecases/watch_group_progress_by_context_id_usecase.dart';
+import 'features/challenges/domain/usecases/watch_user_progress_usecase.dart';
 import 'features/chat/domain/usecases/get_combined_chat_items_usecase.dart';
 import 'features/invites/data/datasources/invites_remote_datasource.dart';
 import 'features/invites/data/repositories/invites_repository_impl.dart';
@@ -80,12 +82,10 @@ import 'features/profile/presentation/providers/user_profile_provider.dart';
 import 'features/challenges/data/datasources/challenge_remote_datasource.dart';
 import 'features/challenges/data/repositories/challenge_repository_impl.dart';
 import 'features/challenges/domain/repositories/challenge_repository.dart';
-import 'features/challenges/domain/usecases/accept_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/complete_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/create_challenge_usecase.dart';
 import 'features/challenges/domain/usecases/get_all_challenges_stream_usecase.dart';
 import 'features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
-import 'features/challenges/domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 import 'features/challenges/presentation/providers/challenge_provider.dart';
 
 // --- SDG FEATURE ---
@@ -269,7 +269,6 @@ Future<void> main() async {
         Provider<GetAllChallengesStreamUseCase>(create: (context) => GetAllChallengesStreamUseCase(context.read())),
         Provider<GetChallengeByIdUseCase>(create: (context) => GetChallengeByIdUseCase(context.read())),
         Provider<CreateChallengeUseCase>(create: (context) => CreateChallengeUseCase(context.read())),
-        Provider<AcceptChallengeUseCase>(create: (context) => AcceptChallengeUseCase(userProfileRepository: context.read())),
         Provider<ChallengeProgressRemoteDataSource>(create: (context) => ChallengeProgressRemoteDataSourceImpl(firestore: context.read())),
         Provider<ChallengeProgressRepository>(create: (context) => ChallengeProgressRepositoryImpl(remoteDataSource: context.read())),
         Provider<ConfigurationRemoteDataSourceImpl>(create: (context) => ConfigurationRemoteDataSourceImpl(firestore: context.read())),
@@ -289,7 +288,8 @@ Future<void> main() async {
             getGameBalanceUseCase: context.read()
           ),
         ),
-        Provider<RemoveChallengeFromOngoingUseCase>(create: (context) => RemoveChallengeFromOngoingUseCase(context.read())),
+        Provider<AbandonChallengeUseCase>(create: (context) => AbandonChallengeUseCase(context.read<ChallengeProgressRepository>())),
+        Provider<WatchUserProgressUseCase>(create: (context) => WatchUserProgressUseCase(context.read<ChallengeProgressRepository>())),
         Provider<SearchLocationUseCase>(create: (context) => SearchLocationUseCase(context.read())),
         Provider<GetLlmFeedbackUseCase>(create: (context) => GetLlmFeedbackUseCase(context.read())),
         Provider<StartChallengeUseCase>(create: (context) => StartChallengeUseCase(context.read())),
@@ -341,7 +341,6 @@ Future<void> main() async {
           create: (context) => AcceptChallengeInviteUseCase(
             context.read<InvitesRepository>(),
             context.read<StartChallengeUseCase>(),
-            context.read<AcceptChallengeUseCase>(),
             context.read<CreateGroupChallengeProgressUseCase>(),
             context.read<AddParticipantToGroupChallengeUseCase>(),
           ),
@@ -351,7 +350,6 @@ Future<void> main() async {
             context.read<InvitesRepository>(),
             context.read<GetChallengeByIdUseCase>(),
             context.read<StartChallengeUseCase>(),
-            context.read<AcceptChallengeUseCase>(),
             context.read<Uuid>(),
           ),
         ),
@@ -408,9 +406,9 @@ Future<void> main() async {
             getAllChallengesStreamUseCase: context.read<GetAllChallengesStreamUseCase>(),
             getChallengeByIdUseCase: context.read<GetChallengeByIdUseCase>(),
             createChallengeUseCase: context.read<CreateChallengeUseCase>(),
-            acceptChallengeUseCase: context.read<AcceptChallengeUseCase>(),
             completeChallengeUseCase: context.read<CompleteChallengeUseCase>(),
-            removeChallengeFromOngoingUseCase: context.read<RemoveChallengeFromOngoingUseCase>(),
+            abandonChallengeUseCase: context.read<AbandonChallengeUseCase>(),
+            watchUserProgressUseCase: context.read<WatchUserProgressUseCase>(),
             searchLocationUseCase: context.read<SearchLocationUseCase>(),
             getLlmFeedbackUseCase: context.read<GetLlmFeedbackUseCase>(),
             startChallengeUseCase: context.read<StartChallengeUseCase>(),
