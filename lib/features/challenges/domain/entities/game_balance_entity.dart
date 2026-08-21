@@ -2,8 +2,11 @@ import 'package:equatable/equatable.dart';
 
 /// Represents the game balance settings.
 ///
-/// This entity holds various point values and thresholds
-/// that define the game's scoring and difficulty.
+/// This entity holds every tunable parameter of the motivational system:
+/// point values per task type, bonus rules, difficulty thresholds, group
+/// milestones and the shape of the level progression curve. It is loaded
+/// through the [ConfigurationRepository] at runtime, so none of these values
+/// are hard-coded in domain logic.
 class GameBalanceEntity extends Equatable {
   /// Points awarded for completing a checkbox task.
   final int pointsPerCheckboxTask;
@@ -14,7 +17,7 @@ class GameBalanceEntity extends Equatable {
   /// Points awarded per 1000 steps taken.
   final int pointsPer1000Steps;
 
-  /// The maximum total points a user can accumulate.
+  /// The maximum total points a single challenge can award.
   final int maxTotalPoints;
 
   /// Points awarded for unlocked checkbox tasks per provable task.
@@ -28,10 +31,18 @@ class GameBalanceEntity extends Equatable {
 
   /// Milestones for group challenges.
   ///
-  /// The map keys represent the milestone number (e.g., 1, 2, 3)
-  /// and the values represent the percentage of completion required
-  /// to reach that milestone.
+  /// The map keys represent the percentage of completion required to reach
+  /// the milestone and the values the bonus factor applied when it is reached.
   final Map<int, double> groupChallengeMilestones;
+
+  /// Base experience points of the level curve: the total XP needed to reach
+  /// level 2. Together with [levelExponent] it defines
+  /// `xpForLevel(L) = levelBaseXp * (L - 1) ^ levelExponent`.
+  final int levelBaseXp;
+
+  /// Exponent of the level curve. Values above 1 make later levels
+  /// progressively harder to reach.
+  final double levelExponent;
 
   /// Creates a [GameBalanceEntity].
   const GameBalanceEntity({
@@ -42,6 +53,8 @@ class GameBalanceEntity extends Equatable {
     required this.unlockedCheckboxPointsPerProvableTask,
     required this.difficultyThresholds,
     required this.groupChallengeMilestones,
+    required this.levelBaseXp,
+    required this.levelExponent,
   });
 
   @override
@@ -53,5 +66,7 @@ class GameBalanceEntity extends Equatable {
         unlockedCheckboxPointsPerProvableTask,
         difficultyThresholds,
         groupChallengeMilestones,
+        levelBaseXp,
+        levelExponent,
       ];
 }

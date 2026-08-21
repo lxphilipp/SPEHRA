@@ -66,8 +66,9 @@ class _AppBarUserStats extends StatelessWidget {
     }
 
     if (userProfile != null) {
+      final int level = profileProvider.levelData?.level ?? userProfile.level;
       String imagePath = 'assets/icons/Level_Icons/1. Beginner.png';
-      switch (userProfile.level) {
+      switch (level) {
         case 1:
           imagePath = 'assets/icons/Level_Icons/1. Beginner.png';
           break;
@@ -94,7 +95,7 @@ class _AppBarUserStats extends StatelessWidget {
           SizedBox(
               height: kToolbarHeight - 36.0, child: Image.asset(imagePath)),
           Text(
-            'Pts: ${userProfile.points} | Lvl: ${userProfile.level}',
+            'Pts: ${userProfile.points} | Lvl: $level',
             style: theme.textTheme.labelSmall?.copyWith(
                 fontSize: 10, color: theme.colorScheme.onSurface),
           ),

@@ -5,5 +5,5 @@ abstract class ConfigurationRepository {
   /// Retrieves the game balance configuration.
   ///
   /// Returns a [Future] that completes with a [GameBalanceEntity] object.
-  Future<GameBalanceEntity> getGameBalance();
+  Future<GameBalanceEntity> getGameBalance({bool forceRefresh = false});
 }
