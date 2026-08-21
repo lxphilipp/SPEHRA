@@ -4,7 +4,8 @@ import '../../../../core/utils/app_logger.dart';
 
 /// Abstract class for profile statistics data operations.
 abstract class ProfileStatsDataSource {
-  /// Retrieves a stream of completed task IDs for a given user.
+  /// Retrieves a stream of the IDs of challenges the user has completed,
+  /// derived from the user's participation records.
   ///
   /// Returns `null` if the [userId] is empty or an error occurs.
   Stream<List<String>?> getCompletedTaskIdsStream(String userId);
@@ -34,24 +35,18 @@ class ProfileStatsDataSourceImpl implements ProfileStatsDataSource {
       return Stream.value(null);
     }
     try {
+      // Completed challenges are derived from the user's participations:
+      // a 'challenge_progress' document with a 'completedAt' timestamp.
       return _firestore
-          .collection('users')
-          .doc(userId)
+          .collection('challenge_progress')
+          .where('userId', isEqualTo: userId)
           .snapshots()
-          .map((snapshot) {
-        // --- DEBUG CHECKPOINT 1 ---
-        if (!snapshot.exists || snapshot.data() == null) {
-          AppLogger.info("DEBUG (DataSource): User document for $userId not found or empty.");
-          return <String>[];
-        }
-        final data = snapshot.data();
-        final completedTasks = data?['completedTasks'];
-        AppLogger.debug("DEBUG (DataSource): Read 'completedTasks' field. Type: ${completedTasks.runtimeType}, Value: $completedTasks");
-
-        if (completedTasks is List) {
-          return List<String>.from(completedTasks);
-        }
-        return <String>[];
+          .map((query) {
+        return query.docs
+            .where((doc) => doc.data()['completedAt'] != null)
+            .map((doc) => doc.data()['challengeId'] as String?)
+            .whereType<String>()
+            .toList();
       }).handleError((error) {
         AppLogger.error("ProfileStatsDS: Error in getCompletedTaskIdsStream for user $userId", error);
         return null;

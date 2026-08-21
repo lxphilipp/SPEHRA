@@ -1,8 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
-import '../../../challenges/domain/usecases/accept_challenge_usecase.dart';
 import '../../../challenges/domain/usecases/get_challenge_by_id_usecase.dart';
-import '../../../challenges/domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 import '../../../challenges/domain/usecases/start_challenge_usecase.dart';
 import '../entities/invite_entity.dart';
 import '../repositories/invites_repository.dart';
@@ -11,8 +9,7 @@ import '../repositories/invites_repository.dart';
 /// Use case for creating a challenge invite.
 ///
 /// This use case handles the logic for inviting users to a challenge.
-/// It creates an invite, accepts the challenge for the inviter, and
-/// starts the challenge for the inviter.
+/// It creates an invite and starts the challenge for the inviter.
 /// {@endtemplate}
 class CreateChallengeInviteUseCase {
   /// The repository for managing invites.
@@ -21,8 +18,6 @@ class CreateChallengeInviteUseCase {
   final GetChallengeByIdUseCase _getChallengeByIdUseCase;
   /// Use case to start a challenge for a user.
   final StartChallengeUseCase _startChallengeUseCase;
-  /// Use case to accept a challenge for a user.
-  final AcceptChallengeUseCase _acceptChallengeUseCase;
   /// A UUID generator.
   final Uuid _uuid;
 
@@ -31,7 +26,6 @@ class CreateChallengeInviteUseCase {
       this._invitesRepository,
       this._getChallengeByIdUseCase,
       this._startChallengeUseCase,
-      this._acceptChallengeUseCase,
       this._uuid,
       );
 
@@ -62,10 +56,6 @@ class CreateChallengeInviteUseCase {
     );
 
     await _invitesRepository.createInvite(newInvite);
-    await _acceptChallengeUseCase(UserTaskParams(
-      userId: params.inviterId,
-      challengeId: challenge.id,
-    ));
     await _startChallengeUseCase(StartChallengeParams(
       userId: params.inviterId,
       challenge: challenge,

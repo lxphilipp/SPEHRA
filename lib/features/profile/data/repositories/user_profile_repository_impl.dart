@@ -67,8 +67,6 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
       profileImageUrl: model.imageURL,
       points: model.points,
       level: model.level,
-      completedTasks: model.completedTasks,
-      ongoingTasks: model.ongoingTasks,
       hasCompletedIntro: model.hasCompletedIntro, // Maps the hasCompletedIntro field.
     );
   }
@@ -142,29 +140,10 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
   }
 
   @override
-  Future<bool> addTaskToOngoing(String userId, String challengeId) async {
-    if (userId.isEmpty || challengeId.isEmpty) return false;
-    try {
-      await remoteDataSource.addUserOngoingTask(userId, challengeId);
-      return true;
-    } catch (e) { return false; }
-  }
-
-  @override
-  Future<bool> removeTaskFromOngoing(String userId, String challengeId) async {
-    if (userId.isEmpty || challengeId.isEmpty) return false;
-    try {
-      await remoteDataSource.removeUserOngoingTask(userId, challengeId);
-      return true;
-    } catch (e) { return false; }
-  }
-
-  @override
-  Future<bool> markTaskAsCompleted({
-    required String userId, required String challengeId, required int pointsEarned,
-    required LevelUtils levelCalculator,
+  Future<bool> awardChallengePoints({
+    required String userId, required int points, required LevelUtils levelCalculator,
   }) async {
-    if (userId.isEmpty || challengeId.isEmpty) return false;
+    if (userId.isEmpty) return false;
     try {
       return await remoteDataSource.runUserProfileTransaction<bool>(
         userId: userId,
@@ -173,17 +152,10 @@ class UserProfileRepositoryImpl implements UserProfileRepository {
           if (!userSnapshot.exists) throw Exception("User not found.");
 
           final model = UserProfileModel.fromMap(userSnapshot.data()! as Map<String, dynamic>, userSnapshot.id);
-          final ongoing = List<String>.from(model.ongoingTasks)..remove(challengeId);
-          final completed = List<String>.from(model.completedTasks);
-          if (!completed.contains(challengeId)) completed.add(challengeId);
-
-          final newPoints = model.points + pointsEarned;
+          final newPoints = model.points + points;
           final newLevel = levelCalculator.calculateLevel(newPoints);
 
-          transaction.update(userDocRef, {
-            'ongoingTasks': ongoing, 'completedTasks': completed,
-            'points': newPoints, 'level': newLevel,
-          });
+          transaction.update(userDocRef, {'points': newPoints, 'level': newLevel});
           return true;
         },
       );

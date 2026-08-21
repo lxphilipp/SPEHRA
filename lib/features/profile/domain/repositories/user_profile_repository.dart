@@ -46,28 +46,15 @@ abstract class UserProfileRepository {
   /// Returns a [Stream] of [Map<String, int>] or null if not available.
   Stream<Map<String, int>?> getSdgCategoryCountsStream(String userId);
 
-  /// Adds a task to the user's list of ongoing tasks.
+  /// Credits [points] to the user and recomputes the persisted level with
+  /// [levelCalculator] (the configured level curve). Called once when a
+  /// challenge is finalised; the participation itself is tracked by the
+  /// challenge-progress repository.
   ///
-  /// Takes [userId] and [challengeId] to identify the user and the task.
-  /// Returns true if the task was successfully added, false otherwise.
-  Future<bool> addTaskToOngoing(String userId, String challengeId);
-
-  /// Removes a task from the user's list of ongoing tasks.
-  ///
-  /// Takes [userId] and [challengeId] to identify the user and the task.
-  /// Returns true if the task was successfully removed, false otherwise.
-  Future<bool> removeTaskFromOngoing(String userId, String challengeId);
-
-  /// Marks a task as completed for the user.
-  ///
-  /// Takes [userId], [challengeId], and [pointsEarned] for completing the task.
-  /// [levelCalculator] carries the configured level curve and is used to
-  /// derive the user's new level from the updated point total.
-  /// Returns true if the task was successfully marked as completed, false otherwise.
-  Future<bool> markTaskAsCompleted({
+  /// Returns true if the update succeeded, false otherwise.
+  Future<bool> awardChallengePoints({
     required String userId,
-    required String challengeId,
-    required int pointsEarned,
+    required int points,
     required LevelUtils levelCalculator,
   });
 

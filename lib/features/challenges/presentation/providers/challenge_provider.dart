@@ -6,19 +6,18 @@ import 'package:collection/collection.dart'; // For deep list comparison
 // Core & Usecases
 import '../../../../core/usecases/use_case.dart';
 import '../../../../core/utils/app_logger.dart';
-import '../../../profile/domain/entities/user_profile_entity.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/challenge_progress_entity.dart';
 import '../../domain/entities/game_balance_entity.dart';
 import '../../domain/usecases/create_challenge_usecase.dart';
 import '../../domain/usecases/get_all_challenges_stream_usecase.dart';
 import '../../domain/usecases/get_challenge_by_id_usecase.dart';
-import '../../domain/usecases/accept_challenge_usecase.dart';
+import '../../domain/usecases/abandon_challenge_usecase.dart';
 import '../../domain/usecases/complete_challenge_usecase.dart';
 import '../../domain/usecases/get_game_balance_usecase.dart';
 import '../../domain/usecases/get_llm_feedback_usecase.dart';
 import '../../domain/usecases/refresh_steps_for_task_usecase.dart';
-import '../../domain/usecases/remove_challenge_from_ongoing_usecase.dart';
+import '../../domain/usecases/watch_user_progress_usecase.dart';
 
 // Domain Entities
 import '../../domain/entities/challenge_entity.dart';
@@ -49,9 +48,9 @@ class ChallengeProvider with ChangeNotifier {
   final GetAllChallengesStreamUseCase _getAllChallengesStreamUseCase;
   final GetChallengeByIdUseCase _getChallengeByIdUseCase;
   final CreateChallengeUseCase _createChallengeUseCase;
-  final AcceptChallengeUseCase _acceptChallengeUseCase;
   final CompleteChallengeUseCase _completeChallengeUseCase;
-  final RemoveChallengeFromOngoingUseCase _removeChallengeFromOngoingUseCase;
+  final AbandonChallengeUseCase _abandonChallengeUseCase;
+  final WatchUserProgressUseCase _watchUserProgressUseCase;
   final SearchLocationUseCase _searchLocationUseCase;
   final GetLlmFeedbackUseCase _getLlmFeedbackUseCase;
   final StartChallengeUseCase _startChallengeUseCase;
@@ -65,13 +64,15 @@ class ChallengeProvider with ChangeNotifier {
 
   // --- Internal References to other Providers ---
   late AuthenticationProvider _authProvider;
-  late UserProfileProvider _userProfileProvider;
-  UserProfileEntity? _lastProcessedProfile;
   String? _currentUserId;
 
   // --- State for Challenge List and Filtering ---
   List<ChallengeEntity> _allChallenges = [];
   StreamSubscription? _allChallengesSubscription;
+
+  // --- State for the user's participations (source of ongoing/completed) ---
+  List<ChallengeProgressEntity> _userProgress = [];
+  StreamSubscription? _userProgressSubscription;
   ChallengeFilterState _filterState = const ChallengeFilterState();
   String _sortCriteria = 'createdAt';
   bool _isSortAscending = false;
@@ -125,9 +126,9 @@ class ChallengeProvider with ChangeNotifier {
     required CreateChallengeUseCase createChallengeUseCase,
     required SearchLocationUseCase searchLocationUseCase,
     required GetLlmFeedbackUseCase getLlmFeedbackUseCase,
-    required AcceptChallengeUseCase acceptChallengeUseCase,
     required CompleteChallengeUseCase completeChallengeUseCase,
-    required RemoveChallengeFromOngoingUseCase removeChallengeFromOngoingUseCase,
+    required AbandonChallengeUseCase abandonChallengeUseCase,
+    required WatchUserProgressUseCase watchUserProgressUseCase,
     required StartChallengeUseCase startChallengeUseCase,
     required WatchChallengeProgressUseCase watchChallengeProgressUseCase,
     required UpdateTaskProgressUseCase updateTaskProgressUseCase,
@@ -141,9 +142,9 @@ class ChallengeProvider with ChangeNotifier {
         _createChallengeUseCase = createChallengeUseCase,
         _searchLocationUseCase = searchLocationUseCase,
         _getLlmFeedbackUseCase = getLlmFeedbackUseCase,
-        _acceptChallengeUseCase = acceptChallengeUseCase,
         _completeChallengeUseCase = completeChallengeUseCase,
-        _removeChallengeFromOngoingUseCase = removeChallengeFromOngoingUseCase,
+        _abandonChallengeUseCase = abandonChallengeUseCase,
+        _watchUserProgressUseCase = watchUserProgressUseCase,
         _startChallengeUseCase = startChallengeUseCase,
         _watchChallengeProgressUseCase = watchChallengeProgressUseCase,
         _updateTaskProgressUseCase = updateTaskProgressUseCase,
@@ -227,38 +228,44 @@ class ChallengeProvider with ChangeNotifier {
 
     return filtered;
   }
-  List<ChallengeEntity> get discoverChallenges {
-    final profile = _userProfileProvider.userProfile;
-    if (profile == null) return [];
-    final ongoingIds = profile.ongoingTasks.toSet();
-    final completedIds = profile.completedTasks.toSet();
+  /// The current user's participations (running and completed).
+  /// Running/completed challenge lists are derived from this, nothing else.
+  List<ChallengeProgressEntity> get userProgress => _userProgress;
 
-    return filteredChallenges.where((c) {
-      return !ongoingIds.contains(c.id) && !completedIds.contains(c.id);
-    }).toList();
+  Set<String> get _ongoingIds =>
+      _userProgress.where((p) => p.isOngoing).map((p) => p.challengeId).toSet();
+
+  Set<String> get _completedIds =>
+      _userProgress.where((p) => p.isCompleted).map((p) => p.challengeId).toSet();
+
+  /// Whether the current user is currently running the given challenge.
+  bool isChallengeOngoing(String challengeId) => _ongoingIds.contains(challengeId);
+
+  /// Whether the current user has completed the given challenge.
+  bool isChallengeCompleted(String challengeId) => _completedIds.contains(challengeId);
+
+  List<ChallengeEntity> get discoverChallenges {
+    final ongoing = _ongoingIds;
+    final completed = _completedIds;
+    return filteredChallenges
+        .where((c) => !ongoing.contains(c.id) && !completed.contains(c.id))
+        .toList();
   }
 
   List<ChallengeEntity> get ongoingChallenges {
-    final profile = _userProfileProvider.userProfile;
-    if (profile == null) return [];
-    final ongoingIds = profile.ongoingTasks.toSet();
-
-    return filteredChallenges.where((c) => ongoingIds.contains(c.id)).toList();
+    final ongoing = _ongoingIds;
+    return filteredChallenges.where((c) => ongoing.contains(c.id)).toList();
   }
 
   List<ChallengeEntity> get completedChallenges {
-    final profile = _userProfileProvider.userProfile;
-    if (profile == null) return [];
-    final completedIds = profile.completedTasks.toSet();
-
-    return filteredChallenges.where((c) => completedIds.contains(c.id)).toList();
+    final completed = _completedIds;
+    return filteredChallenges.where((c) => completed.contains(c.id)).toList();
   }
 
   // --- Methods for state change ---
 
   void updateDependencies(AuthenticationProvider auth, UserProfileProvider profile) {
     _authProvider = auth;
-    _userProfileProvider = profile;
 
     final newUserId = auth.currentUserId;
 
@@ -266,20 +273,29 @@ class ChallengeProvider with ChangeNotifier {
       _currentUserId = newUserId;
       if (newUserId != null) {
         _initializeStreams();
+        _subscribeToUserProgress(newUserId);
         AppLogger.debug("ChallengeProvider: User logged in, initializing streams.");
       } else {
         _allChallengesSubscription?.cancel();
+        _userProgressSubscription?.cancel();
         _allChallenges = [];
+        _userProgress = [];
         AppLogger.debug("ChallengeProvider: User logged out, clearing challenges data.");
       }
     }
+  }
 
-    final newUserProfile = profile.userProfile;
-    if (!const DeepCollectionEquality().equals(_lastProcessedProfile, newUserProfile)) {
-      AppLogger.debug("ChallengeProvider: UserProfile dependency changed. Notifying listeners.");
-      _lastProcessedProfile = newUserProfile;
-      notifyListeners();
-    }
+  void _subscribeToUserProgress(String userId) {
+    _userProgressSubscription?.cancel();
+    _userProgressSubscription = _watchUserProgressUseCase(userId).listen(
+      (progress) {
+        if (!const ListEquality().equals(_userProgress, progress)) {
+          _userProgress = progress;
+          notifyListeners();
+        }
+      },
+      onError: (e, s) => AppLogger.error("ChallengeProvider: user progress stream error", e, s),
+    );
   }
 
   void _initializeStreams() {
@@ -548,13 +564,14 @@ class ChallengeProvider with ChangeNotifier {
       return;
     }
 
-    // 1. Calls the UseCase to add the ID to the "ongoing" list in the user profile.
-    // (This step is important for your filtering in the list view)
-    await _acceptChallengeUseCase(UserTaskParams(userId: userId, challengeId: challengeId));
+    if (isChallengeOngoing(challengeId) || isChallengeCompleted(challengeId)) {
+      AppLogger.warning("Challenge $challengeId is already ongoing or completed for user $userId.");
+      return;
+    }
 
-    // 2. Calls the NEW UseCase to create the progress document in Firestore.
-    final params = StartChallengeParams(userId: userId, challenge: challengeToStart);
-    await _startChallengeUseCase(params);
+    // Joining a challenge == creating the participation record. The running
+    // list is derived from it, so no further bookkeeping is needed.
+    await _startChallengeUseCase(StartChallengeParams(userId: userId, challenge: challengeToStart));
 
     // The UI is automatically updated by the streams.
     // An explicit notifyListeners() is not necessary here.
@@ -621,7 +638,7 @@ class ChallengeProvider with ChangeNotifier {
     await _updateTaskProgressUseCase(params);
   }
 
-  /// Removes the currently loaded challenge from the user's "Ongoing" list.
+  /// Abandons the currently loaded challenge (drops the participation).
   Future<bool> removeCurrentChallengeFromOngoing() async {
     if (_selectedChallenge == null) {
       AppLogger.warning("removeCurrentChallengeFromOngoing called but _selectedChallenge is null.");
@@ -632,7 +649,7 @@ class ChallengeProvider with ChangeNotifier {
     return await removeChallengeFromOngoingById(_selectedChallenge!.id);
   }
 
-  /// Contains the core logic for removing a challenge from "Ongoing" by its ID.
+  /// Contains the core logic for abandoning a running challenge by its ID.
   Future<bool> removeChallengeFromOngoingById(String challengeId) async {
     final userId = _authProvider.currentUserId;
     if (userId == null) {
@@ -645,7 +662,7 @@ class ChallengeProvider with ChangeNotifier {
     _userChallengeStatusError = null;
     notifyListeners();
 
-    final success = await _removeChallengeFromOngoingUseCase(
+    final success = await _abandonChallengeUseCase(
         UserTaskParams(userId: userId, challengeId: challengeId)
     );
 
@@ -772,6 +789,7 @@ class ChallengeProvider with ChangeNotifier {
   @override
   void dispose() {
     _allChallengesSubscription?.cancel();
+    _userProgressSubscription?.cancel();
     _pageController?.dispose();
     _debounce?.cancel();
     super.dispose();

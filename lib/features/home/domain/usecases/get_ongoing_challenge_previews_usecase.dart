@@ -1,6 +1,6 @@
 import 'dart:async';
 import '/core/utils/app_logger.dart';
-import '/features/profile/domain/entities/user_profile_entity.dart';
+import '/features/challenges/domain/entities/challenge_progress_entity.dart';
 import '/features/challenges/domain/entities/challenge_entity.dart';
 import '/features/challenges/domain/usecases/get_challenge_by_id_usecase.dart';
 
@@ -10,7 +10,7 @@ class GetOngoingChallengePreviewsUseCase {
   GetOngoingChallengePreviewsUseCase(this._getChallengeByIdUseCase);
 
   Future<List<ChallengeEntity>?> call({
-    required UserProfileEntity userProfile,
+    required List<ChallengeProgressEntity> userProgress,
     required int limit,
   }) async {
     if (limit <= 0) {
@@ -20,8 +20,11 @@ class GetOngoingChallengePreviewsUseCase {
     final List<ChallengeEntity> previews = [];
     List<Future<ChallengeEntity?>> futures = [];
 
-    for (String taskId in userProfile.ongoingTasks.take(limit)) {
-      futures.add(_getChallengeByIdUseCase(taskId));
+    // Running challenges are derived from the participations: newest first.
+    final relevant = userProgress.where((p) => p.isOngoing).toList()
+      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    for (final progress in relevant.take(limit)) {
+      futures.add(_getChallengeByIdUseCase(progress.challengeId));
     }
 
     try {

@@ -9,7 +9,7 @@ import '/core/utils/app_logger.dart';
 // Dependencies: Providers and Entities
 import '/features/auth/presentation/providers/auth_provider.dart';
 import '/features/profile/presentation/providers/user_profile_provider.dart';
-import '/features/profile/domain/entities/user_profile_entity.dart';
+import '/features/challenges/domain/entities/challenge_progress_entity.dart';
 import '/features/challenges/presentation/providers/challenge_provider.dart';
 import '/features/challenges/domain/entities/challenge_entity.dart';
 import '/features/sdg/presentation/providers/sdg_list_provider.dart';
@@ -31,7 +31,6 @@ class HomeProvider with ChangeNotifier {
 
   // --- Internal Provider References ---
   // These will be kept up-to-date by the `updateDependencies` method.
-  late UserProfileProvider _userProfileProvider;
   late SdgListProvider _sdgListProvider;
 
   // --- State for Challenge Previews ---
@@ -44,7 +43,7 @@ class HomeProvider with ChangeNotifier {
   String? _completedPreviewsError;
 
   // Keep track of the last profile state we reacted to, to avoid redundant fetches.
-  UserProfileEntity? _lastProcessedProfile;
+  List<ChallengeProgressEntity>? _lastProcessedProgress;
 
   /// The constructor is now simple and only requires its own UseCases.
   HomeProvider({
@@ -82,21 +81,20 @@ class HomeProvider with ChangeNotifier {
       SdgListProvider sdg,
       ) {
     // 1. Update internal references
-    _userProfileProvider = profile;
     _sdgListProvider = sdg;
 
     // 2. React to meaningful changes.
-    // We check if the user profile has changed since the last time we fetched data.
-    // The `ProxyProvider` calls this method whenever a dependency notifies, so we
-    // need this check to prevent fetching on every minor change.
-    final newUserProfile = profile.userProfile;
-    if (!const DeepCollectionEquality().equals(newUserProfile, _lastProcessedProfile)) {
-      AppLogger.debug("HomeProvider: UserProfile dependency has changed. Updating previews.");
+    // The previews are derived from the user's participations, so we refetch
+    // only when that list changes. The `ProxyProvider` calls this method
+    // whenever any dependency notifies, hence the equality check.
+    final newProgress = auth.isLoggedIn ? challenges.userProgress : null;
+    if (!const DeepCollectionEquality().equals(newProgress, _lastProcessedProgress)) {
+      AppLogger.debug("HomeProvider: user participations changed. Updating previews.");
 
-      _lastProcessedProfile = newUserProfile;
+      _lastProcessedProgress = newProgress;
 
-      if (auth.isLoggedIn && newUserProfile != null) {
-        _fetchChallengePreviews(userProfile: newUserProfile);
+      if (newProgress != null) {
+        _fetchChallengePreviews(userProgress: newProgress);
       } else {
         // Clear data if user logs out or profile becomes null
         _ongoingChallengePreviews = [];
@@ -110,7 +108,7 @@ class HomeProvider with ChangeNotifier {
 
   // --- Private Methods ---
 
-  Future<void> _fetchChallengePreviews({required UserProfileEntity userProfile}) async {
+  Future<void> _fetchChallengePreviews({required List<ChallengeProgressEntity> userProgress}) async {
     const int previewLimit = 3;
 
     // Fetch Ongoing Challenges
@@ -119,7 +117,7 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
 
     final ongoingResult = await _getOngoingChallengePreviewsUseCase(
-        userProfile: userProfile, limit: previewLimit
+        userProgress: userProgress, limit: previewLimit
     );
     _ongoingChallengePreviews = ongoingResult ?? [];
     if (ongoingResult == null) _ongoingPreviewsError = "Could not load ongoing challenges.";
@@ -132,7 +130,7 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
 
     final completedResult = await _getCompletedChallengePreviewsUseCase(
-        userProfile: userProfile, limit: previewLimit
+        userProgress: userProgress, limit: previewLimit
     );
     _completedChallengePreviews = completedResult ?? [];
     if (completedResult == null) _completedPreviewsError = "Could not load completed challenges.";

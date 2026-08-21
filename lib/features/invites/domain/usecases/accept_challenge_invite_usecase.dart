@@ -1,7 +1,5 @@
-import '../../../challenges/domain/usecases/remove_challenge_from_ongoing_usecase.dart';
 import 'package:equatable/equatable.dart';
 import '../../../challenges/domain/entities/challenge_entity.dart';
-import '../../../challenges/domain/usecases/accept_challenge_usecase.dart';
 import '../../../challenges/domain/usecases/add_participant_to_group_challenge_usecase.dart';
 import '../../../challenges/domain/usecases/create_group_challenge_progress_usecase.dart';
 import '../../../challenges/domain/usecases/start_challenge_usecase.dart';
@@ -23,9 +21,6 @@ class AcceptChallengeInviteUseCase {
   /// Use case for starting a challenge for a user.
   final StartChallengeUseCase _startChallengeUseCase;
 
-  /// Use case for marking a challenge as accepted by a user.
-  final AcceptChallengeUseCase _acceptChallengeUseCase;
-
   /// Use case for creating a progress document for a group challenge.
   final CreateGroupChallengeProgressUseCase _createGroupProgressUseCase;
 
@@ -36,7 +31,6 @@ class AcceptChallengeInviteUseCase {
   AcceptChallengeInviteUseCase(
     this._invitesRepository,
     this._startChallengeUseCase,
-    this._acceptChallengeUseCase,
     this._createGroupProgressUseCase,
     this._addParticipantToGroupChallengeUseCase,
   );
@@ -45,8 +39,7 @@ class AcceptChallengeInviteUseCase {
   ///
   /// [params] The parameters required to accept the invite.
   Future<void> call(AcceptInviteParams params) async {
-    // 1. Start the challenge for the accepting user.
-    await _acceptChallengeUseCase(UserTaskParams(userId: params.userId, challengeId: params.challenge.id));
+    // 1. Start the challenge for the accepting user (creates the participation).
     await _startChallengeUseCase(StartChallengeParams(
       userId: params.userId,
       challenge: params.challenge,

@@ -16,10 +16,29 @@ abstract class ChallengeProgressRepository {
   /// - [progressId]: The ID of the challenge progress to watch.
   Stream<ChallengeProgressEntity?> watchChallengeProgress(String progressId);
 
-  /// Creates a new challenge progress entry.
+  /// Watches every participation of a user (running and completed).
+  ///
+  /// Running and completed challenge lists are derived from this stream;
+  /// see [ChallengeProgressEntity.isOngoing] / [ChallengeProgressEntity.isCompleted].
+  ///
+  /// - [userId]: The user whose participations to watch.
+  Stream<List<ChallengeProgressEntity>> watchUserProgress(String userId);
+
+  /// Creates a new challenge progress entry, i.e. the user joins the challenge.
   ///
   /// - [progress]: The [ChallengeProgressEntity] to create.
   Future<void> createChallengeProgress(ChallengeProgressEntity progress);
+
+  /// Marks a participation as finalised by stamping [completedAt].
+  ///
+  /// - [progressId]: The ID of the challenge progress.
+  /// - [completedAt]: The completion timestamp.
+  Future<void> markChallengeCompleted(String progressId, DateTime completedAt);
+
+  /// Removes a participation, i.e. the user abandons a running challenge.
+  ///
+  /// - [progressId]: The ID of the challenge progress.
+  Future<void> deleteChallengeProgress(String progressId);
 
   /// Updates the state of a specific task within a challenge progress.
   ///

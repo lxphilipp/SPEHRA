@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show immutable, listEquals;
+import 'package:flutter/foundation.dart' show immutable;
 
 /// Represents a user profile with all its details.
 @immutable
@@ -30,12 +30,6 @@ class UserProfileEntity {
   /// The current level of the user.
   final int level;
 
-  /// A list of IDs of tasks that are currently ongoing for the user.
-  final List<String> ongoingTasks;
-
-  /// A list of IDs of tasks that have been completed by the user.
-  final List<String> completedTasks;
-
   /// A flag indicating whether the user has completed the introductory flow.
   final bool hasCompletedIntro;
 
@@ -50,8 +44,6 @@ class UserProfileEntity {
     this.profileImageUrl,
     required this.points,
     required this.level,
-    required this.completedTasks,
-    required this.ongoingTasks,
     required this.hasCompletedIntro,
   });
 
@@ -68,16 +60,13 @@ class UserProfileEntity {
         other.profileImageUrl == profileImageUrl &&
         other.points == points &&
         other.level == level &&
-        listEquals(other.completedTasks, completedTasks) &&
-        listEquals(other.ongoingTasks, ongoingTasks) &&
-        other.hasCompletedIntro == hasCompletedIntro; // Field for intro completion status
+        other.hasCompletedIntro == hasCompletedIntro;
   }
 
   @override
   int get hashCode => Object.hash(
     id, name, email, age, studyField, school, profileImageUrl,
-    points, level, Object.hashAll(completedTasks), Object.hashAll(ongoingTasks),
-    hasCompletedIntro, // Field for intro completion status
+    points, level, hasCompletedIntro,
   );
 
   /// Creates a copy of this [UserProfileEntity] but with the given fields
@@ -92,8 +81,6 @@ class UserProfileEntity {
     String? profileImageUrl,
     int? points,
     int? level,
-    List<String>? completedTasks,
-    List<String>? ongoingTasks,
     bool? hasCompletedIntro,
   }) {
     return UserProfileEntity(
@@ -106,8 +93,6 @@ class UserProfileEntity {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       points: points ?? this.points,
       level: level ?? this.level,
-      completedTasks: completedTasks ?? this.completedTasks,
-      ongoingTasks: ongoingTasks ?? this.ongoingTasks,
       hasCompletedIntro: hasCompletedIntro ?? this.hasCompletedIntro,
     );
   }
